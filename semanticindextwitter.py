@@ -7,9 +7,6 @@ from optparse import OptionParser
 from semanticizer import Semanticizer
 import textcat
 
-ngrammodel = textcat.NGram('LM')
-availablelang = ngrammodel.listLangs()
-
 usage = "Usage: %prog [options] <tweetdir-root>"
 parser = OptionParser(usage=usage)
 parser.add_option("-c", "--connection",
@@ -20,9 +17,13 @@ parser.add_option("-p", "--pause", metavar="MINUTES",
                   help="Number of minutes to pause in the loop (default: %default)", type="int", default="30")
 parser.add_option("--listlang", 
                   help="list languages that can be recognized",  action="store_true")
+parser.add_option("--lm", metavar="DIR",
+                  help="language model root (default: %default)", default="LM")
 
 (options, args) = parser.parse_args()
 
+ngrammodel = textcat.NGram(options.lm)
+availablelang = ngrammodel.listLangs()
 if options.listlang:
     print sorted(availablelang)
     sys.exit(0)
@@ -46,23 +47,22 @@ filecmp = lambda x,y: cmp(addzero(x), addzero(y))
 
 def run(dir, file):
     print "Loading tweets from: " + dir + "/" + file
-    with open(os.path.join(root, dir, file)) as filep:
-        for line in filep:
-            try:
-                tweet = json.loads(line)
-            except ValueError:
-                print "Error in tweet: " + line
-                continue
+    for line in open(os.path.join(root, dir, file), 'r'):
+        try:
+            tweet = json.loads(line)
+        except ValueError:
+            print "Error in tweet: " + line
+            continue
 
-            if tweet.has_key("delete"): continue
-            if not tweet.has_key("id"): assert False, line
-            assert tweet.has_key("text")
-            tweet["semantic"] = semanticizer.semanticize(tweet["text"])
-            connection.request('POST', '/semantictwitter/tweet/%d' % tweet["id"], json.dumps(tweet))
-            result = connection.getresponse().read()
-            result_json = json.loads(result)
-            if "ok" in result_json or not result_json["ok"]:
-                print result
+        if "delete" in tweet: continue
+        if not "id" in tweet: assert False, line
+        assert "text" in tweet
+        tweet["semantic"] = semanticizer.semanticize(tweet["text"])
+        connection.request('POST', '/semantictwitter/tweet/%d' % tweet["id"], json.dumps(tweet))
+        result = connection.getresponse().read()
+        result_json = json.loads(result)
+        if "ok" in result_json or not result_json["ok"]:
+            print result
 
 if options.loop:
     dir_index = 0
