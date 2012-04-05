@@ -1,34 +1,28 @@
 import os
 import json
-from time import sleep
 import httplib
+from time import sleep
+from optparse import OptionParser
 from semanticizer import Semanticizer
 import textcat
-from optparse import OptionParser
 
 usage = "Usage: %prog [options] <tweetdir-root>"
 parser = OptionParser(usage=usage)
 parser.add_option("-c", "--connection",
                   help="Connection string (default: %default)", metavar="HOST:PORT", default="localhost:9200")
-
+parser.add_option("-l", "--loop",
+                  help="Loop, with an hour pause",  action="store_true")
 
 (options, args) = parser.parse_args()
 
 if len(args) != 1:
-    parser.error("provide (only) the tweetdir-root directory please")
+    parser.error("provide (only) the tweetdir-root directory please, eg: /zfs/ilps-plexer/twitter-data/data/2012")
 
 root = args[0]
-
-#root="/zfs/ilps-plexer/twitter-data/data/2012"
-
 connection =  httplib.HTTPConnection(options.connection)
+semanticizer = Semanticizer()
 
-# # Find max id from where to start posting again
-# connection.request('GET', '/twitter/tweet/_search?size=1&fields=&sort=id:desc')
-# result = json.loads(connection.getresponse().read())
-# max_id = int(result["hits"]["hits"][0]["_id"])
-
-# Helpers to compare filenames in gardenhose dump
+# Helper to compare filenames in gardenhose dump
 def addzero(x): 
     parts = x.split('-')
     if parts[1][1] == '.':
@@ -38,35 +32,7 @@ def addzero(x):
          return x
 filecmp = lambda x,y: cmp(addzero(x), addzero(y))
 
-# Initialize a Semanticizer
-semanticizer = Semanticizer()
-
-dir_index = 0
-file_index = 0
-while True:
-    dirs = sorted(os.listdir(root))
-    assert dir_index < len(dirs)
-
-    dir = dirs[dir_index]
-    files = sorted(os.listdir(os.path.join(root, dir)), filecmp)
-
-    if file_index == (len(files)-1) and dir_index == (len(files)-1):
-        # The last file of the last dir
-        print("At last file, so leeping for 30 minutes.")
-        sleep(30*60)
-        continue
-    if file_index >= len(files):
-        if dir_index < (len(dirs)-1):
-            # Go to next dir
-            dir_index += 1
-            file_index = 0
-            continue
-        else:
-            print("I should be here, so I'll be Sleeping for 30 minutes.")
-            sleep(30*60)
-            continue
-
-    file = files[file_index]
+def run(dir, file):
     print "Loading tweets from: " + dir + "/" + file
     with open(os.path.join(root, dir, file)) as filep:
         for line in filep:
@@ -78,16 +44,41 @@ while True:
 
             if tweet.has_key("delete"): continue
             if not tweet.has_key("id"): assert False, line
-#           if int(tweet["id"]) <= max_id: continue
-
             assert tweet.has_key("text")
             tweet["semantic"] = semanticizer.semanticize(tweet["text"])
-
             connection.request('POST', '/semantictwitter/tweet/%d' % tweet["id"], json.dumps(tweet))
             result = connection.getresponse().read()
             result_json = json.loads(result)
-            if not result_json.has_key("ok") or not result_json["ok"]:
+            if "ok" in result_json or not result_json["ok"]:
                 print result
-                continue
 
-    file_index += 1
+if options.loop:
+    dir_index = 0
+    file_index = 0
+    while True:
+        dirs = sorted(os.listdir(root))
+        assert dir_index < len(dirs)
+        dir = dirs[dir_index]
+        files = sorted(os.listdir(os.path.join(root, dir)), filecmp)
+        if file_index == (len(files)-1) and dir_index == (len(files)-1):
+            # The last file of the last dir
+            print("At last file, so sleeping for 30 minutes.")
+            sleep(30*60)
+            continue
+        if file_index >= len(files):
+            if dir_index < (len(dirs)-1):
+                # Go to next dir
+                dir_index += 1
+                file_index = 0
+                continue
+            else:
+                print("I should be here, so sleeping for 30 minutes.")
+                sleep(30*60)
+                continue
+        file = files[file_index]
+        run(dir, file)
+        file_index += 1
+else:
+    for dir in sorted(os.listdir(root)):
+        for file in sorted(os.listdir(os.path.join(root, dir)), filecmp):
+            run(dir, file)
