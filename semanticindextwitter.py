@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import httplib
 from time import sleep
@@ -6,14 +7,25 @@ from optparse import OptionParser
 from semanticizer import Semanticizer
 import textcat
 
+ngrammodel = textcat.NGram('LM')
+availablelang = ngrammodel.listLangs()
+
 usage = "Usage: %prog [options] <tweetdir-root>"
 parser = OptionParser(usage=usage)
 parser.add_option("-c", "--connection",
                   help="Connection string (default: %default)", metavar="HOST:PORT", default="localhost:9200")
 parser.add_option("-l", "--loop",
-                  help="Loop, with an hour pause",  action="store_true")
+                  help="Loop, with a pause",  action="store_true")
+parser.add_option("-p", "--pause", metavar="MINUTES",
+                  help="Number of minutes to pause in the loop (default: %default)", type="int", default="30")
+parser.add_option("--listlang", 
+                  help="list languages that can be recognized",  action="store_true")
 
 (options, args) = parser.parse_args()
+
+if options.listlang:
+    print sorted(availablelang)
+    sys.exit(0)
 
 if len(args) != 1:
     parser.error("provide (only) the tweetdir-root directory please, eg: /zfs/ilps-plexer/twitter-data/data/2012")
@@ -63,7 +75,7 @@ if options.loop:
         if file_index == (len(files)-1) and dir_index == (len(files)-1):
             # The last file of the last dir
             print("At last file, so sleeping for 30 minutes.")
-            sleep(30*60)
+            sleep(options.pause*60)
             continue
         if file_index >= len(files):
             if dir_index < (len(dirs)-1):
@@ -73,7 +85,7 @@ if options.loop:
                 continue
             else:
                 print("I should be here, so sleeping for 30 minutes.")
-                sleep(30*60)
+                sleep(options.pause*60)
                 continue
         file = files[file_index]
         run(dir, file)

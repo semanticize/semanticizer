@@ -127,7 +127,10 @@ class NGram:
         if not count:
             raise ValueError("no language files found")
 
-    def classify (self,text):
+    def listLangs(self):
+        return self.ngrams.keys()
+
+    def classify(self,text):
         ngram = _NGram(text)
         r = 'guess'
 
