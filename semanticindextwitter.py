@@ -1,12 +1,27 @@
 import os
 import json
-
 from time import sleep
-
-root="/zfs/ilps-plexer/twitter-data/data/2012"
-
 import httplib
-connection =  httplib.HTTPConnection('localhost:9200')
+from semanticizer import Semanticizer
+import textcat
+from optparse import OptionParser
+
+usage = "Usage: %prog [options] <tweetdir-root>"
+parser = OptionParser(usage=usage)
+parser.add_option("-c", "--connection",
+                  help="Connection string (default: %default)", metavar="HOST:PORT", default="localhost:9200")
+
+
+(options, args) = parser.parse_args()
+
+if len(args) != 1:
+    parser.error("provide (only) the tweetdir-root directory please")
+
+root = args[0]
+
+#root="/zfs/ilps-plexer/twitter-data/data/2012"
+
+connection =  httplib.HTTPConnection(options.connection)
 
 # # Find max id from where to start posting again
 # connection.request('GET', '/twitter/tweet/_search?size=1&fields=&sort=id:desc')
@@ -24,37 +39,7 @@ def addzero(x):
 filecmp = lambda x,y: cmp(addzero(x), addzero(y))
 
 # Initialize a Semanticizer
-from nltk import word_tokenize
-from Semanticizer import Semanticizer
-
 semanticizer = Semanticizer()
-
-def semanticize(sentence):
-    result = {"sentiment_clues": {}, "links": []}
-    words = word_tokenize(sentence.replace('-', ' '))
-    for n in range(1,len(words)+1):
-        for i in range(len(words)-n+1):
-            word = ' '.join(words[i:i+n])
-#           if semanticizer.sentiment_lexicon.has_key(word):
-#               sentiment = semanticizer.sentiment_lexicon[word]
-#               result["sentiment_clues"][word] = sentiment
-            if semanticizer.labels.has_key(word):
-                label = semanticizer.labels[word]
-                for sense in label[4]:
-                    if label[2] == 0:
-                        senseprob = 0
-                    else:
-                        # Senseprob is # of links to target with anchor text
-                        # over # of times anchor text used
-                        senseprob = float(label[4][sense][0])/label[2]
-                    if senseprob > 0.01:
-                        title = semanticizer.page_title[sense].decode(errors="replace")
-                        result["links"].append({
-                            "label": word,
-                            "title": title,
-                            "senseProbability": senseprob
-                        })
-    return result           
 
 dir_index = 0
 file_index = 0
@@ -96,7 +81,7 @@ while True:
 #           if int(tweet["id"]) <= max_id: continue
 
             assert tweet.has_key("text")
-            tweet["semantic"] = semanticize(tweet["text"])
+            tweet["semantic"] = semanticizer.semanticize(tweet["text"])
 
             connection.request('POST', '/semantictwitter/tweet/%d' % tweet["id"], json.dumps(tweet))
             result = connection.getresponse().read()
