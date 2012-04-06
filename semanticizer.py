@@ -10,6 +10,8 @@ class Semanticizer:
     def __init__(self, wikipediaminer_root=None, senseprobthreshold=None):
         if not wikipediaminer_root:
             self.wikipediaminer_root = WIKIPEDIAMINER_ROOT
+        else:
+            self.wikipediaminer_root = wikipediaminer_root
         if not senseprobthreshold:
             self.senseprobthreshold = SENSEPRO0THRESHOLD
 

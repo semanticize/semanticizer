@@ -20,7 +20,7 @@ parser.add_option("--listlang",
 parser.add_option("--lm", metavar="DIR",
                   help="language model root (default: %default)", default="LM")
 parser.add_option("--langloc", help="List accepted languages plus location for wikipediaminer dump", nargs=2,
-                  action="append")
+                  action="append", metavar="LANG LOC")
 (options, args) = parser.parse_args()
 
 ngrammodel = textcat.NGram(options.lm)
