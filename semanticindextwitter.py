@@ -46,7 +46,7 @@ connection =  httplib.HTTPConnection(options.connection)
 
 semanticizers = {}
 for lang, loc in options.langloc:
-    semanticizer[lang] = Semanticizer(loc)
+    semanticizers[lang] = Semanticizer(loc)
 
 # Helper to compare filenames in gardenhose dump
 def addzero(x): 
