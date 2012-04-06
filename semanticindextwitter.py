@@ -19,7 +19,8 @@ parser.add_option("--listlang",
                   help="list languages that can be recognized",  action="store_true")
 parser.add_option("--lm", metavar="DIR",
                   help="language model root (default: %default)", default="LM")
-
+parser.add_option("--langloc", help="List accepted languages plus location for wikipediaminer dump", nargs=2,
+                  action="append")
 (options, args) = parser.parse_args()
 
 ngrammodel = textcat.NGram(options.lm)
@@ -28,12 +29,24 @@ if options.listlang:
     print sorted(availablelang)
     sys.exit(0)
 
+
+for lang, loc in options.langloc:
+    if not lang in availablelang:
+        parser.error("Language \"" + lang + "\" is not available, available languages are: " + ", ".join(sorted(availablelang)))
+    if not os.path.isdir(loc):
+        parser.error("Wikipediaminer dump does not exist: " + loc)
+
 if len(args) != 1:
-    parser.error("provide (only) the tweetdir-root directory please, eg: /zfs/ilps-plexer/twitter-data/data/2012")
+    parser.error("Provide (only) the tweetdir-root directory please, eg: /zfs/ilps-plexer/twitter-data/data/2012")
+if not os.path.isdir(args[0]):
+    parser.error("The tweetdir-root directory does not exist.")
 
 root = args[0]
 connection =  httplib.HTTPConnection(options.connection)
-semanticizer = Semanticizer()
+
+semanticizers = {}
+for lang, loc in options.langloc:
+    semanticizer[lang] = Semanticizer(loc)
 
 # Helper to compare filenames in gardenhose dump
 def addzero(x): 
@@ -57,7 +70,12 @@ def run(dir, file):
         if "delete" in tweet: continue
         if not "id" in tweet: assert False, line
         assert "text" in tweet
-        tweet["semantic"] = semanticizer.semanticize(tweet["text"])
+
+        lang = ngrammodel.classify(tweet["text"])
+        if not lang in semanticizers: continue
+
+        tweet["lang"] = lang
+        tweet["semantic"] = semanticizers[lang].semanticize(tweet["text"])
         connection.request('POST', '/semantictwitter/tweet/%d' % tweet["id"], json.dumps(tweet))
         result = connection.getresponse().read()
         result_json = json.loads(result)
