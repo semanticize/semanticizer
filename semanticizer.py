@@ -43,6 +43,7 @@ class Semanticizer:
                             result["links"].append({
                                 "label": word,
                                 "title": title,
+                                "id": sense,
                                 "senseProbability": senseprob
                             })
         return result
