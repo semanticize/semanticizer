@@ -14,6 +14,8 @@ class Semanticizer:
             self.wikipediaminer_root = wikipediaminer_root
         if not senseprobthreshold:
             self.senseprobthreshold = SENSEPRO0THRESHOLD
+        else:
+            self.senseprobthreshold = senseprobthreshold
 
         #self.load_sentiment_lexicon('./sentiment_lexicon_nl.txt')
         
@@ -21,7 +23,8 @@ class Semanticizer:
         self.load_page_titles(os.path.join(self.wikipediaminer_root, 'page.csv'))
 
     def semanticize(sentence):
-        result = {"sentiment_clues": {}, "links": []}
+    #    result = {"sentiment_clues": {}, "links": []}
+        result = {"links": []}
         words = word_tokenize(sentence.replace('-', ' '))
         for n in range(1,len(words)+1):
             for i in range(len(words)-n+1):

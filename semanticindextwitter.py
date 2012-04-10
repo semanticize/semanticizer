@@ -11,6 +11,8 @@ usage = "Usage: %prog [options] <tweetdir-root>"
 parser = OptionParser(usage=usage)
 parser.add_option("-c", "--connection",
                   help="Connection string (default: %default)", metavar="HOST:PORT", default="localhost:9200")
+parser.add_option("-i", "--index",
+                  help="URL to find index (default: %default)", default="/semantictwitter/tweet/")
 parser.add_option("-l", "--loop",
                   help="Loop, with a pause",  action="store_true")
 parser.add_option("-p", "--pause", metavar="MINUTES",
@@ -76,7 +78,7 @@ def run(dir, file):
 
         tweet["lang"] = lang
         tweet["semantic"] = semanticizers[lang].semanticize(tweet["text"])
-        connection.request('POST', '/semantictwitter/tweet/%d' % tweet["id"], json.dumps(tweet))
+        connection.request('POST', '%s%d' % (options.index, tweet["id"], json.dumps(tweet)))
         result = connection.getresponse().read()
         result_json = json.loads(result)
         if "ok" in result_json or not result_json["ok"]:
