@@ -1,4 +1,4 @@
-import sys, os
+import sys, os, urllib
 from nltk import sent_tokenize, word_tokenize
 
 #PICKLE_ROOT = './enwiki-20111007-pickles/'
@@ -52,7 +52,7 @@ class Semanticizer:
                                 "label": word,
                                 "title": title,
                                 "id": sense,
-                                "url": WIKIPEDIA_URL_TEMPLATE % (self.language_code, title),
+                                "url": WIKIPEDIA_URL_TEMPLATE % (self.language_code, urllib.quote(unicode(title).encode('utf8'))),
                                 "senseProbability": senseprob
                             })
         return result
