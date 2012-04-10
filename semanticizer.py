@@ -3,7 +3,7 @@ from nltk import sent_tokenize, word_tokenize
 
 #PICKLE_ROOT = './enwiki-20111007-pickles/'
 DEFAULT_LANGUAGE_CODE = 'en'
-WIKIPEDIAMINER_ROOT = './enwiki-20111007-wikipediaminer/'
+WIKIPEDIAMINER_ROOT = '/zfs/ilps-plexer/wikipediaminer/enwiki-20111007/'
 SENSEPRO0THRESHOLD = 0.01
 WIKIPEDIA_URL_TEMPLATE = 'http://%s.wikipedia.org/wiki/%s'
 
