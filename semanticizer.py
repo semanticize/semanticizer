@@ -40,6 +40,7 @@ class Semanticizer:
                 if word in self.labels:
                     label = self.labels[word]
                     for sense in label[4]:
+                        prior_probability = float(label[0])/label[2]
                         if label[2] == 0:
                             senseprob = 0
                         else:
@@ -47,13 +48,16 @@ class Semanticizer:
                             # over # of times anchor text used
                             senseprob = float(label[4][sense][0])/label[2]
                         if senseprob > self.senseprobthreshold:
+	                        commonness = float(label[4][sense][0])/label[0]
                             title = self.page_title[sense].decode(errors="replace")
                             result["links"].append({
                                 "label": word,
                                 "title": title,
                                 "id": sense,
                                 "url": WIKIPEDIA_URL_TEMPLATE % (self.language_code, urllib.quote(unicode(title).encode('utf8'))),
-                                "senseProbability": senseprob
+                                "prior_probability": prior_probability,
+                                "sense_probability": senseprob,
+                                "commonness": commonness
                             })
         return result
 
