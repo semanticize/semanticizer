@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import json
 import httplib
 from time import sleep
@@ -50,9 +51,12 @@ connection =  httplib.HTTPConnection(options.connection)
 langmap = {}
 semanticizers = {}
 for lang, langcode, loc in options.langloc:
-    print "Loading semanticizer for " + lang
     langmap[lang] = langcode
+
+    print "Loading semanticizer for " + lang + " from " + loc
+    start = time.time()
     semanticizers[langcode] = Semanticizer(langcode, loc)
+    print "Loading semanticizer took", time.time() - start, "seconds."
 
 # Helper to compare filenames in gardenhose dump
 def addzero(x): 
