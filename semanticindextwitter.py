@@ -23,7 +23,7 @@ parser.add_option("--listlang",
 parser.add_option("--lm", metavar="DIR",
                   help="language model root (default: %default)", default="LM")
 #parser.add_option("--langloc", help="List accepted languages plus location for wikipediaminer dump", nargs=3,
-parser.add_option("--langloc", help="Add accepted language, followed by wikipedia language code and location for wikipediaminer dump", nargs=3,
+parser.add_option("--langloc", help="Add accepted language (see --listlang), followed by 2 character wikipedia language code and the location for wikipediaminer dump", nargs=3,
                   action="append", metavar="LANG LANGCODE LOC")
 (options, args) = parser.parse_args()
 
