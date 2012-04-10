@@ -2,12 +2,17 @@ import sys, os
 from nltk import sent_tokenize, word_tokenize
 
 #PICKLE_ROOT = './enwiki-20111007-pickles/'
+DEFAULT_LANGUAGE_CODE = 'en'
 WIKIPEDIAMINER_ROOT = './enwiki-20111007-wikipediaminer/'
 SENSEPRO0THRESHOLD = 0.01
-
+WIKIPEDIA_URL_TEMPLATE = 'http://%s.wikipedia.org/wiki/%s'
 
 class Semanticizer:
-    def __init__(self, wikipediaminer_root=None, senseprobthreshold=None):
+    def __init__(self, language_code=None, wikipediaminer_root=None, senseprobthreshold=None):
+        if not language_code:
+            self.language_code = DEFAULT_LANGUAGE_CODE
+        else:
+            self.language_code = language_code
         if not wikipediaminer_root:
             self.wikipediaminer_root = WIKIPEDIAMINER_ROOT
         else:
@@ -47,6 +52,7 @@ class Semanticizer:
                                 "label": word,
                                 "title": title,
                                 "id": sense,
+                                "url": WIKIPEDIA_URL_TEMPLATE % (self.language_code, title),
                                 "senseProbability": senseprob
                             })
         return result

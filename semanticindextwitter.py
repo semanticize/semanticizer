@@ -21,8 +21,9 @@ parser.add_option("--listlang",
                   help="list languages that can be recognized",  action="store_true")
 parser.add_option("--lm", metavar="DIR",
                   help="language model root (default: %default)", default="LM")
-parser.add_option("--langloc", help="List accepted languages plus location for wikipediaminer dump", nargs=2,
-                  action="append", metavar="LANG LOC")
+#parser.add_option("--langloc", help="List accepted languages plus location for wikipediaminer dump", nargs=3,
+parser.add_option("--langloc", help="Add accepted language, followed by wikipedia language code and location for wikipediaminer dump", nargs=3,
+                  action="append", metavar="LANG LANGCODE LOC")
 (options, args) = parser.parse_args()
 
 ngrammodel = textcat.NGram(options.lm)
@@ -32,7 +33,7 @@ if options.listlang:
     sys.exit(0)
 
 
-for lang, loc in options.langloc:
+for lang, langcode, loc in options.langloc:
     if not lang in availablelang:
         parser.error("Language \"" + lang + "\" is not available, available languages are: " + ", ".join(sorted(availablelang)))
     if not os.path.isdir(loc):
@@ -47,8 +48,9 @@ root = args[0]
 connection =  httplib.HTTPConnection(options.connection)
 
 semanticizers = {}
-for lang, loc in options.langloc:
-    semanticizers[lang] = Semanticizer(loc)
+for lang, langcode, loc in options.langloc:
+    print "Loading semanticizer for " + lang
+    semanticizers[lang] = Semanticizer(langcode, loc)
 
 # Helper to compare filenames in gardenhose dump
 def addzero(x): 
