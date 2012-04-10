@@ -71,20 +71,30 @@ def run(dir, file):
             print "Error in tweet: " + line
             continue
 
-        if "delete" in tweet: continue
+        if "delete" in tweet:
+            print "Deleted tweet"
+            continue
         if not "id" in tweet: assert False, line
         assert "text" in tweet
 
         lang = ngrammodel.classify(tweet["text"])
-        if not lang in semanticizers: continue
+        #if not lang in semanticizers: 
+        #    print "Tweets of lang " + lang + " will not be stored"
+        #    continue
 
+<<<<<<< HEAD
         tweet["lang"] = lang
         tweet["semantic"] = semanticizers[lang].semanticize(tweet["text"])
         connection.request('POST', '%s%d' % (options.index, tweet["id"], json.dumps(tweet)))
+=======
+        #tweet["lang"] = lang
+        tweet["semantic"] = semanticizers["english"].semanticize(tweet["text"])
+        connection.request('POST', '/semantictwitter/tweet/%d' % tweet["id"], json.dumps(tweet))
+>>>>>>> f1757ce112fb82c45e00cfccdb4b0cc734f1e690
         result = connection.getresponse().read()
         result_json = json.loads(result)
-        if "ok" in result_json or not result_json["ok"]:
-            print result
+        #if "ok" in result_json or not result_json["ok"]:
+        #    print result
 
 if options.loop:
     dir_index = 0

@@ -27,7 +27,7 @@ class Semanticizer:
         self.load_labels(os.path.join(self.wikipediaminer_root, 'label.csv'))
         self.load_page_titles(os.path.join(self.wikipediaminer_root, 'page.csv'))
 
-    def semanticize(sentence):
+    def semanticize(self, sentence):
     #    result = {"sentiment_clues": {}, "links": []}
         result = {"links": []}
         words = word_tokenize(sentence.replace('-', ' '))
