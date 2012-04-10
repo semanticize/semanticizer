@@ -93,7 +93,7 @@ def run(dir, file):
             continue
 
         langcode = langmap[lang]
-        tweet["detectedlang"] = langcode
+        tweet["detected_lang"] = langcode
         tweet["semantic"] = semanticizers[langcode].semanticize(tweet["text"])
         connection.request('POST', '%s%d' % (options.index, tweet["id"]), json.dumps(tweet))
         result = connection.getresponse().read()
