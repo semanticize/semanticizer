@@ -91,7 +91,7 @@ def run(dir, file):
         langcode = langmap[lang]
         tweet["detectedlang"] = langcode
         tweet["semantic"] = semanticizers[langcode].semanticize(tweet["text"])
-        connection.request('POST', '%s%d' % (options.index, tweet["id"], json.dumps(tweet)))
+        connection.request('POST', '%s%d' % (options.index, tweet["id"]), json.dumps(tweet))
         result = connection.getresponse().read()
         result_json = json.loads(result)
 
