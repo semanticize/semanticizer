@@ -47,10 +47,12 @@ if not os.path.isdir(args[0]):
 root = args[0]
 connection =  httplib.HTTPConnection(options.connection)
 
+langmap = {}
 semanticizers = {}
 for lang, langcode, loc in options.langloc:
     print "Loading semanticizer for " + lang
-    semanticizers[lang] = Semanticizer(langcode, loc)
+    langmap[lang] = langcode
+    semanticizers[langcode] = Semanticizer(langcode, loc)
 
 # Helper to compare filenames in gardenhose dump
 def addzero(x): 
@@ -63,38 +65,31 @@ def addzero(x):
 filecmp = lambda x,y: cmp(addzero(x), addzero(y))
 
 def run(dir, file):
-    print "Loading tweets from: " + dir + "/" + file
+    print "Loading tweets from: " + dir + "/" + file + "."
     for line in open(os.path.join(root, dir, file), 'r'):
         try:
             tweet = json.loads(line)
         except ValueError:
-            print "Error in tweet: " + line
+            print "Error while loading tweet: " + line
             continue
 
         if "delete" in tweet:
-            print "Deleted tweet"
+            print "Deleted tweet, not storing."
             continue
         if not "id" in tweet: assert False, line
         assert "text" in tweet
 
-        lang = ngrammodel.classify(tweet["text"])
-        #if not lang in semanticizers: 
-        #    print "Tweets of lang " + lang + " will not be stored"
-        #    continue
+        lang = ngrammodel.classify(unicode(tweet["text"]).encode('utf-8'))
+        if not lang in langmap: 
+            print "Tweets of lang " + lang + " will not be stored."
+            continue
 
-<<<<<<< HEAD
-        tweet["lang"] = lang
-        tweet["semantic"] = semanticizers[lang].semanticize(tweet["text"])
+        langcode = langmap[lang]
+        tweet["detectedlang"] = langcode
+        tweet["semantic"] = semanticizers[langcode].semanticize(tweet["text"])
         connection.request('POST', '%s%d' % (options.index, tweet["id"], json.dumps(tweet)))
-=======
-        #tweet["lang"] = lang
-        tweet["semantic"] = semanticizers["english"].semanticize(tweet["text"])
-        connection.request('POST', '/semantictwitter/tweet/%d' % tweet["id"], json.dumps(tweet))
->>>>>>> f1757ce112fb82c45e00cfccdb4b0cc734f1e690
         result = connection.getresponse().read()
         result_json = json.loads(result)
-        #if "ok" in result_json or not result_json["ok"]:
-        #    print result
 
 if options.loop:
     dir_index = 0
