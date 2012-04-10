@@ -47,7 +47,7 @@ class Semanticizer:
                             # over # of times anchor text used
                             senseprob = float(label[4][sense][0])/label[2]
                         if senseprob > self.senseprobthreshold:
-                            title = self.page_title[sense].decode(errors="replace")
+                            title = self.page_title[sense]
                             result["links"].append({
                                 "label": word,
                                 "title": title,
@@ -74,8 +74,7 @@ class Semanticizer:
     def load_labels(self, filename):
         self.labels = {}
         print 'Loading labels...'
-        file = open(filename, 'r')
-        for line in file:
+        for line in codecs.open(filename, "r", "utf-8"):
             stats_part, senses_part = line.split(',v{')
             senses = senses_part[:-1].split('s')[1:]
             stats = stats_part[1:].split(',')
@@ -92,8 +91,7 @@ class Semanticizer:
     def load_category_parents(self, filename):
         print 'Loading category parents...'
         self.category_parents = {}
-        file = open(filename, 'r')
-        for line in file:
+        for line in codecs.open(filename, "r", "utf-8"):
             line = line.replace('v{', '').replace('}\n', '')
             ids = line.split(',')
             category_id = int(ids[0])
@@ -106,8 +104,7 @@ class Semanticizer:
     def load_category_titles(self, filename):
         print 'Loading category titles...'
         self.category_title = {}
-        file = open(filename, 'r')
-        for line in file:
+        for line in codecs.open(filename, "r", "utf-8"):
             if not line.startswith('INSERT INTO `category` VALUES'):
                 continue
             splits = line[31:-3].split('),(')
@@ -120,8 +117,7 @@ class Semanticizer:
     def load_article_parents(self, filename):
         print 'Loading article parents...'
         self.article_parents = {}
-        file = open(filename, 'r')
-        for line in file:
+        for line in codecs.open(filename, "r", "utf-8"):
             line = line.replace('v{', '').replace('}\n', '')
             ids = line.split(',')
             article_id = int(ids[0])
@@ -159,12 +155,9 @@ class Semanticizer:
 #
 #        print '%d sentiment words loaded.' % len(self.sentiment_lexicon)
         
-
 if __name__ == '__main__':
-    
     semanticizer = Semanticizer()
     print 'Loading text...'
-    print
     text = sys.stdin.read()
     sentences = sent_tokenize(text)
     for sentence in sentences:
