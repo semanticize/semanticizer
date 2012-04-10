@@ -18,6 +18,8 @@ parser.add_option("-l", "--loop",
                   help="Loop, with a pause",  action="store_true")
 parser.add_option("-v", "--verbose",
                   help="Set high verbosity",  action="store_true")
+parser.add_option("-d", "--delete",
+                  help="Delete json file after processing",  action="store_true")
 parser.add_option("-p", "--pause", metavar="MINUTES",
                   help="Number of minutes to pause in the loop (default: %default)", type="int", default="30")
 parser.add_option("--listlang", 
@@ -96,6 +98,9 @@ def run(dir, file):
         connection.request('POST', '%s%d' % (options.index, tweet["id"]), json.dumps(tweet))
         result = connection.getresponse().read()
         result_json = json.loads(result)
+    if options.delete:
+        print "Deleting file: " + dir + "/" + file
+        os.remove(os.path.join(root, dir, file))
 
 if options.loop:
     dir_index = 0
