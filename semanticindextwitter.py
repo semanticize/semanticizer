@@ -16,6 +16,8 @@ parser.add_option("-i", "--index",
                   help="URL to find index (default: %default)", default="/semantictwitter/tweet/")
 parser.add_option("-l", "--loop",
                   help="Loop, with a pause",  action="store_true")
+parser.add_option("-v", "--verbose",
+                  help="Set high verbosity",  action="store_true")
 parser.add_option("-p", "--pause", metavar="MINUTES",
                   help="Number of minutes to pause in the loop (default: %default)", type="int", default="30")
 parser.add_option("--listlang", 
@@ -74,18 +76,18 @@ def run(dir, file):
         try:
             tweet = json.loads(line)
         except ValueError:
-            print "Error while loading tweet: " + line
+            if options.verbose: print "Error while loading tweet: " + line
             continue
 
         if "delete" in tweet:
-            print "Deleted tweet, not storing."
+            if options.verbose: print "Deleted tweet, not storing."
             continue
         if not "id" in tweet: assert False, line
         assert "text" in tweet
 
         lang = ngrammodel.classify(unicode(tweet["text"]).encode('utf-8'))
         if not lang in langmap: 
-            print "Tweets of lang " + lang + " will not be stored."
+            if options.verbose: print "Tweets of lang " + lang + " will not be stored."
             continue
 
         langcode = langmap[lang]
