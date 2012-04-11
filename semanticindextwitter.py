@@ -25,7 +25,7 @@ parser.add_option("-p", "--pause", metavar="MINUTES",
 parser.add_option("--listlang", 
                   help="list languages that can be recognized",  action="store_true")
 parser.add_option("--lm", metavar="DIR",
-                  help="language model root (default: %default)", default="LM")
+                  help="language model root (default: %default)", default="LM.lrej2011")
 #parser.add_option("--langloc", help="List accepted languages plus location for wikipediaminer dump", nargs=3,
 parser.add_option("--langloc", help="Add accepted language (see --listlang), followed by 2 character wikipedia language code and the location for wikipediaminer dump", nargs=3,
                   action="append", metavar="LANG LANGCODE LOC")
