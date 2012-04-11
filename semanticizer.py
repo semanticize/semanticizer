@@ -1,4 +1,4 @@
-import sys, os, urllib
+import sys, os, urllib, codecs
 from nltk import sent_tokenize, word_tokenize
 
 #PICKLE_ROOT = './enwiki-20111007-pickles/'
@@ -45,16 +45,17 @@ class Semanticizer:
     #               result["sentiment_clues"][word] = sentiment
                 if word in self.labels:
                     label = self.labels[word]
+                    if len(label) < 5:
+                        continue
                     for sense in label[4]:
-                        prior_probability = float(label[0])/label[2]
                         if label[2] == 0:
-                            senseprob = 0
-                        else:
-                            # Senseprob is # of links to target with anchor text
-                            # over # of times anchor text used
-                            senseprob = float(label[4][sense][0])/label[2]
+                            continue
+                        prior_probability = float(label[0])/label[2]
+                        # Senseprob is # of links to target with anchor text
+                        # over # of times anchor text used
+                        senseprob = float(label[4][sense][0])/label[2]
                         if senseprob > self.senseprobthreshold:
-                            title = self.page_title[sense]
+                            title = unicode(self.page_title[sense])
                             commonness = float(label[4][sense][0])/label[0]
                             if sense in self.translation:
                                 translations = {}
@@ -100,39 +101,56 @@ class Semanticizer:
         print 'Loading page titles...'
         self.page_title = {}
         self.title_page = {}
-        file = open(filename, 'r')
-        for line in file:
-            splits = line.split(',')
-            id = int(splits[0])
-            title = splits[1][1:]
-            self.page_title[id] = title
-            self.title_page[title] = id
+        linenr = 0
+        for line in codecs.open(filename, "r", "utf-8"):
+            linenr += 1
+            try:
+                splits = line.split(',')
+                id = int(splits[0])
+                title = splits[1][1:]
+                self.page_title[id] = title
+                self.title_page[title] = id
+            except:
+                print "Error loading on line " + str(linenr )+ ": " + line
+                continue
 
         print '%d pages loaded.' % len(self.page_title)
 
     def load_labels(self, filename):
         self.labels = {}
         print 'Loading labels...'
+        linenr = 0
         for line in codecs.open(filename, "r", "utf-8"):
-            stats_part, senses_part = line.split(',v{')
-            senses = senses_part[:-1].split('s')[1:]
-            stats = stats_part[1:].split(',')
-            text = stats[0]
-            label = map(int, stats[1:])
-            label.append({})
-            for sense_text in senses:
-                sense_parts = sense_text[1:-1].split(',')
-                id = int(sense_parts[0])
-                label[-1][id] = map(int, sense_parts[1:3]) + [sense_parts[3] == 'T', sense_parts[4] == 'T']
+            linenr += 1
+            try:
+                stats_part, senses_part = line.split(',v{')
+                senses = senses_part[:-1].split('s')[1:]
+                stats = stats_part[1:].split(',')
+                text = stats[0]
+                label = map(int, stats[1:])
+                label.append({})
+                for sense_text in senses:
+                    sense_parts = sense_text[1:-1].split(',')
+                    id = int(sense_parts[0])
+                    label[-1][id] = map(int, sense_parts[1:3]) + [sense_parts[3] == 'T', sense_parts[4] == 'T']
 
-            self.labels[text] = label
+                self.labels[text] = label
+            except:
+                print "Error loading on line " + str(linenr )+ ": " + line
+                continue
 
     def load_category_parents(self, filename):
         print 'Loading category parents...'
         self.category_parents = {}
+        linenr = 0
         for line in codecs.open(filename, "r", "utf-8"):
-            line = line.replace('v{', '').replace('}\n', '')
-            ids = line.split(',')
+            linenr += 1
+            try:
+                line = line.replace('v{', '').replace('}\n', '')
+                ids = line.split(',')
+            except:
+                print "Error loading on line " + str(linenr )+ ": " + line
+                continue
             category_id = int(ids[0])
             self.category_parents[category_id] = []
             for parent_id in ids[1:]:
