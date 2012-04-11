@@ -6,9 +6,10 @@ DEFAULT_LANGUAGE_CODE = 'en'
 WIKIPEDIAMINER_ROOT = '/zfs/ilps-plexer/wikipediaminer/enwiki-20111007/'
 SENSEPRO0THRESHOLD = 0.01
 WIKIPEDIA_URL_TEMPLATE = 'http://%s.wikipedia.org/wiki/%s'
+TRANSLATION_LANGS = ['en', 'nl', 'fr', 'es']
 
 class Semanticizer:
-    def __init__(self, language_code=None, wikipediaminer_root=None, senseprobthreshold=None):
+    def __init__(self, language_code=None, wikipediaminer_root=None, senseprobthreshold=None, translation_langs=None):
         if not language_code:
             self.language_code = DEFAULT_LANGUAGE_CODE
         else:
@@ -21,9 +22,14 @@ class Semanticizer:
             self.senseprobthreshold = SENSEPRO0THRESHOLD
         else:
             self.senseprobthreshold = senseprobthreshold
+        if not translation_langs:
+            self.translation_langs = TRANSLATION_LANGS
+        else:
+            self.translation_langs = translation_langs
 
         #self.load_sentiment_lexicon('./sentiment_lexicon_nl.txt')
         
+        self.load_translations(os.path.join(self.wikipediaminer_root, 'translations.csv'))
         self.load_labels(os.path.join(self.wikipediaminer_root, 'label.csv'))
         self.load_page_titles(os.path.join(self.wikipediaminer_root, 'page.csv'))
 
@@ -50,16 +56,45 @@ class Semanticizer:
                         if senseprob > self.senseprobthreshold:
                             title = self.page_title[sense]
                             commonness = float(label[4][sense][0])/label[0]
+                            if sense in self.translation:
+                                translations = {}
+                                for lang in self.translation[sense]:
+                                    translations[lang] = {
+                                        'title': unicode(self.translation[sense][lang]),
+                                        'url' : WIKIPEDIA_URL_TEMPLATE % (lang, urllib.quote(unicode(self.translation[sense][lang]).encode('utf-8')))
+                                    }
+                            else:
+                                translations = []
                             result["links"].append({
                                 "label": word,
                                 "title": title,
                                 "id": sense,
-                                "url": WIKIPEDIA_URL_TEMPLATE % (self.language_code, urllib.quote(unicode(title).encode('utf8'))),
+                                "translations": translations,
+                                "url": WIKIPEDIA_URL_TEMPLATE % (self.language_code, urllib.quote(title.encode('utf-8'))),
                                 "prior_probability": prior_probability,
                                 "sense_probability": senseprob,
                                 "commonness": commonness
                             })
         return result
+
+    def load_translations(self, filename):
+        print 'Loading translations...'
+        self.translation = {}
+        linenr = 0
+        for line in codecs.open(filename, "r", "utf-8"):
+            linenr += 1
+            try:
+                id_str, translation_part = line.strip()[:-1].split(",m{'")
+                id = int(id_str)
+                parts = translation_part.split(",'")
+                self.translation[id] = {}
+                for i in range(0, len(parts), 2):
+                    lang = parts[i]
+                    if lang in self.translation_langs:
+                        self.translation[id][parts[i]] = parts[i+1]
+            except:
+                print "Error loading on line " + str(linenr )+ ": " + line
+                continue
 
     def load_page_titles(self, filename):
         print 'Loading page titles...'
