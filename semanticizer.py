@@ -56,22 +56,21 @@ class Semanticizer:
                         senseprob = float(label[4][sense][0])/label[2]
                         if senseprob > self.senseprobthreshold:
                             title = unicode(self.page_title[sense])
+                            url = WIKIPEDIA_URL_TEMPLATE % (self.language_code, urllib.quote(title.encode('utf-8')))
                             commonness = float(label[4][sense][0])/label[0]
+                            translations = {self.language_code: {"title":title,"url":url}}
                             if sense in self.translation:
-                                translations = {}
                                 for lang in self.translation[sense]:
                                     translations[lang] = {
                                         'title': unicode(self.translation[sense][lang]),
                                         'url' : WIKIPEDIA_URL_TEMPLATE % (lang, urllib.quote(unicode(self.translation[sense][lang]).encode('utf-8')))
                                     }
-                            else:
-                                translations = []
                             result["links"].append({
                                 "label": word,
                                 "title": title,
                                 "id": sense,
                                 "translations": translations,
-                                "url": WIKIPEDIA_URL_TEMPLATE % (self.language_code, urllib.quote(title.encode('utf-8'))),
+                                "url":url,
                                 "prior_probability": prior_probability,
                                 "sense_probability": senseprob,
                                 "commonness": commonness
