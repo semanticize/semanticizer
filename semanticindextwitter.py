@@ -30,7 +30,7 @@ parser.add_option("--listlang",
                   help="list languages that can be recognized",  action="store_true")
 parser.add_option("--lm", metavar="DIR",
                   help="language model root (default: %default)", default="LM.lrej2011")
-parser.add_option("--langloc", help="Add accepted language (see --listlang), followed by 2 character wikipedia language code and the location for wikipediaminer dump", nargs=3,
+parser.add_option("--langloc", help="Add accepted language (see --listlang), followed by 2 character wikipedia language code and the location for wikipediaminer dump (default: english en /zfs/ilps-plexer/wikipediaminer/enwiki-20111007/)", nargs=3,
                   action="append", metavar="LANG LANGCODE LOC")
 parser.add_option("-s", "--stopword", metavar="DIR",
                   help="Location of the stopword dir (default: %default)", default="SW")
@@ -52,6 +52,9 @@ for fname in glob.glob(os.path.join(options.stopword, "stopwords.*")):
     stopwords[langcode] = {}
     for line in codecs.open(fname, 'r', 'utf-8'):
         stopwords[langcode][line.strip()] = 0
+
+if not options.langloc:
+    options.langloc = [("english", "en", "/zfs/ilps-plexer/wikipediaminer/enwiki-20111007/")] 
 
 for lang, langcode, loc in options.langloc:
     if not langcode in stopwords:
