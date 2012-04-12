@@ -107,13 +107,16 @@ def removeStopwords(text, langcode):
     return " ".join([w for w in re.split('\s+', text) if not w in stopwords[langcode]])
 
 def run(dir, file):
+    stats = {"total":0}
+    for lang in langmap:
+        stats[langmap[lang]] = 0
     print "Loading tweets from: " + dir + "/" + file + "."
     for line in open(os.path.join(root, dir, file), 'r'):
+        stats["total"]+=1
         try:
             tweet = json.loads(line)
         except ValueError:
             if options.verbose: print "Error while loading tweet: " + line
-            continue
 
         if "delete" in tweet:
             if options.verbose: print "Deleted tweet, not storing."
@@ -132,11 +135,13 @@ def run(dir, file):
         tweet["cleaned_text"] = text
         tweet["semantic"] = semanticizers[langcode].semanticize(text)
         connection.request('POST', '%s%d' % (options.index, tweet["id"]), json.dumps(tweet))
+        stats[langcode] += 1
         result = connection.getresponse().read()
         result_json = json.loads(result)
     if options.delete:
         print "Deleting file: " + dir + "/" + file
         os.remove(os.path.join(root, dir, file))
+    return stats
 
 if options.loop:
     dir_index = 0
@@ -165,6 +170,13 @@ if options.loop:
         run(dir, file)
         file_index += 1
 else:
+    totalstats = {}
     for dir in sorted(os.listdir(root)):
         for file in sorted(os.listdir(os.path.join(root, dir)), filecmp):
-            run(dir, file)
+            stats = run(dir, file)
+            for k in stats:
+                if not k in totalstats:
+                    totalstats[k] = 0
+                totalstats[k] += stats[k]
+            print "file:", stats
+            print "cum:", totalstats
