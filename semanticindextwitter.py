@@ -101,23 +101,25 @@ def cleanText(text):
 def removeStopwords(text, langcode):
     return " ".join([w for w in re.split('\s+', text) if not w in stopwords[langcode]])
 
-def run(dir, file):
+def run(file):
     stats = {"total":0}
     for lang in langmap:
         stats[langmap[lang]] = 0
-    print "Loading tweets from: " + dir + "/" + file + "."
-    for line in open(os.path.join(root, dir, file), 'r'):
+    print "Loading tweets from:", file
+    for line in open(file, 'r'):
         stats["total"]+=1
         try:
             tweet = json.loads(line)
         except ValueError:
             if options.verbose: print "Error while loading tweet: " + line
+            continue
 
         if "delete" in tweet:
             if options.verbose: print "Deleted tweet, not storing."
             continue
-        if not "id" in tweet: assert False, line
-        assert "text" in tweet
+
+        assert "id" in tweet, line
+        assert "text" in tweet, line
 
         text = cleanText(unicode(tweet["text"]))
         lang = ngrammodel.classify(text.encode('utf-8'))
@@ -162,13 +164,15 @@ if options.loop:
                 sleep(options.pause*60)
                 continue
         file = files[file_index]
-        run(dir, file)
+        fullname = os.path.join(root, dir, file)
+        stats = run(fullname)
         file_index += 1
 else:
     totalstats = {}
     for dir in sorted(os.listdir(root)):
         for file in sorted(os.listdir(os.path.join(root, dir)), filecmp):
-            stats = run(dir, file)
+            fullname = os.path.join(root, dir, file)
+            stats = run(fullname)
             for k in stats:
                 if not k in totalstats:
                     totalstats[k] = 0
