@@ -2,7 +2,10 @@ import os
 import sys
 import time
 import json
+import re
 import httplib
+import glob
+import codecs
 from time import sleep
 from optparse import OptionParser
 from semanticizer import Semanticizer
@@ -29,6 +32,8 @@ parser.add_option("--lm", metavar="DIR",
 #parser.add_option("--langloc", help="List accepted languages plus location for wikipediaminer dump", nargs=3,
 parser.add_option("--langloc", help="Add accepted language (see --listlang), followed by 2 character wikipedia language code and the location for wikipediaminer dump", nargs=3,
                   action="append", metavar="LANG LANGCODE LOC")
+parser.add_option("-s", "--stopword", metavar="DIR",
+                  help="Location of the stopword dir (default: %default)", default="SW")
 (options, args) = parser.parse_args()
 
 ngrammodel = textcat.NGram(options.lm)
@@ -37,8 +42,19 @@ if options.listlang:
     print sorted(availablelang)
     sys.exit(0)
 
+if not os.path.isdir(options.stopword):
+    parser.error("The stopword dir does not exist")
+
+stopwords = {}
+for fname in glob.glob(os.path.join(options.stopword, "stopwords.*")):
+    langcode = os.path.split(fname)[-1].split(".")[-1]
+    stopwords[langcode] = {}
+    for line in codecs.open(fname, 'r', 'utf-8'):
+        stopwords[langcode][line.strip()] = 0
 
 for lang, langcode, loc in options.langloc:
+    if not langcode in stopwords:
+        parser.error("No stopwords for " + lang)
     if not lang in availablelang:
         parser.error("Language \"" + lang + "\" is not available, available languages are: " + ", ".join(sorted(availablelang)))
     if not os.path.isdir(loc):
@@ -48,6 +64,7 @@ if len(args) != 1:
     parser.error("Provide (only) the tweetdir-root directory please, eg: /zfs/ilps-plexer/twitter-data/data/2012")
 if not os.path.isdir(args[0]):
     parser.error("The tweetdir-root directory does not exist.")
+
 
 root = args[0]
 connection =  httplib.HTTPConnection(options.connection)
@@ -72,6 +89,23 @@ def addzero(x):
          return x
 filecmp = lambda x,y: cmp(addzero(x), addzero(y))
 
+ru = re.compile(r"(@\w+)")
+rl = re.compile(r"(http://[a-zA-Z0-9_=\-\.\?&/#]+)")
+rp = re.compile(r"[-!\"#\$%&'\(\)\*\+,\.\/:;<=>\?@\[\\\]\^_`\{\|\}~]")
+rt = re.compile(r"(\bRT\b)")
+
+def cleanText(text):
+    text = ru.sub(" ", text)
+    text = rl.sub(" ", text)
+    text = rp.sub(" ", text)
+    text = rt.sub(" ", text)
+    text = " ".join([w for w in re.split('\s+', text) if len(w) > 1])
+    return text
+
+
+def removeStopwords(text, langcode):
+    return " ".join([w for w in re.split('\s+', text) if not w in stopwords[langcode]])
+
 def run(dir, file):
     print "Loading tweets from: " + dir + "/" + file + "."
     for line in open(os.path.join(root, dir, file), 'r'):
@@ -87,14 +121,16 @@ def run(dir, file):
         if not "id" in tweet: assert False, line
         assert "text" in tweet
 
-        lang = ngrammodel.classify(unicode(tweet["text"]).encode('utf-8'))
+        text = cleanText(unicode(tweet["text"]))
+        lang = ngrammodel.classify(text.encode('utf-8'))
         if not lang in langmap: 
             if options.verbose: print "Tweets of lang " + lang + " will not be stored."
             continue
-
         langcode = langmap[lang]
+        text = removeStopwords(text, langcode)
         tweet["detected_lang"] = langcode
-        tweet["semantic"] = semanticizers[langcode].semanticize(tweet["text"])
+        tweet["cleaned_text"] = text
+        tweet["semantic"] = semanticizers[langcode].semanticize(text)
         connection.request('POST', '%s%d' % (options.index, tweet["id"]), json.dumps(tweet))
         result = connection.getresponse().read()
         result_json = json.loads(result)
