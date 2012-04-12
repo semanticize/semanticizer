@@ -6,6 +6,7 @@ import re
 import httplib
 import glob
 import codecs
+import multiprocessing
 from time import sleep
 from optparse import OptionParser
 from semanticizer import Semanticizer
@@ -33,6 +34,8 @@ parser.add_option("--langloc", help="Add accepted language (see --listlang), fol
                   action="append", metavar="LANG LANGCODE LOC")
 parser.add_option("-s", "--stopword", metavar="DIR",
                   help="Location of the stopword dir (default: %default)", default="SW")
+parser.add_option("-m", "--multi", metavar="NUM", type="int",
+                  help="Number of cores to use (default: %default)", default=1)
 (options, args) = parser.parse_args()
 
 ngrammodel = textcat.NGram(options.lm)
@@ -136,9 +139,11 @@ def run(file):
         result = connection.getresponse().read()
         result_json = json.loads(result)
     if options.delete:
-        print "Deleting file: " + dir + "/" + file
-        os.remove(os.path.join(root, dir, file))
-    return stats
+        print "Deleting file: ", file
+        os.remove(file)
+
+    print "Done with", file, stats
+    return file, stats
 
 if options.loop:
     dir_index = 0
@@ -165,14 +170,23 @@ if options.loop:
                 continue
         file = files[file_index]
         fullname = os.path.join(root, dir, file)
-        stats = run(fullname)
+        print run(fullname)
         file_index += 1
+elif options.multi > 1:
+    pool = multiprocessing.Pool(processes=options.multi)
+    fullnames = []
+    for dir in sorted(os.listdir(root)):
+        for file in sorted(os.listdir(os.path.join(root, dir)), filecmp):
+            fullnames.append(os.path.join(root, dir, file))
+    print pool.map(run, fullnames)
+    pool.close()
+    pool.join()
 else:
     totalstats = {}
     for dir in sorted(os.listdir(root)):
         for file in sorted(os.listdir(os.path.join(root, dir)), filecmp):
             fullname = os.path.join(root, dir, file)
-            stats = run(fullname)
+            _, stats = run(fullname)
             for k in stats:
                 if not k in totalstats:
                     totalstats[k] = 0
