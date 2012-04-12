@@ -29,7 +29,6 @@ parser.add_option("--listlang",
                   help="list languages that can be recognized",  action="store_true")
 parser.add_option("--lm", metavar="DIR",
                   help="language model root (default: %default)", default="LM.lrej2011")
-#parser.add_option("--langloc", help="List accepted languages plus location for wikipediaminer dump", nargs=3,
 parser.add_option("--langloc", help="Add accepted language (see --listlang), followed by 2 character wikipedia language code and the location for wikipediaminer dump", nargs=3,
                   action="append", metavar="LANG LANGCODE LOC")
 parser.add_option("-s", "--stopword", metavar="DIR",
@@ -44,7 +43,6 @@ if options.listlang:
 
 if not os.path.isdir(options.stopword):
     parser.error("The stopword dir does not exist")
-
 stopwords = {}
 for fname in glob.glob(os.path.join(options.stopword, "stopwords.*")):
     langcode = os.path.split(fname)[-1].split(".")[-1]
@@ -65,7 +63,6 @@ if len(args) != 1:
 if not os.path.isdir(args[0]):
     parser.error("The tweetdir-root directory does not exist.")
 
-
 root = args[0]
 connection =  httplib.HTTPConnection(options.connection)
 
@@ -79,7 +76,6 @@ for lang, langcode, loc in options.langloc:
     semanticizers[langcode] = Semanticizer(langcode, loc)
     print "Loading semanticizer took", time.time() - start, "seconds."
 
-# Helper to compare filenames in gardenhose dump
 def addzero(x): 
     parts = x.split('-')
     if parts[1][1] == '.':
@@ -101,7 +97,6 @@ def cleanText(text):
     text = rt.sub(" ", text)
     text = " ".join([w for w in re.split('\s+', text) if len(w) > 1])
     return text
-
 
 def removeStopwords(text, langcode):
     return " ".join([w for w in re.split('\s+', text) if not w in stopwords[langcode]])
