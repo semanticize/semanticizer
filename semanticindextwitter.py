@@ -110,9 +110,11 @@ def removeStopwords(text, langcode):
     return " ".join([w for w in re.split('\s+', text) if not w in stopwords[langcode]])
 
 def run(file):
-    for done in open(options.log, 'r'):
-        if done.strip() == file:
-            return
+    if options.skip:
+        for done in open(options.log, 'r'):
+            if done.strip() == file: 
+                print "Skipping tweets from:", file
+                return
     stats = {"total":0}
     for lang in langmap:
         stats[langmap[lang]] = 0
@@ -182,11 +184,12 @@ if options.loop:
         file_index += 1
 elif options.multi > 1:
     pool = multiprocessing.Pool(processes=options.multi)
-    fullnames = []
+    #fullnames = []
     for dir in sorted(os.listdir(root)):
         for file in sorted(os.listdir(os.path.join(root, dir)), filecmp):
-            fullnames.append(os.path.join(root, dir, file))
-    print pool.map(run, fullnames)
+            pool.apply_async(run, os.path.join(root, dir, file))
+            #fullnames.append(os.path.join(root, dir, file))
+    #pool.map(run, fullnames)
     pool.close()
     pool.join()
 else:
