@@ -36,6 +36,8 @@ parser.add_option("-s", "--stopword", metavar="DIR",
                   help="Location of the stopword dir (default: %default)", default="SW")
 parser.add_option("-m", "--multi", metavar="NUM", type="int",
                   help="Number of cores to use (default: %default)", default=1)
+parser.add_option("--log", metavar="FILE", help="Log file location (default: %default)", default="log.txt")
+parser.add_option("--skip", action="store_true", help="Skip json files present in the log files")
 (options, args) = parser.parse_args()
 
 ngrammodel = textcat.NGram(options.lm)
@@ -108,6 +110,9 @@ def removeStopwords(text, langcode):
     return " ".join([w for w in re.split('\s+', text) if not w in stopwords[langcode]])
 
 def run(file):
+    for done in open(options.log, 'r'):
+        if done.strip() == file:
+            return
     stats = {"total":0}
     for lang in langmap:
         stats[langmap[lang]] = 0
@@ -146,8 +151,8 @@ def run(file):
         os.remove(file)
 
     print "Done with", file, stats
-    return file, stats
-
+    open(options.log, 'a').write(file + "\n")
+    
 if options.loop:
     dir_index = 0
     file_index = 0
