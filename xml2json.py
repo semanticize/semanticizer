@@ -14,7 +14,7 @@ class objectJSONEncoder(json.JSONEncoder):
        if isinstance(o, lxml.objectify.NumberElement) or isinstance(o, lxml.objectify.FloatElement):
            return float(o)
        if isinstance(o, lxml.objectify.ObjectifiedDataElement):
-           return str(o)
+           return o.text.encode('ascii', 'ignore')
        if hasattr(o, '__dict__'):
            #For objects with a __dict__, return the encoding of the __dict__
            return o.__dict__
