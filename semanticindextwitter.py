@@ -148,13 +148,21 @@ def run(file):
         stats[langcode] += 1
         result = connection.getresponse().read()
         result_json = json.loads(result)
+    filepointer.close()
     if options.delete:
         print "Deleting file: ", file
         os.remove(file)
 
     print "Done with", file, stats
     open(options.log, 'a').write(file + "\n")
-    
+
+def skip_file(fullname):
+    for done in open(options.log, 'r'):
+        if done.strip() == fullname: 
+            print "Skipping tweets from:", fullname
+            return True
+    return False
+
 if options.loop:
     dir_index = 0
     file_index = 0
@@ -180,6 +188,7 @@ if options.loop:
                 continue
         file = files[file_index]
         fullname = os.path.join(root, dir, file)
+        if options.skip and skip_file(fullname): continue
         print run(fullname)
         file_index += 1
 elif options.multi > 1:
@@ -188,27 +197,14 @@ elif options.multi > 1:
     for dir in sorted(os.listdir(root)):
         for file in sorted(os.listdir(os.path.join(root, dir)), filecmp):
             fullname = os.path.join(root, dir, file)
-            if options.skip:
-                skip = False
-                for done in open(options.log, 'r'):
-                    if done.strip() == fullname: 
-                        print "Skipping tweets from:", file
-                        skip = True
-                        break
-                if skip: continue
+            if options.skip and skip_file(fullname): continue
             fullnames.append(fullname)
     pool.map(run, fullnames)
     pool.close()
     pool.join()
 else:
-    totalstats = {}
     for dir in sorted(os.listdir(root)):
         for file in sorted(os.listdir(os.path.join(root, dir)), filecmp):
             fullname = os.path.join(root, dir, file)
-            _, stats = run(fullname)
-            for k in stats:
-                if not k in totalstats:
-                    totalstats[k] = 0
-                totalstats[k] += stats[k]
-            print "file:", stats
-            print "cum:", totalstats
+            if options.skip and skip_file(fullname): continue
+            run(fullname)
