@@ -87,7 +87,7 @@ for lang, langcode, loc in options.langloc:
 
 def addzero(x): 
     parts = x.split('-')
-    if parts[1][1] == '.':
+    if len(parts) > 1 and len(parts[1]) > 1 and parts[1][1] == '.':
         parts[1] = '0' + parts[1]
         return '-'.join(parts)
     else:
