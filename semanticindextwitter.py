@@ -7,6 +7,7 @@ import httplib
 import glob
 import codecs
 import multiprocessing
+import gzip
 from time import sleep
 from optparse import OptionParser
 from semanticizer import Semanticizer
@@ -114,7 +115,11 @@ def run(file):
     for lang in langmap:
         stats[langmap[lang]] = 0
     print "Loading tweets from:", file
-    for line in open(file, 'r'):
+    if file.endswith(".gz"):
+        filepointer = gzip.open(file, 'r')
+    else:
+	    filepointer = open(file, 'r')
+    for line in filepointer:
         stats["total"]+=1
         try:
             tweet = json.loads(line)
