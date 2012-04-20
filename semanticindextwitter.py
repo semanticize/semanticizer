@@ -123,16 +123,18 @@ def run(file):
         stats["total"]+=1
         try:
             tweet = json.loads(line)
+            assert "id" in tweet, line
+            assert "text" in tweet, line
         except ValueError:
             if options.verbose: print "Error while loading tweet: " + line
+            continue
+        except AssertionError:
+            print "Unexpected content in tweet: " + line
             continue
 
         if "delete" in tweet:
             if options.verbose: print "Deleted tweet, not storing."
             continue
-
-        assert "id" in tweet, line
-        assert "text" in tweet, line
 
         text = cleanText(unicode(tweet["text"]))
         lang = ngrammodel.classify(text.encode('utf-8'))
