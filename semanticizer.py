@@ -1,3 +1,4 @@
+from collections import Sequence
 import sys, os, urllib, codecs
 from nltk import sent_tokenize, wordpunct_tokenize
 from nltk.util import ngrams as nltk_ngrams
@@ -265,6 +266,8 @@ class Semanticizer:
 #        print '%d sentiment words loaded.' % len(self.sentiment_lexicon)
         
 if __name__ == '__main__':
+    from nltk import sent_tokenize
+
     semanticizer = Semanticizer()
     print 'Loading text...'
     text = sys.stdin.read()
