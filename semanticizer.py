@@ -1,5 +1,8 @@
 import sys, os, urllib, codecs
-from nltk import sent_tokenize, word_tokenize
+from nltk import sent_tokenize, wordpunct_tokenize
+from nltk.util import ngrams as nltk_ngrams
+
+import unicodedata
 
 #PICKLE_ROOT = './enwiki-20111007-pickles/'
 DEFAULT_LANGUAGE_CODE = 'en'
@@ -33,48 +36,79 @@ class Semanticizer:
         self.load_labels(os.path.join(self.wikipediaminer_root, 'label.csv'))
         self.load_page_titles(os.path.join(self.wikipediaminer_root, 'page.csv'))
 
-    def semanticize(self, sentence):
+    def semanticize(self, sentence, translations=True, counts=False, senseprobthreshold=None):
+    	if senseprobthreshold == None: senseprobthreshold = self.senseprobthreshold
     #    result = {"sentiment_clues": {}, "links": []}
         result = {"links": []}
-        words = word_tokenize(sentence.replace('-', ' '))
-        for n in range(1,len(words)+1):
-            for i in range(len(words)-n+1):
-                word = ' '.join(words[i:i+n])
-    #           if semanticizer.sentiment_lexicon.has_key(word):
-    #               sentiment = semanticizer.sentiment_lexicon[word]
-    #               result["sentiment_clues"][word] = sentiment
-                if word in self.labels:
-                    label = self.labels[word]
-                    if len(label) < 5:
-                        continue
-                    for sense in label[4]:
-                        if label[2] == 0:
+        ngrams = set()
+  #      tokens = [wordpunct_tokenize(sentence)]
+        tokens = [wordpunct_tokenize(sentence),
+                  wordpunct_tokenize(sentence.replace('-', ' ')),
+                  wordpunct_tokenize(sentence.replace('.', ' ')),
+                  wordpunct_tokenize(sentence.replace('.', ''))]
+
+        for words in tokens:
+            for n in range(1,len(words)+1):
+                for ngram in nltk_ngrams(words, n):
+                    ngrams.add(' '.join(ngram))
+#                    ngrams.add(' '.join([w.lower() for w in ngram]))
+#                    ngrams.add(' '.join([w.capitalize() for w in ngram]))
+                    ngrams.add(self.normalize(' '.join(ngram)))
+#                    ngrams.add(self.normalize(' '.join([w.lower() for w in ngram])))
+#                    ngrams.add(self.normalize(' '.join([w.capitalize() for w in ngram])))
+
+        for ngram in ngrams:
+#           if semanticizer.sentiment_lexicon.has_key(word):
+#               sentiment = semanticizer.sentiment_lexicon[word]
+#               result["sentiment_clues"][word] = sentiment
+            if ngram in self.normalized:
+                for word in self.normalized[ngram]:
+                    if word in self.labels:
+                        label = self.labels[word]
+                        if len(label) < 5:
                             continue
-                        prior_probability = float(label[0])/label[2]
-                        # Senseprob is # of links to target with anchor text
-                        # over # of times anchor text used
-                        senseprob = float(label[4][sense][0])/label[2]
-                        if senseprob > self.senseprobthreshold:
-                            title = unicode(self.page_title[sense])
-                            url = WIKIPEDIA_URL_TEMPLATE % (self.language_code, urllib.quote(title.encode('utf-8')))
-                            commonness = float(label[4][sense][0])/label[0]
-                            translations = {self.language_code: {"title":title,"url":url}}
-                            if sense in self.translation:
-                                for lang in self.translation[sense]:
-                                    translations[lang] = {
-                                        'title': unicode(self.translation[sense][lang]),
-                                        'url' : WIKIPEDIA_URL_TEMPLATE % (lang, urllib.quote(unicode(self.translation[sense][lang]).encode('utf-8')))
-                                    }
-                            result["links"].append({
-                                "label": word,
-                                "title": title,
-                                "id": sense,
-                                "translations": translations,
-                                "url":url,
-                                "prior_probability": prior_probability,
-                                "sense_probability": senseprob,
-                                "commonness": commonness
-                            })
+                        for sense in label[4]:
+                            if label[2] == 0:
+                                prior_probability = 0
+                                senseprob = 0
+                            else:
+                                prior_probability = float(label[0])/label[2]
+                                # Senseprob is # of links to target with anchor text
+                                # over # of times anchor text used
+                                senseprob = float(label[4][sense][0])/label[2]
+                            if senseprob > senseprobthreshold:
+                                title = unicode(self.page_title[sense])
+                                url = WIKIPEDIA_URL_TEMPLATE % (self.language_code, urllib.quote(title.encode('utf-8')))
+                                if label[0] == 0:
+                                	commonness = 0
+                                else:
+                                    commonness = float(label[4][sense][0])/label[0]
+                                link = {
+                                    "label": word,
+                                    "title": title,
+                                    "id": sense,
+                                    "url":url,
+                                    "prior_probability": prior_probability,
+                                    "sense_probability": senseprob,
+                                    "commonness": commonness
+                                }
+                                if translations:
+                                    link["translations"] = {self.language_code: {"title":title,"url":url}}
+                                    if sense in self.translation:
+                                        for lang in self.translation[sense]:
+                                            link["translations"][lang] = {
+                                                'title': unicode(self.translation[sense][lang]),
+                                                'url' : WIKIPEDIA_URL_TEMPLATE % (lang, urllib.quote(unicode(self.translation[sense][lang]).encode('utf-8')))
+                                            }
+                                if counts:
+                                    link["docCount"] = label[2]
+                                    link["occCount"] = label[3]
+                                    link["linkDocCount"] = float(label[4][sense][0])
+                                    link["linkOccCount"] = float(label[4][sense][1])
+                                    link['fromTitle'] = label[4][sense][2]
+                                    link['fromRedirect'] = label[4][sense][3]
+                                result["links"].append(link)
+                                        
         return result
 
     def load_translations(self, filename):
@@ -95,6 +129,20 @@ class Semanticizer:
             except:
                 print "Error loading on line " + str(linenr )+ ": " + line
                 continue
+    
+    def normalize(self, text):
+        text = text.replace('-', ' ')
+        text = self.remove_accents(text)
+#        text = text.lower()
+        return text
+                
+    def remove_accents(self, input_str):
+        if type(input_str) is str:
+            input_unicode = unicode(input_str, errors="ignore")
+        else:
+            input_unicode = input_str
+        nkfd_form = unicodedata.normalize('NFKD', input_unicode)
+        return u"".join([c for c in nkfd_form if not unicodedata.combining(c)])
 
     def load_page_titles(self, filename):
         print 'Loading page titles...'
@@ -117,6 +165,7 @@ class Semanticizer:
 
     def load_labels(self, filename):
         self.labels = {}
+        self.normalized = {}
         print 'Loading labels...'
         linenr = 0
         for line in codecs.open(filename, "r", "utf-8"):
@@ -134,6 +183,10 @@ class Semanticizer:
                     label[-1][id] = map(int, sense_parts[1:3]) + [sense_parts[3] == 'T', sense_parts[4] == 'T']
 
                 self.labels[text] = label
+                
+                normalized = self.normalize(text)
+                self.normalized.setdefault(normalized, [])
+                self.normalized[normalized].append(text)
             except:
                 print "Error loading on line " + str(linenr )+ ": " + line
                 continue
