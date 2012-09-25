@@ -1,5 +1,5 @@
 import sys, os, urllib, codecs
-from nltk import sent_tokenize, word_tokenize
+from nltk import sent_tokenize, wordpunct_tokenize
 
 #PICKLE_ROOT = './enwiki-20111007-pickles/'
 DEFAULT_LANGUAGE_CODE = 'en'
@@ -36,7 +36,7 @@ class Semanticizer:
     def semanticize(self, sentence):
     #    result = {"sentiment_clues": {}, "links": []}
         result = {"links": []}
-        words = word_tokenize(sentence.replace('-', ' '))
+        words = wordpunct_tokenize(sentence.replace('-', ' '))
         for n in range(1,len(words)+1):
             for i in range(len(words)-n+1):
                 word = ' '.join(words[i:i+n])
