@@ -1,3 +1,4 @@
+from collections import Sequence
 import sys, os, urllib, codecs
 from nltk import sent_tokenize, wordpunct_tokenize
 
@@ -34,9 +35,20 @@ class Semanticizer:
         self.load_page_titles(os.path.join(self.wikipediaminer_root, 'page.csv'))
 
     def semanticize(self, sentence):
+        """Semanticize a string or sequence of strings."""
+
     #    result = {"sentiment_clues": {}, "links": []}
         result = {"links": []}
         words = wordpunct_tokenize(sentence.replace('-', ' '))
+
+        if isinstance(words, basestring):
+            from nltk import word_tokenize
+            words = word_tokenize(sentence.replace('-', ' '))
+        elif isinstance(sentence, Sequence):
+            words = sentence
+        else:
+            raise TypeError("expected string or sequence, got %r" % words)
+
         for n in range(1,len(words)+1):
             for i in range(len(words)-n+1):
                 word = ' '.join(words[i:i+n])
@@ -212,6 +224,8 @@ class Semanticizer:
 #        print '%d sentiment words loaded.' % len(self.sentiment_lexicon)
         
 if __name__ == '__main__':
+    from nltk import sent_tokenize
+
     semanticizer = Semanticizer()
     print 'Loading text...'
     text = sys.stdin.read()
