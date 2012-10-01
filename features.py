@@ -7,7 +7,7 @@ from threading import Thread
 
 class anchorFeatures:
     def __init__(self, langcode, wikipediaminer_root, title_page=None):
-        pickle_root = '/scratch/dodijk/SemanticSubtitles/pickles/%s/' % langcode
+        pickle_root = '/scratch/dodijk/flask-semanticizer/pickles/%s/' % langcode
         
         #   From Wikipedia miner CSV file:
         self.wikipediaArticleCount = 970139
@@ -130,7 +130,7 @@ class anchorFeatures:
         
 class conceptFeatures:
     def __init__(self, langcode, wikipediaminer_root, article_url):
-        pickle_root = '/scratch/dodijk/SemanticSubtitles/pickles/%s/' % langcode
+        pickle_root = '/scratch/dodijk/flask-semanticizer/pickles/%s/' % langcode
         
         self.load_category_parents(wikipediaminer_root + "categoryParents.csv")     
 
@@ -348,7 +348,7 @@ class anchorConceptFeatures:
 
 class statisticsFeatures:
     def __init__(self, langcode):
-        pickle_root = '/scratch/dodijk/SemanticSubtitles/pickles/%s/' % langcode
+        pickle_root = '/scratch/dodijk/flask-semanticizer/pickles/%s/' % langcode
         
         self.WIKIPEDIA_STATS_URL = "http://stats.grok.se/json/"+langcode+"/%d%02d/%s" # 201001/De%20Jakhalzen
         self.wikipedia_statistics_cache = shelve.open(pickle_root+'wikipedia_statistics_cache.db')
