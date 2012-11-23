@@ -48,6 +48,12 @@ app = Flask(__name__)
 # Debug mode is not exactly the same as verbose.
 if options.verbose: app.debug = True
 app.debug_log_format = '[%(asctime)-15s][%(levelname)s][%(module)s][%(pathname)s:%(lineno)d]: %(message)s'
+import logging
+from logging.handlers import TimedRotatingFileHandler
+file_handler = TimedRotatingFileHandler("logs/log", when='midnight')
+file_handler.setLevel(logging.DEBUG)
+file_handler.setFormatter(logging.Formatter('[%(asctime)-15s][%(levelname)s][%(module)s][%(pathname)s:%(lineno)d]: %(message)s'))
+app.logger.addHandler(file_handler)
 
 app.logger.info("Loading ngram model")
 ngrammodel = textcat.NGram(options.lm)
@@ -85,6 +91,7 @@ pipeline = []
 def semanticize(langcode):
     app.logger.debug("Semanticizing: start")
     text = get_text_from_request()
+    app.logger.debug("Semanticizing text: " + text)
     links = []
     settings = {"langcode": langcode}
     for key, value in request.args.iteritems():
@@ -146,11 +153,11 @@ if __name__ == '__main__':
 
     semanticize_processor = LinksProcessors.SemanticizeProcessor()
     
+    start = time.time()
     for lang, langcode, loc in options.langloc:
         app.logger.info("Loading semanticizer for " + lang + " from " + loc)
-        start = time.time()
-        semanticize_processor.load_language(langcode, loc)
-        app.logger.info("Loading semanticizer took %.2f seconds." % (time.time() - start))
+    semanticize_processor.load_languages(options.langloc)        
+    app.logger.info("Loading semanticizers took %.2f seconds." % (time.time() - start))
 
     pipeline.append(("Semanticize", semanticize_processor))
     pipeline.append(("Filter", LinksProcessors.FilterProcessor()))

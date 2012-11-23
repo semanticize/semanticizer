@@ -39,10 +39,11 @@ class SemanticizeProcessor(LinksProcessor):
         self.semanticizers = {}
         self.ilps_semanticizers = {}
 
-    def load_language(self, langcode, loc):
-        self.semanticizers[langcode] = Semanticizer(langcode, loc)
-        self.ilps_semanticizers[langcode] = ILPSSemanticizer(langcode, loc)
-
+    def load_languages(self, languages):
+        for lang, langcode, loc in languages:
+            self.semanticizers[langcode] = Semanticizer(langcode, loc)
+            self.ilps_semanticizers[langcode] = ILPSSemanticizer(langcode, loc)
+            
     def preprocess(self, links, text, settings):
         links = []
         if settings.has_key("langcode"): 
@@ -56,7 +57,9 @@ class SemanticizeProcessor(LinksProcessor):
                                 .semanticize(text, counts=True, \
                                              translations=translations, \
                                              senseprobthreshold=-1)
-                links = results["links"]
+                    links = results["links"]
+                else:
+                    links = []
             
         return (links, text, settings)
 

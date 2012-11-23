@@ -21,7 +21,7 @@ def add_image_url(links, langcode):
 IMG_DIMENSION_PATTERN = '<img .*?width="(\d+)" height="(\d+)".*?>'
 IMG_URL_PATTERN = '<img .*?src="(.+?)".*?>'
 
-def get_image_urls(urls, num_of_threads=8, min_dimension=24):
+def get_image_urls(urls, num_of_threads=8, min_dimension=36):
     def worker():
         while True:
             try:

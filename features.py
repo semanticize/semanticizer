@@ -292,8 +292,8 @@ class conceptFeatures:
             print "Error", result.attrib["error"]
             if 'url' in locals(): print url
         else:
-            assert article.decode("utf-8")==result.attrib["title"], \
-                "%s!=%s" % (article.decode("utf-8"), result.attrib["title"])
+            if article.decode("utf-8") != result.attrib["title"]:
+                print "%s!=%s" % (article.decode("utf-8"), result.attrib["title"])
     
         return result
 
