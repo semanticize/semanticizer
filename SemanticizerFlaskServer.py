@@ -144,7 +144,7 @@ def get_text_from_request():
             abort(Response("Unsupported Content Type, use: text/plain\n", status=415))        
         return request.data
     elif request.args.has_key("text"):
-        return request.args["text"].encode('utf-8')
+        return request.args["text"]#.encode('utf-8')
     else:
         abort(Response("No text provided, use: POST or GET with attribute text\n", status=400))
 
