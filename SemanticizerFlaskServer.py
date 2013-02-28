@@ -148,6 +148,14 @@ def get_text_from_request():
     else:
         abort(Response("No text provided, use: POST or GET with attribute text\n", status=400))
 
+@app.route("/inspect", methods=["GET"])
+def inspect():
+    inspect = {}
+    for step, processor in pipeline:
+        inspect.update(processor.inspect())
+        
+    return json.dumps(inspect, indent=4)
+
 if __name__ == '__main__':
     pipeline.append(("Settings", LinksProcessors.SettingsProcessor()))
 

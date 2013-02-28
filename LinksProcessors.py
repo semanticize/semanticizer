@@ -17,6 +17,9 @@ class LinksProcessor:
 
     def postprocess(self, links, text, settings):
         return (links, text, settings)
+        
+    def inspect(self):
+        return {}
 
 class SettingsProcessor(LinksProcessor):
     def __init__(self):
@@ -33,14 +36,18 @@ class SettingsProcessor(LinksProcessor):
                     settings[k] = v
             del settings["settings"]
         return (links, text, settings)
+    def inspect(self):
+        return {self.__class__.__name__: self.settings}
                 
 class SemanticizeProcessor(LinksProcessor):
     def __init__(self):
+        self.languages = {}
         self.semanticizers = {}
         self.ilps_semanticizers = {}
 
     def load_languages(self, languages):
         for lang, langcode, loc in languages:
+            self.languages[langcode] = (lang, loc)
             self.semanticizers[langcode] = Semanticizer(langcode, loc)
             self.ilps_semanticizers[langcode] = ILPSSemanticizer(langcode, loc)
             
@@ -62,6 +69,9 @@ class SemanticizeProcessor(LinksProcessor):
                     links = []
             
         return (links, text, settings)
+
+    def inspect(self):
+        return {self.__class__.__name__: self.languages}
 
 class FilterProcessor(LinksProcessor):
     def __init__(self):
@@ -116,6 +126,9 @@ class FilterProcessor(LinksProcessor):
         print "Filtered %d links to %d" % (len(links), len(filtered_links))
     
         return filtered_links
+
+    def inspect(self):
+        return {self.__class__.__name__: self.context_links}
 
 class FeaturesProcessor(LinksProcessor):
     def __init__(self, semanticizer_processor, article_url, threads):
@@ -179,6 +192,9 @@ class FeaturesProcessor(LinksProcessor):
             
         return (links, text, settings)
 
+    def inspect(self):
+        return {self.__class__.__name__: [(lang, classes.keys()) for (lang, classes) in self.feature_classes.iteritems()]}
+
 class ContextFeaturesProcessor(LinksProcessor):
     def __init__(self):
         self.context_features = {}
@@ -207,6 +223,18 @@ class ContextFeaturesProcessor(LinksProcessor):
                     link["features"].update(self.context_features[settings["context"]][label].compute_features(link["title"]))
             
         return (links, text, settings)
+
+    def inspect(self):
+        context = {}
+        for context_label, features in self.context_features.iteritems():
+            context[context_label] = {}
+            for label, context_graph in features.iteritems():
+                graph = {"page_ranked": context_graph.page_ranked,
+                         "graph": context_graph.to_dict_of_dicts(),
+                         "chunk": context_graph.chunk}
+                context[context_label][label] = graph
+
+        return {self.__class__.__name__: context}
 
 class LearningProcessor(LinksProcessor):
     def __init__(self, scikit_url=None):

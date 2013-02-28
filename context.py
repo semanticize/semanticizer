@@ -41,6 +41,9 @@ class contextGraph:
         #                               print "Cleaning graph with %d nodes and %d edges." \
         #                                                                         % (len(context_graph.nodes()), \
         #                                                                                len(context_graph.edges()))
+        
+    def to_dict_of_dicts(self):
+        return networkx.convert.to_dict_of_dicts(self.graph)
 
     def add_chunk(self):
         self.chunk += 1
