@@ -40,7 +40,7 @@ def get_image_urls(urls, num_of_threads=8, min_dimension=36):
                     match = re.match(IMG_DIMENSION_PATTERN, img)
                     if match == None: continue
                     dimension = max([int(value) for value in match.groups()])
-                    if dimension >= min_dimension or image == None:
+                    if dimension >= min_dimension: # Do not use fallback: or image == None:
                         match = re.match(IMG_URL_PATTERN, img)
                         if match != None and len(match.groups()) > 0:
                             image = match.groups()[0]
