@@ -1,6 +1,6 @@
 from collections import Sequence
 import sys, os, urllib, codecs
-from nltk import sent_tokenize, wordpunct_tokenize
+from nltk import sent_tokenize, regexp_tokenize
 from nltk.util import ngrams as nltk_ngrams
 
 import unicodedata
@@ -11,6 +11,11 @@ WIKIPEDIAMINER_ROOT = '/zfs/ilps-plexer/wikipediaminer/enwiki-20111007/'
 SENSEPRO0THRESHOLD = 0.01
 WIKIPEDIA_URL_TEMPLATE = 'http://%s.wikipedia.org/wiki/%s'
 TRANSLATION_LANGS = ['en', 'nl', 'fr', 'es']
+
+def tokenize(text):
+	#return wordpunct_tokenize(text)
+	# Modified to allow dots, commas and apostrofs to be in a word.
+	return regexp_tokenize(text, r'\w+([.,\']\w+)*|[^\w\s]+')
 
 class Semanticizer:
     def __init__(self, language_code=None, wikipediaminer_root=None, senseprobthreshold=None, translation_langs=None):
@@ -43,10 +48,10 @@ class Semanticizer:
         result = {"links": []}
         ngrams = set()
   #      tokens = [wordpunct_tokenize(sentence)]
-        tokens = [wordpunct_tokenize(sentence),
-                  wordpunct_tokenize(sentence.replace('-', ' ')),
-                  wordpunct_tokenize(sentence.replace('.', ' ')),
-                  wordpunct_tokenize(sentence.replace('.', ''))]
+        tokens = [tokenize(sentence),
+                  tokenize(sentence.replace('-', ' ')),
+                  tokenize(sentence.replace('.', ' ')),
+                  tokenize(sentence.replace('.', ''))]
 
         for words in tokens:
             for n in range(1,len(words)+1):
