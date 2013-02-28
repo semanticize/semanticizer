@@ -242,16 +242,16 @@ class LearningProcessor(LinksProcessor):
                     del link["features"]
 
         else:
-            links = ""
+            data = ""
             for link in links:
-                links += "-1 qid:0"
+                data += "-1 qid:0"
                 for index, feature in enumerate(features):
-                    links += " %d:%f" % (index, link["features"][feature])
-                links += "\n"
+                    data += " %d:%f" % (index, link["features"][feature])
+                data += "\n"
                 
             import urllib, urllib2
             url = self.scikit_url + "/predict/" + model
-            request = urllib2.urlopen(urllib2.Request(url, links, {"Content-Type": "text/plain"}))
+            request = urllib2.urlopen(urllib2.Request(url, data, {"Content-Type": "text/plain"}))
             scores = request.read().split('\n')
             for link, score in zip(links, scores):
                 if len(score) == 0 or " " not in score: score = "0 0"
