@@ -3,6 +3,14 @@ from threading import Thread
 
 import urllib2, re
 
+from core import LinksProcessor
+
+class AddImageProcessor(LinksProcessor):
+    def postprocess(self, links, text, settings):
+        if "image" in settings and "langcode" in settings:
+            links = add_image_url(links, settings["langcode"])
+        return (links, text, settings)
+
 image_url_cache = {}
 
 def add_image_url(links, langcode):

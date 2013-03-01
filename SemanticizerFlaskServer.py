@@ -10,7 +10,11 @@ from optparse import OptionParser
 
 import textcat
 
-import LinksProcessors
+from processors.core import SettingsProcessor, FilterProcessor
+from processors.semanticizer import SemanticizeProcessor
+from processors.features import FeaturesProcessor, ContextFeaturesProcessor
+from processors.learning import LearningProcessor
+from processors.image import AddImageProcessor
 
 usage = "Usage: %prog [options]"
 parser = OptionParser(usage=usage)
@@ -157,9 +161,9 @@ def inspect():
     return json.dumps(inspect, indent=4)
 
 if __name__ == '__main__':
-    pipeline.append(("Settings", LinksProcessors.SettingsProcessor()))
+    pipeline.append(("Settings", SettingsProcessor()))
 
-    semanticize_processor = LinksProcessors.SemanticizeProcessor()
+    semanticize_processor = SemanticizeProcessor()
     
     start = time.time()
     for lang, langcode, loc in options.langloc:
@@ -168,19 +172,18 @@ if __name__ == '__main__':
     app.logger.info("Loading semanticizers took %.2f seconds." % (time.time() - start))
 
     pipeline.append(("Semanticize", semanticize_processor))
-    pipeline.append(("Filter", LinksProcessors.FilterProcessor()))
+    pipeline.append(("Filter", FilterProcessor()))
     if options.features:
         app.logger.info("Loading features...")
         start = time.time()
-        import features
-        pipeline.append(("Features", LinksProcessors.FeaturesProcessor(semanticize_processor, options.article, options.threads)))
-        pipeline.append(("ContextFeatures", LinksProcessors.ContextFeaturesProcessor()))
+        pipeline.append(("Features", FeaturesProcessor(semanticize_processor, options.article, options.threads)))
+        pipeline.append(("ContextFeatures", ContextFeaturesProcessor()))
         app.logger.info("Loading features took %.2f seconds." % (time.time() - start))
         if options.scikit:
-            pipeline.append(("Learning", LinksProcessors.LearningProcessor()))
+            pipeline.append(("Learning", LearningProcessor()))
         else:
-            pipeline.append(("Learning", LinksProcessors.LearningProcessor(options.learn)))
-    pipeline.append(("AddImage", LinksProcessors.AddImageProcessor()))
+            pipeline.append(("Learning", LearningProcessor(options.learn)))
+    pipeline.append(("AddImage", AddImageProcessor()))
 
     app.run(host='0.0.0.0', port=options.port, debug=options.verbose, use_reloader=False)
     
