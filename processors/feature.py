@@ -2,12 +2,7 @@ import shelve
 import cPickle as pickle
 from datetime import datetime, timedelta
 
-from Queue import Queue, Empty
-from threading import Thread
-
 from math import log
-import urllib, urllib2
-from lxml import etree as ElementTree
 import re
 from json import loads
 import collections
@@ -138,130 +133,35 @@ class anchorFeatures:
                 'SNCL': self.feature_SNCL(link)
                 }
        
-class conceptFeatures:
-    def __init__(self, langcode, wikipediaminer_root, article_url):
-        pickle_root = '/scratch/dodijk/flask-semanticizer/pickles/%s/' % langcode
-        
-        self.ARTICLE_URL = article_url
-        self.WIKIPEDIA_ID = wikipediaminer_root.split('/')[-2]
-
-        print "Loaded %d articles from cache." % len(self.article_cache)
-
-    def feature_INLINKS(self, child):
-        return int(child.attrib["total"])
-    
-    def feature_OUTLINKS(self, child):
-        return int(child.attrib["total"])
-
-    def feature_REDIRECT(self, child):
-        redirect = 0
-        for label in child:
-            # Should be fromRedirect but bug in Wikipedia Miner
-            if label.attrib["fromTitle"] == "true":
-                redirect += 1
-        return redirect
-
-    def compute_concept_features(self, article):
-        # Eerst initieren want heel soms komen er bijvoorbeeld geen inlinks
-        # voor
-        features = {'INLINKS': 0,
-                    'OUTLINKS': 0,
-                    'GEN': 0,
-                    'REDIRECT': 0
-                    }
-
-        # Hier loop je dus maar 1 keer door het article object heen
-        ### Ja, maar dit wordt dus op basis van 1 dict ###
-        for child in article:
-            if child.tag == 'InLinks':
-                features['INLINKS'] = self.feature_INLINKS(child)
-            elif child.tag == 'OutLinks':
-                features['OUTLINKS'] = self.feature_OUTLINKS(child)
-            elif child.tag == 'Labels':
-                features['REDIRECT'] == self.feature_REDIRECT(child)
-                
-        return features
-
-    def get_articles(self, articles, num_of_threads):
-        results = {}
-        def worker():
-            while True:
-                try:
-                    item = queue.get_nowait()
-                    results[item] = self.get_article(item.encode('utf-8'))
-                    queue.task_done()
-                except Empty:
-                    break
-        
-        queue = Queue()
-        for title in set([article["title"] for article in articles]):
-            queue.put(title)
-        
-        for i in range(num_of_threads):
-            t = Thread(target=worker)
-            t.daemon = True
-            t.start()
-        
-        return (results, queue)
-        
-    def get_article(self, article):
-        if self.article_cache.has_key(article):
-            resultDoc = self.article_cache[article]
-        else:
-            url = self.ARTICLE_URL + "?"
-            url += urllib.urlencode({"wikipedia": self.WIKIPEDIA_ID, 
-                                     "title": article, 
-                                     "definition": "true",
-                                     "definitionLength":"LONG",
-                                     "linkRelatedness": True,
-                                     "linkFormat":"HTML", 
-                                     "inLinks": "true",
-                                     "outLinks": "true",
-                                     "labels": "true",
-                                     "parentCategories": "true"})            
-
-            try:
-                request = urllib2.urlopen(url)
-                encoding = request.headers['content-type'].split('charset=')[-1]
-                #resultDoc = unicode(request.read(), encoding)
-                resultDoc = request.read()
-            except urllib2.HTTPError:
-                # Strange bug in some articles, mentioned to Edgar
-                print "Strange bug, requesting shorter definition"
-        
-                request = urllib2.urlopen(url.replace("&definitionLength=LONG", ""))
-                encoding = request.headers['content-type'].split('charset=')[-1]
-                #resultDoc = unicode(request.read(), encoding)
-                resultDoc = request.read()
-    
-            self.article_cache[article] = resultDoc
-        
-        result = ElementTree.fromstring(resultDoc).find("Response")
-        
-        if not result.attrib.has_key("title"):
-            print "Error", result.attrib["error"]
-            if 'url' in locals(): print url
-        else:
-            if article.decode("utf-8") != result.attrib["title"]:
-                print "%s!=%s" % (article.decode("utf-8"), result.attrib["title"])
-    
-        return result
-
-class anchorConceptFeatures:
+class articleFeatures:
     def __init__(self):
         self.re_non_word_chars = re.compile('(?u)\W+', re.UNICODE)
 
-    def feature_TF(self, link, article, re_label_text, features):
+    def feature_INLINKS(self, link):
+        if "InLinks" not in link: 
+            return 0
+        return len(link["InLinks"])
+    
+    def feature_OUTLINKS(self, link):
+        if "OutLinks" not in link: 
+            return 0
+        return len(link["OutLinks"])
+
+    def feature_REDIRECT(self, link):
+        # Should be fromRedirect but bug in Wikipedia Miner
+        if "fromTitle" in link and link["fromTitle"]:
+            return 1
+        return 0
+
+    def feature_TF(self, link, re_label_text, features):
         aMatches = re.findall(re_label_text, link['title'])
         features["TF_title"] = float(len(aMatches))
 
         text = " "
-        for child in article:
-            if child.tag == "Definition":
-                if child.text and len(child.text):
-                    text = re.sub(r"<.*?>", "", child.text)
-                    text = re.sub(r"^[|\- }]*", "", text)
-                break
+        if "Definition" in link:
+            if link["Definition"] and len(link["Definition"]):
+                text = re.sub(r"<.*?>", "", link["Definition"])
+                text = re.sub(r"^[|\- }]*", "", text)
 
         while len(text) and (text[0] == "."):
             text = text[1:].strip()
@@ -288,11 +188,11 @@ class anchorConceptFeatures:
             else:
                 features["POS_first_in_paragraph"] = 1
 
-    def feature_TITLE(self, link, article, re_label_text, features):
+    def feature_TITLE(self, link, re_label_text, features):
         label_text = unicode(link["label"])
 
-        re_title = stringUtils.ngramToPattern(article.attrib['title'])
-        article_title = unicode(article.attrib['title'])
+        re_title = stringUtils.ngramToPattern(link['title'])
+        article_title = unicode(link['title'])
         
         features["NCT"] = 0 if re.search(re_title, label_text) is None \
             else 1
@@ -342,14 +242,20 @@ class anchorConceptFeatures:
     def feature_COMMONNESS(self, link, features):
         features["COMMONNESS"] = link["commonness"]
         
-    def compute_anchor_concept_features(self, link, article):
-        features = {}
+    def compute_article_features(self, link):
+        features = {
+            'INLINKS': self.feature_INLINKS(link),
+            'OUTLINKS': self.feature_OUTLINKS(link),
+            'REDIRECT': self.feature_REDIRECT(link)
+        }        
 
         re_label_text = stringUtils.ngramToPattern(link["label"])
         
-        self.feature_TF(link, article, re_label_text, features)
-        self.feature_TITLE(link, article, re_label_text, features)
+        self.feature_TF(link, re_label_text, features)
+        self.feature_TITLE(link, re_label_text, features)
         self.feature_COMMONNESS(link, features)
+
+        return features
 
         ### TK: Ik heb nog wat extra features gemaakt die kijken hoe vaak
         ### inlink anchors en inlink/outlink titels voorkomen in de
@@ -364,144 +270,6 @@ class anchorConceptFeatures:
         ### gaan dat ook zeker nodig hebben!
         ###
         ### Maar goed, ik heb ze nu nog even weg gelaten...
-
-class statisticsFeatures:
-    def __init__(self, langcode):
-        #pickle_root = '/scratch/dodijk/flask-semanticizer/pickles/%s/' % \
-        #              langcode 
-        pickle_root = '/scratch/tkenter1/pickles/%s/' % langcode
-
-        self.WIKIPEDIA_STATS_URL = "http://stats.grok.se/json/" + \
-                                   langcode + \
-                                   "/%d%02d/%s" # 201001/De%20Jakhalzen
-        self.wikipedia_statistics_cache = \
-                    shelve.open(pickle_root + 'wikipedia_statistics_cache.db')
-        print "Loaded %d sets of statistics from cache." % \
-              len(self.wikipedia_statistics_cache)
-
-        self.date_format = "%d-%02d-%02d"
-        
-    def compute_statistics_features(self, article, now=datetime.now()):
-        features = {"WIKISTATSDAY": 0,
-                    "WIKISTATSWK": 0,
-                    "WIKISTATS4WK": 0,
-                    "WIKISTATSYEAR": 0,
-                    "WIKISTATSDAYOFWK": 0,
-                    "WIKISTATSWKOF4WK": 0,
-                    "WIKISTATS4WKOFYEAR": 0
-                    }
-    
-        self.feature_WIKISTATSDAY(datetime, article, features, now)
-        self.feature_WIKISTATSWK(datetime, article, features, now)
-        self.feature_WIKISTATS4WK(datetime, article, features, now)
-        self.feature_WIKISTATSYEAR(datetime, article, features, now)
-        self.feature_WIKISTATSTRENDS(features)
-
-        del features["WIKISTATSDAY"]
-        
-        return features
-
-    def feature_WIKISTATSDAY(self, datetime, article, features, now): 
-        day = now
-        day += timedelta(days=-1)
-        monthly_views = self.wikipedia_page_views(day.year,
-                                                  day.month, article)
-        views = monthly_views["daily_views"][self.date_format % \
-                                             (day.year,day.month, day.day)]
-        features["WIKISTATSDAY"] = views
-    
-    def feature_WIKISTATSWK(self, datetime, article, features, now): 
-        day = now
-        for n in range(7):
-            day += timedelta(days=-1)
-            monthly_views = self.wikipedia_page_views(day.year,
-                                                      day.month, article)
-            views = \
-                  monthly_views["daily_views"][self.date_format % \
-                                               (day.year, day.month, day.day)]
-            features["WIKISTATSWK"] += views
-
-    def feature_WIKISTATS4WK(self, datetime, article, features, now):
-        day = now
-        for n in range(28):
-            day += timedelta(days=-1)
-            monthly_views = self.wikipedia_page_views(day.year,
-                                                      day.month, article)
-            views = monthly_views["daily_views"][self.date_format % \
-                                                 (day.year,day.month, day.day)]
-            features["WIKISTATS4WK"] += views
-
-    def feature_WIKISTATSYEAR(self, datetime, article, features, now):
-        day = now
-        for n in range(365):
-            day += timedelta(days=-1)
-            monthly_views = self.wikipedia_page_views(day.year,
-                                                      day.month, article)
-            views = monthly_views["daily_views"][self.date_format % \
-                                                 (day.year,day.month, day.day)]
-            features["WIKISTATSYEAR"] += views
-
-    def feature_WIKISTATSTRENDS(self, features): 
-        if features["WIKISTATSWK"] > 0:
-            features["WIKISTATSDAYOFWK"] = \
-                       float(features["WIKISTATSDAY"])/features["WIKISTATSWK"]
-        if features["WIKISTATS4WK"] > 0:
-            features["WIKISTATSWKOF4WK"] = \
-                       float(features["WIKISTATSWK"])/features["WIKISTATS4WK"]
-        if features["WIKISTATSYEAR"] > 0:
-            features["WIKISTATS4WKOFYEAR"] = \
-                     float(features["WIKISTATS4WK"])/features["WIKISTATSYEAR"]
-
-    def wikipedia_page_views(self, year, month, article):
-        url = self.WIKIPEDIA_STATS_URL % (year, month, article)
-        url = url.encode('utf-8')
-        if self.wikipedia_statistics_cache.has_key(url):
-            resultJson = self.wikipedia_statistics_cache[url]
-        else:
-            try:
-                request = urllib2.urlopen(url, timeout=1)
-                encoding = request.headers['content-type'].split('charset=')[-1]
-                resultJson = request.read()
-            except urllib2.URLError:
-                try:
-                    request = urllib2.urlopen(url)
-                    encoding = request.headers['content-type'].split('charset=')[-1]
-                    resultJson = request.read()
-                except urllib2.URLError:
-                    request = urllib2.urlopen(url)
-                    encoding = request.headers['content-type'].split('charset=')[-1]
-                    resultJson = request.read()
-    
-            self.wikipedia_statistics_cache[url] = resultJson
-        
-        result = loads(resultJson)
-        
-        return result
-
-    def cache_wikipedia_page_views(self, articles, num_of_threads,
-                                   now=datetime.now()):
-        def worker():
-            while True:
-                try:
-                    (year, month, article) = queue.get_nowait()
-                    self.wikipedia_page_views(year, month, article)
-                    queue.task_done()
-                except Empty:
-                    break
-        
-        queue = Queue()
-        for title in set([article["title"] for article in articles]):
-            day = now
-            for i in range(14):
-                queue.put((day.year, day.month, article))
-                day += timedelta(days=28)
-        
-        for i in range(num_of_threads):
-            t = Thread(target=worker)
-            t.daemon = True
-            t.start()
-        
-        return queue
 
 if __name__ == "__main__":
     # Some settings

@@ -12,7 +12,8 @@ import textcat
 
 from processors.core import SettingsProcessor, FilterProcessor
 from processors.semanticizer import SemanticizeProcessor
-from processors.features import FeaturesProcessor, ContextFeaturesProcessor
+from processors.features import FeaturesProcessor, ArticleFeaturesProcessor, ContextFeaturesProcessor
+from processors.external import ArticlesProcessor, StatisticsProcessor
 from processors.learning import LearningProcessor
 from processors.image import AddImageProcessor
 
@@ -166,6 +167,10 @@ if __name__ == '__main__':
     semanticize_processor = SemanticizeProcessor()
     
     start = time.time()
+    langcodes = [langcode for lang, langcode, loc in options.langloc]
+    wikipedia_ids = {}
+    for lang, langcode, loc in options.langloc:
+        wikipedia_ids[langcode] = loc.split('/')[-2]
     for lang, langcode, loc in options.langloc:
         app.logger.info("Loading semanticizer for " + lang + " from " + loc)
     semanticize_processor.load_languages(options.langloc)        
@@ -176,7 +181,10 @@ if __name__ == '__main__':
     if options.features:
         app.logger.info("Loading features...")
         start = time.time()
-        pipeline.append(("Features", FeaturesProcessor(semanticize_processor, options.article, options.threads)))
+        pipeline.append(("Features", FeaturesProcessor(semanticize_processor)))
+        pipeline.append(("Articles", ArticlesProcessor(wikipedia_ids, options.article, options.threads)))
+        pipeline.append(("Statistics", StatisticsProcessor(langcodes, options.threads)))
+        pipeline.append(("ArticleFeatures", ArticleFeaturesProcessor()))#semanticize_processor)))
         pipeline.append(("ContextFeatures", ContextFeaturesProcessor()))
         app.logger.info("Loading features took %.2f seconds." % (time.time() - start))
         if options.scikit:

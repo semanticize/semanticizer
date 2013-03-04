@@ -4,66 +4,50 @@ import context
 from core import LinksProcessor
 
 class FeaturesProcessor(LinksProcessor):
-    def __init__(self, semanticizer_processor, article_url, threads):
-        self.threads = threads
-        self.feature_classes = {}
+    def __init__(self, semanticizer_processor):
+        self.features = {}
         
         semanticizers = {}
         for langcode, semanticizer in semanticizer_processor.semanticizers.iteritems():
             semanticizers[langcode] = (semanticizer.wikipediaminer_root, semanticizer.title_page)
         
         for langcode, (loc, title_page) in semanticizers.iteritems():
-            anchor_features = features.anchorFeatures(langcode, loc, title_page)
-            self.feature_classes[langcode] = {
-                "anchor": anchor_features,
-                "concept": features.conceptFeatures(langcode, loc, article_url),
-                "anchor_concept": features.anchorConceptFeatures(),
-                "statistics": features.statisticsFeatures(langcode),
-            }
+            self.features[langcode] = features.anchorFeatures(langcode, loc, title_page)
 
     def process(self, links, text, settings):
         if not settings.has_key("features") and not settings.has_key("learning"):
             return (links, text, settings)
-        if not self.feature_classes.has_key(settings["langcode"]):
+        if not self.features.has_key(settings["langcode"]):
             return (links, text, settings)
-
-        featuresets = self.feature_classes[settings["langcode"]]
-        # Start threads
-        (articles, article_queue) = featuresets["concept"].get_articles(links, self.threads)
-        if "wikistats" in settings:
-            import datetime
-            # Should be more robust against unexpected values
-            if len(settings["wikistats"]) > 0:
-                timestamp = datetime.datetime.fromtimestamp(int(settings["wikistats"]))
-            else:
-                timestamp = datetime.now()
-
-            statistics_queue = featureset["statistics"].cache_wikipedia_page_views(links, self.threads, timestamp)
             
+        featuresets = self.features[settings["langcode"]]
+
         for link in links:
-            link["features"] = featuresets["anchor"].compute_anchor_features(link)
-        article_queue.join()
-        for link in links:
-            article = articles[link["title"]]
-            link["features"].update(featuresets["concept"].compute_concept_features(article))
-            link["features"].update(featuresets["anchor_concept"].compute_anchor_concept_features(link, article))
-        if "wikistats" in settings:
-            statistics_queue.join()
-            for link in links:
-                link["features"].update(featuresets["statistics"].compute_statistics_features(link["title"], timestamp))
-                
-        print "Syncing %d category depths for cache." % len(featuresets["concept"].category_depth_cache)
-        featuresets["concept"].category_depth_cache.sync()
-        print "Syncing %d articles for cache." % len(featuresets["concept"].article_cache)
-        featuresets["concept"].article_cache.sync()
-        
-        print "Sync %d sets of statistics for cache." % len(featuresets["statistics"].wikipedia_statistics_cache)
-        featuresets["statistics"].wikipedia_statistics_cache.sync()
-            
+            link.setdefault("features", {})
+            link["features"].update(featuresets.compute_anchor_features(link))
+                            
         return (links, text, settings)
 
     def inspect(self):
-        return {self.__class__.__name__: [(lang, classes.keys()) for (lang, classes) in self.feature_classes.iteritems()]}
+        return {self.__class__.__name__: self.features.keys()}
+        
+class ArticleFeaturesProcessor(LinksProcessor):
+    def __init__(self):
+        self.features = features.articleFeatures()
+
+    def process(self, links, text, settings):
+        if not settings.has_key("features") and not settings.has_key("learning"):
+            return (links, text, settings)
+        # Check if ArticleProcessor has run
+            
+        for link in links:
+            link.setdefault("features", {})
+            link["features"].update(self.features.compute_article_features(link))
+                            
+        return (links, text, settings)
+
+    def inspect(self):
+        return {self.__class__.__name__: self.features.__name__}
 
 class ContextFeaturesProcessor(LinksProcessor):
     def __init__(self):
