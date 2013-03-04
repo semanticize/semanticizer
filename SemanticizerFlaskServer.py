@@ -1,7 +1,11 @@
 import os
 import sys
 import time
-import json
+# Can do without ujson and simplejson, but speeds up considerably.
+try: import ujson
+except ImportError: pass 
+try: import simplejson as json
+except ImportError: import json
 import re
 import httplib
 import glob
@@ -109,7 +113,9 @@ def semanticize(langcode):
             (links, text, settings) = getattr(processor, function)(links, text, settings)
         app.logger.debug("Semanticizing: %s pipeline with %d steps done" % (function, len(pipeline)))
 
-    return json.dumps({"links": links, "text": text}, indent=4)
+    result = json_dumps({"links": links, "text": text}, "pretty" in settings)
+    app.logger.debug("Semanticizing: Created %d characters of JSON." % len(result))
+    return result
         
 @app.route("/stopwords/<langcode>", methods=["GET", "POST"])
 def remove_stopwords(langcode):
@@ -117,7 +123,7 @@ def remove_stopwords(langcode):
         abort(404)
     text = get_text_from_request()
     text = " ".join([w for w in re.split('\s+', text) if not w in stopwords[langcode]])
-    return json.dumps({"cleaned_text": text}, indent=4)
+    return json_dumps({"cleaned_text": text})
 
 # RegEx for CleanTweet
 ru = re.compile(r"(@\w+)")
@@ -133,7 +139,7 @@ def cleantweet():
     text = rp.sub(" ", text)
     text = rt.sub(" ", text)
     text = " ".join([w for w in re.split('\s+', text) if len(w) > 1])
-    return json.dumps({"cleaned_text": text}, indent=4)
+    return json_dumps({"cleaned_text": text})
         
 @app.route("/language", methods=["GET", "POST"])
 def language():
@@ -141,7 +147,7 @@ def language():
     app.logger.debug(unicode(text))
 #    lang = ngrammodel.classify(data.encode('utf-8'))
     lang = ngrammodel.classify(text)
-    return json.dumps({"language": lang})
+    return json_dumps({"language": lang})
         
 def get_text_from_request():
     if request.method == "POST":
@@ -152,6 +158,14 @@ def get_text_from_request():
         return request.args["text"]#.encode('utf-8')
     else:
         abort(Response("No text provided, use: POST or GET with attribute text\n", status=400))
+        
+def json_dumps(object, pretty=False):
+    if not pretty and "ujson" in locals():
+        return ujson.dumps(object)
+    elif not pretty:
+        return json.dumps(object)
+    else:
+        return json.dumps(object, indent=4)
 
 @app.route("/inspect", methods=["GET"])
 def inspect():
@@ -159,7 +173,7 @@ def inspect():
     for step, processor in pipeline:
         inspect.update(processor.inspect())
         
-    return json.dumps(inspect, indent=4)
+    return json_dumps(inspect, pretty=True)
 
 if __name__ == '__main__':
     pipeline.append(("Settings", SettingsProcessor()))
