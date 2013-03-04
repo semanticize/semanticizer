@@ -8,6 +8,7 @@ from lxml import etree as ElementTree
 
 import datetime
 import shelve
+from copy import deepcopy
 
 from . import memory
 
@@ -55,7 +56,7 @@ class ArticlesProcessor(LinksProcessor):
         for link in links:
             article = self.articles[link["title"]]
             
-            link.update(self.article_template)
+            link.update(deepcopy(self.article_template))
             
             if "id" in article.attrib:
                 link["article_id"] = int(article.attrib["id"])
@@ -87,7 +88,7 @@ class ArticlesProcessor(LinksProcessor):
                         link["Definition"] = child.text
 
         for langcode, cache in self.article_cache.iteritems():
-            print "Loaded %d articles for %s from cache." % (len(cache), langcode)
+            print "Saving %d articles for %s to cache." % (len(cache), langcode)
             cache.sync()
                     
         return (links, text, settings)
