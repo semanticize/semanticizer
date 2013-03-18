@@ -1,4 +1,4 @@
-from collections import Sequence
+from collections import Sequence, defaultdict
 import sys, os, urllib, codecs
 from nltk import sent_tokenize, regexp_tokenize
 from nltk.util import ngrams as nltk_ngrams
@@ -42,7 +42,8 @@ class Semanticizer:
         self.load_labels(os.path.join(self.wikipediaminer_root, 'label.csv'))
         self.load_page_titles(os.path.join(self.wikipediaminer_root, 'page.csv'))
 
-    def semanticize(self, sentence, translations=True, counts=False, senseprobthreshold=None):
+    def semanticize(self, sentence, normalize_dash=True, normalize_accents=True, normalize_lower=False, \
+                          translations=True, counts=False, senseprobthreshold=None):
     	if senseprobthreshold == None: senseprobthreshold = self.senseprobthreshold
     #    result = {"sentiment_clues": {}, "links": []}
         result = {"links": []}
@@ -57,20 +58,17 @@ class Semanticizer:
             for n in range(1,len(words)+1):
                 for ngram in nltk_ngrams(words, n):
                     ngrams.add(' '.join(ngram))
-#                    ngrams.add(' '.join([w.lower() for w in ngram]))
-#                    ngrams.add(' '.join([w.capitalize() for w in ngram]))
-                    ngrams.add(self.normalize(' '.join(ngram)))
-#                    ngrams.add(self.normalize(' '.join([w.lower() for w in ngram])))
-#                    ngrams.add(self.normalize(' '.join([w.capitalize() for w in ngram])))
 
         for ngram in ngrams:
-#           if semanticizer.sentiment_lexicon.has_key(word):
-#               sentiment = semanticizer.sentiment_lexicon[word]
-#               result["sentiment_clues"][word] = sentiment
-            if ngram in self.normalized:
-                for word in self.normalized[ngram]:
-                    if word in self.labels:
-                        label = self.labels[word]
+            normal_ngram = self.normalize(ngram)
+            if normal_ngram in self.normalized:
+                normalized_ngram = self.normalize(ngram, normalize_dash, normalize_accents, normalize_lower)
+                for anchor in self.normalized[normal_ngram]:
+                    normalized_anchor = self.normalize(anchor, normalize_dash, normalize_accents, normalize_lower)
+                    print normalized_ngram, normalized_anchor
+                    if normalized_ngram == normalized_anchor:
+                        assert anchor in self.labels
+                        label = self.labels[anchor]
                         if len(label) < 5:
                             continue
                         for sense in label[4]:
@@ -90,7 +88,8 @@ class Semanticizer:
                                 else:
                                     commonness = float(label[4][sense][0])/label[0]
                                 link = {
-                                    "label": word,
+                                    "label": anchor,
+                                    "text": ngram,
                                     "title": title,
                                     "id": sense,
                                     "url":url,
@@ -136,11 +135,11 @@ class Semanticizer:
                 print "Error loading on line " + str(linenr )+ ": " + line
                 continue
     
-    def normalize(self, text):
-        text = text.replace('-', ' ')
-        text = self.remove_accents(text)
-#        text = text.lower()
-        return text
+    def normalize(self, text, dash=True, accents=True, lower=True):
+        if dash: text = text.replace('-', ' ')
+        if accents: text = self.remove_accents(text)
+        if lower: text = text.lower()
+        return text.strip()
                 
     def remove_accents(self, input_str):
         if type(input_str) is str:
@@ -171,7 +170,7 @@ class Semanticizer:
 
     def load_labels(self, filename):
         self.labels = {}
-        self.normalized = {}
+        self.normalized = defaultdict(list)
         print 'Loading labels...'
         linenr = 0
         for line in codecs.open(filename, "r", "utf-8"):
@@ -191,7 +190,6 @@ class Semanticizer:
                 self.labels[text] = label
                 
                 normalized = self.normalize(text)
-                self.normalized.setdefault(normalized, [])
                 self.normalized[normalized].append(text)
             except:
                 print "Error loading on line " + str(linenr )+ ": " + line
