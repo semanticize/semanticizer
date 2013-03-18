@@ -135,11 +135,13 @@ class Semanticizer:
                 print "Error loading on line " + str(linenr )+ ": " + line
                 continue
     
-    def normalize(self, text, dash=True, accents=True, lower=True):
+    def normalize(self, raw, dash=True, accents=True, lower=True):
+        text = raw
         if dash: text = text.replace('-', ' ')
         if accents: text = self.remove_accents(text)
         if lower: text = text.lower()
-        return text.strip()
+        text = text.strip()
+        return text if len(text) else raw
                 
     def remove_accents(self, input_str):
         if type(input_str) is str:

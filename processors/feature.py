@@ -122,6 +122,10 @@ class anchorFeatures:
                     SNCL += self.ngram_in_title[ngram]
         return SNCL
 
+    def feature_NORMALIZATION(self, link):
+        edit = Levenshtein.distance(link["label"], link["text"])
+        return float(edit)/len(link["text"])
+
     def compute_anchor_features(self, link):
         return {'LEN': self.feature_LEN(link),
                 'IDF_title': self.feature_IDF_title(link),
@@ -130,7 +134,8 @@ class anchorFeatures:
                 'KEYPHRASENESS': self.feature_KEYPHRASENESS(link),
                 'LINKPROB': self.feature_LINKPROB(link),
                 'SNIL': self.feature_SNIL(link),
-                'SNCL': self.feature_SNCL(link)
+                'SNCL': self.feature_SNCL(link),
+                'NORMALIZATION': self.feature_NORMALIZATION(link)
                 }
        
 class articleFeatures:
