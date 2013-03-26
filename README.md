@@ -3,7 +3,7 @@ Semanticizer
 
 Created in 2012 by [Daan Odijk](http://staff.science.uva.nl/~dodijk/) at
 [ILPS](http://ilps.science.uva.nl/). Received contributions from 
-Lars Buitinck](http://staff.science.uva.nl/~buitinck/), 
+[Lars Buitinck](http://staff.science.uva.nl/~buitinck/), 
 [David Graus](http://graus.nu/), 
 [Tom Kenter](http://staff.science.uva.nl/~tkenter1/), 
 [Edgar Meij](http://edgar.meij.pro/), 
