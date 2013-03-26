@@ -10,8 +10,6 @@ import datetime
 import shelve
 from copy import deepcopy
 
-from . import memory
-
 class ArticlesProcessor(LinksProcessor):
     def __init__(self, wikipedia_ids, article_url, threads):
         self.threads = threads
