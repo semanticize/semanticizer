@@ -141,7 +141,8 @@ class ArticlesProcessor(LinksProcessor):
                                      "inLinks": "true",
                                      "outLinks": "true",
                                      "labels": "true",
-                                     "images": "true",
+#                                    "images": "true",
+# Images disabled because of a bug in WikipediaMiner
                                      "parentCategories": "true"})            
 
             print url
