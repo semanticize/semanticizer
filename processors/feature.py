@@ -245,7 +245,7 @@ class articleFeatures:
                                                          article_title)
     
     def feature_COMMONNESS(self, link, features):
-        features["COMMONNESS"] = link["commonness"]
+        features["COMMONNESS"] = link["prior_probability"]
         
     def compute_article_features(self, link):
         features = {

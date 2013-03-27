@@ -26,11 +26,20 @@ class SemanticizeProcessor(LinksProcessor):
                                          normalize_accents=normalize_accents, \
                                          normalize_lower=normalize_lower, \
                                          translations=translations, \
-                                         senseprobthreshold=-1)
+                                         sense_probability_threshold=-1)
                 links = results["links"]
             else:
                 links = []
             
+        return (links, text, settings)
+        
+    def postprocess(self, links, text, settings):
+        if not "counts" in settings:
+            for link in links:
+                for key in link.keys():
+                    if key.endswith("Count"):
+                        del link[key]
+
         return (links, text, settings)
 
     def inspect(self):

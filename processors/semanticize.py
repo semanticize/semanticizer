@@ -18,7 +18,7 @@ def tokenize(text):
 	return regexp_tokenize(text, r'\w+([.,\']\w+)*|[^\w\s]+')
 
 class Semanticizer:
-    def __init__(self, language_code=None, wikipediaminer_root=None, senseprobthreshold=None, translation_langs=None):
+    def __init__(self, language_code=None, wikipediaminer_root=None, sense_probability_threshold=None, translation_langs=None):
         if not language_code:
             self.language_code = DEFAULT_LANGUAGE_CODE
         else:
@@ -27,10 +27,10 @@ class Semanticizer:
             self.wikipediaminer_root = WIKIPEDIAMINER_ROOT
         else:
             self.wikipediaminer_root = wikipediaminer_root
-        if not senseprobthreshold:
-            self.senseprobthreshold = SENSEPRO0THRESHOLD
+        if not sense_probability_threshold:
+            self.sense_probability_threshold = SENSEPRO0THRESHOLD
         else:
-            self.senseprobthreshold = senseprobthreshold
+            self.sense_probability_threshold = sense_probability_threshold
         if not translation_langs:
             self.translation_langs = TRANSLATION_LANGS
         else:
@@ -43,8 +43,8 @@ class Semanticizer:
         self.load_page_titles(os.path.join(self.wikipediaminer_root, 'page.csv'))
 
     def semanticize(self, sentence, normalize_dash=True, normalize_accents=True, normalize_lower=False, \
-                          translations=True, counts=False, senseprobthreshold=None):
-    	if senseprobthreshold == None: senseprobthreshold = self.senseprobthreshold
+                          translations=True, counts=False, sense_probability_threshold=None):
+    	if sense_probability_threshold == None: sense_probability_threshold = self.sense_probability_threshold
     #    result = {"sentiment_clues": {}, "links": []}
         result = {"links": []}
         ngrams = set()
@@ -73,29 +73,29 @@ class Semanticizer:
                             continue
                         for sense in label[4]:
                             if label[2] == 0:
-                                prior_probability = 0
-                                senseprob = 0
+                                link_probability = 0
+                                sense_probability = 0
                             else:
-                                prior_probability = float(label[0])/label[2]
-                                # Senseprob is # of links to target with anchor text
+                                link_probability = float(label[1])/label[3]
+                                # sense_probability is # of links to target with anchor text
                                 # over # of times anchor text used
-                                senseprob = float(label[4][sense][0])/label[2]
-                            if senseprob > senseprobthreshold:
+                                sense_probability = float(label[4][sense][1])/label[3]
+                            if sense_probability > sense_probability_threshold:
                                 title = unicode(self.page_title[sense])
                                 url = WIKIPEDIA_URL_TEMPLATE % (self.language_code, urllib.quote(title.encode('utf-8')))
                                 if label[0] == 0:
-                                	commonness = 0
+                                	prior_probability = 0
                                 else:
-                                    commonness = float(label[4][sense][0])/label[0]
+                                    prior_probability = float(label[4][sense][0])/label[0]
                                 link = {
                                     "label": anchor,
                                     "text": ngram,
                                     "title": title,
                                     "id": sense,
                                     "url":url,
-                                    "prior_probability": prior_probability,
-                                    "sense_probability": senseprob,
-                                    "commonness": commonness
+                                    "linkProbability": link_probability,
+                                    "senseProbability": sense_probability,
+                                    "priorProbability": prior_probability
                                 }
                                 if translations:
                                     link["translations"] = {self.language_code: {"title":title,"url":url}}
@@ -106,10 +106,12 @@ class Semanticizer:
                                                 'url' : WIKIPEDIA_URL_TEMPLATE % (lang, urllib.quote(unicode(self.translation[sense][lang]).encode('utf-8')))
                                             }
                                 if counts:
-                                    link["docCount"] = label[2]
-                                    link["occCount"] = label[3]
-                                    link["linkDocCount"] = float(label[4][sense][0])
-                                    link["linkOccCount"] = float(label[4][sense][1])
+                                    link["occCount"] = label[2]
+                                    link["docCount"] = label[3]
+                                    link["linkOccCount"] = label[0]
+                                    link["linkDocCount"] = label[1]
+                                    link["senseOccCount"] = label[4][sense][0]
+                                    link["senseDocCount"] = label[4][sense][1]
                                     link['fromTitle'] = label[4][sense][2]
                                     link['fromRedirect'] = label[4][sense][3]
                                 result["links"].append(link)
@@ -170,6 +172,17 @@ class Semanticizer:
 
         print '%d pages loaded.' % len(self.page_title)
 
+    # See Wikipedia Miner documentation at:
+    # http://wikipedia-miner.cms.waikato.ac.nz/wiki/
+    # (The CSV summary files)
+    # http://wikipedia-miner.cms.waikato.ac.nz/doc/
+    #
+    # DbLabel(long LinkOccCount, long LinkDocCount, 
+    #         long TextOccCount, long TextDocCount, 
+    #         java.util.ArrayList<DbSenseForLabel> Senses) 
+    #
+    # DbSenseForLabel(int Id, long LinkOccCount, long LinkDocCount, 
+    #                 boolean FromTitle, boolean FromRedirect) 
     def load_labels(self, filename):
         self.labels = {}
         self.normalized = defaultdict(list)
