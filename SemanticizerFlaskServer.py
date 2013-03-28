@@ -92,10 +92,33 @@ for lang, langcode, loc in options.langloc:
     if not os.path.isdir(loc):
         parser.error("Wikipediaminer dump does not exist: " + loc)
 
+wikipedia_ids = {}
+languages = {}
+for lang, langcode, loc in options.langloc:
+    wikipedia_ids[langcode] = loc.split('/')[-2]
+    languages[lang] = langcode
+
+langcodes = languages.values()
+
 # All settings are OK
 
 pipeline = []
 
+@app.route("/semanticize/", methods=["GET", "POST"])
+def language_and_semanticize():
+    if request.method == "GET" and not request.args.has_key("text"):
+        return json_dumps({"languages": langcodes}, "pretty" in request.args)
+
+    text = get_text_from_request()
+    lang = ngrammodel.classify(text.encode('utf-8'))
+    if lang not in languages:
+        return json_dumps({"language": lang, "text": text, "links": []}, \
+                          "pretty" in request.args)
+    
+    semanticized = semanticize(languages[lang])
+    assert semanticized[-1] == "}"
+    return semanticized[:-1] + ', "language": %s}' % lang
+    
 @app.route("/semanticize/<langcode>", methods=["GET", "POST"])
 def semanticize(langcode):
     app.logger.debug("Semanticizing: start")
@@ -145,8 +168,8 @@ def cleantweet():
 def language():
     text = get_text_from_request()
     app.logger.debug(unicode(text))
-#    lang = ngrammodel.classify(data.encode('utf-8'))
-    lang = ngrammodel.classify(text)
+    lang = ngrammodel.classify(data.encode('utf-8'))
+#    lang = ngrammodel.classify(text)
     return json_dumps({"language": lang})
         
 def get_text_from_request():
@@ -181,10 +204,6 @@ if __name__ == '__main__':
     semanticize_processor = SemanticizeProcessor()
     
     start = time.time()
-    langcodes = [langcode for lang, langcode, loc in options.langloc]
-    wikipedia_ids = {}
-    for lang, langcode, loc in options.langloc:
-        wikipedia_ids[langcode] = loc.split('/')[-2]
     for lang, langcode, loc in options.langloc:
         app.logger.info("Loading semanticizer for " + lang + " from " + loc)
     semanticize_processor.load_languages(options.langloc)        
