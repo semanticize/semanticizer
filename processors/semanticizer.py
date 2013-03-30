@@ -8,9 +8,9 @@ class SemanticizeProcessor(LinksProcessor):
         self.semanticizers = {}
 
     def load_languages(self, languages):
-        for lang, langcode, loc in languages:
-            self.languages[langcode] = (lang, loc)
-            self.semanticizers[langcode] = Semanticizer(langcode, loc)
+        for langcode in languages:
+            self.languages[langcode] = (languages[langcode][0], languages[langcode][1])
+            self.semanticizers[langcode] = Semanticizer(languages[langcode][0], languages[langcode][1])
             
     def preprocess(self, links, text, settings):
         links = []
