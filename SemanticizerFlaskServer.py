@@ -31,7 +31,7 @@ def initialize(parser, app):
     if options.verbose: app.debug = True
     app.debug_log_format = '[%(asctime)-15s][%(levelname)s][%(module)s][%(pathname)s:%(lineno)d]: %(message)s'
     
-    file_handler = TimedRotatingFileHandler("logs/log", when='midnight')
+    file_handler = TimedRotatingFileHandler(options.log, when='midnight')
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(logging.Formatter('[%(asctime)-15s][%(levelname)s][%(module)s][%(pathname)s:%(lineno)d]: %(message)s'))
     app.logger.addHandler(file_handler)
