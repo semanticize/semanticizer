@@ -1,15 +1,18 @@
-'''
-Created on 27 Mar 2013
-
-@author: evert
-'''
+"""
+This module deals with the webservice configuration
+"""
 
 from ConfigParser import SafeConfigParser
 from optparse import OptionParser
 from optparse import OptionGroup
 
 class Conf:
-
+    """
+    This class is responsible for loading all possible configuration params and their defaults,
+    overwriting the defaults by reading values from a given config file, then overwriting these
+    values to whatever's been passed as argument. 
+    """
+    
     USAGE = "Usage: %prog [options]"
 
     ARGS = {"generic":  [{"name":    "--verbose",
@@ -76,6 +79,10 @@ class Conf:
         self.conffile = conffile
         
     def get_conf(self):
+        """
+        Read argument list and defaults, read configuration and overwrite defaults where necessary,
+        read the program arguments and return a parser
+        """
         config = SafeConfigParser()
         config.read(self.conffile)
         parser = OptionParser(usage=self.USAGE)
