@@ -81,7 +81,22 @@ class Test(unittest.TestCase):
     def test_get_arg_parser(self):
         self.assertIsInstance(Configuration._get_arg_parser(), ArgumentParser, "_get_arg_parser doesn't return an instance of ArgumentParser")
         
-    def test_set_data(self):
+    def test_set_data_and_set_conf(self):
+        # generate and set data
+        config = []
+        for key, value in self.config.iteritems():
+            config += ["--" + key]
+            if value:
+                config += [str(value)]
+        Configuration.set_data(config)
+        # check we can read back the data we set
+        self.assertEqual(Configuration.conf_get("port"), 6000, "can't find argument values set by set_data")
+        self.assertEqual(Configuration.conf_get("verbose"), True, "can't find argument values set by set_data")
+        # check that the system exits when we give unrecognized arguments
+        Configuration.set_data("--some values --that --dont --exist".split())
+        self.assertRaises(SystemExit, Configuration._set_conf)
+        
+    def test_conf_get(self):
         # generate and set data
         config = []
         for key, value in self.config.iteritems():
@@ -92,9 +107,7 @@ class Test(unittest.TestCase):
         # check we can read back the data we set
         self.assertEqual(Configuration.conf_get("port"), 6000, "can't find argument values set by set_data")
         self.assertEqual(Configuration.conf_get("lm"), self.tmpfilename, "can't find argument values set by set_data")
-        # check that the system exits when we give unrecognized arguments
-        Configuration.set_data("--some values --that --dont --exist".split())
-        self.assertRaises(SystemExit, Configuration._set_conf)
+        self.assertEqual(Configuration.conf_get("nonexisting"), None, "conf_get doesn't return None on a non-existing param")
 
 
 if __name__ == "__main__":
