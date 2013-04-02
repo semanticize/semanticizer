@@ -18,51 +18,45 @@ from processors.features import FeaturesProcessor, ArticleFeaturesProcessor, Con
 from processors.external import ArticlesProcessor, StatisticsProcessor
 from processors.learning import LearningProcessor
 from processors.image import AddImageProcessor
-import Configuration
+from Configuration import conf_get
+from argparse import ArgumentTypeError
 
 from flask import Flask, Response, request, abort
 
 import logging
 from logging.handlers import TimedRotatingFileHandler
 
-def initialize(parser, app):
-    (options, args) = parser.parse_args()
+def initialize(app):
     # Debug mode is not exactly the same as verbose.
-    if options.verbose: app.debug = True
+    if conf_get("verbose"): app.debug = True
     app.debug_log_format = '[%(asctime)-15s][%(levelname)s][%(module)s][%(pathname)s:%(lineno)d]: %(message)s'
     
-    file_handler = TimedRotatingFileHandler(options.log, when='midnight')
+    file_handler = TimedRotatingFileHandler(conf_get("log"), when='midnight')
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(logging.Formatter('[%(asctime)-15s][%(levelname)s][%(module)s][%(pathname)s:%(lineno)d]: %(message)s'))
     app.logger.addHandler(file_handler)
 
     app.logger.info("Loading ngram model")
-    ngrammodel = textcat.NGram(options.lm)
+    ngrammodel = textcat.NGram(conf_get("lm"))
     availablelang = ngrammodel.listLangs()
-    if options.listlang:
+    if conf_get("listlang"):
         print sorted(availablelang)
         sys.exit(0)
 
     app.logger.info("Loading stopwords")
-    if not os.path.isdir(options.stopword):
-        parser.error("The stopword dir does not exist")
     stopwords = {}
-    for fname in glob.glob(os.path.join(options.stopword, "stopwords.*")):
+    
+    for fname in glob.glob(os.path.join(conf_get("stopword"), "stopwords.*")):
         langcode = os.path.split(fname)[-1].split(".")[-1]
         stopwords[langcode] = {}
         for line in codecs.open(fname, 'r', 'utf-8'):
             stopwords[langcode][line.strip()] = 0
-
-    if not options.langloc:
-        options.langloc = [("english", "en", "/zfs/ilps-plexer/wikipediaminer/enwiki-20111007/")] 
     
-    for lang, langcode, loc in options.langloc:
+    for lang, langcode, loc in conf_get("langloc"):
         if not langcode in stopwords:
-            parser.error("No stopwords for " + lang)
+            raise ArgumentTypeError("No stopwords")
         if not lang in availablelang:
-            parser.error("Language \"" + lang + "\" is not available, available languages are: " + ", ".join(sorted(availablelang)))
-        if not os.path.isdir(loc):
-            parser.error("Wikipediaminer dump does not exist: " + loc)
+            raise ArgumentTypeError("Language \"" + lang + "\" is not available, available languages are: " + ", ".join(sorted(availablelang)))
 
     # All settings are OK
     
@@ -148,17 +142,16 @@ def initialize(parser, app):
     
     return pipeline
 
-def main(parser):
-    (options, args) = parser.parse_args()
+def main():
     app = Flask(__name__)
-    pipeline = initialize(parser, app)
+    pipeline = initialize(app)
     pipeline.append(("Settings", SettingsProcessor()))
 
     semanticize_processor = SemanticizeProcessor()
     
     start = time.time()
     uniqlangs = {}
-    for lang, langcode, loc in options.langloc:
+    for lang, langcode, loc in conf_get("langloc"):
         uniqlangs[langcode] = [lang, loc]
     langcodes = uniqlangs.keys()
     wikipedia_ids = {}
@@ -171,24 +164,24 @@ def main(parser):
 
     pipeline.append(("Semanticize", semanticize_processor))
     pipeline.append(("Filter", FilterProcessor()))
-    if options.features:
+    if conf_get("features") == True:
         app.logger.info("Loading features...")
         start = time.time()
         pipeline.append(("Features", FeaturesProcessor(semanticize_processor)))
-        pipeline.append(("Articles", ArticlesProcessor(wikipedia_ids, options.article, options.threads)))
-        pipeline.append(("Statistics", StatisticsProcessor(langcodes, options.threads)))
+        pipeline.append(("Articles", ArticlesProcessor(wikipedia_ids, conf_get("article"), conf_get("threads"))))
+        pipeline.append(("Statistics", StatisticsProcessor(langcodes, conf_get("threads"))))
         pipeline.append(("ArticleFeatures", ArticleFeaturesProcessor()))#semanticize_processor)))
         pipeline.append(("ContextFeatures", ContextFeaturesProcessor()))
         app.logger.info("Loading features took %.2f seconds." % (time.time() - start))
-        if options.scikit:
+        if conf_get("scikit"):
             pipeline.append(("Learning", LearningProcessor()))
         else:
-            pipeline.append(("Learning", LearningProcessor(options.learn)))
+            pipeline.append(("Learning", LearningProcessor(conf_get("learn"))))
     pipeline.append(("AddImage", AddImageProcessor()))
 
-    app.run(host='0.0.0.0', port=options.port, debug=options.verbose, use_reloader=False)
+    app.run(host='0.0.0.0', port=conf_get("port"), debug=conf_get("verbose"), use_reloader=False)
 
 if __name__ == '__main__':
-    conf = Configuration.Conf()
-    main(conf.get_conf())
+    conf_get("langloc")
+    main()
     
