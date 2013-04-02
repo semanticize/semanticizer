@@ -185,12 +185,13 @@ def set_data(data):
     Set the data that should be loaded by this configuration. Default is sys.argv[1:]. Only effective
     if called before the first call to conf_get().
     """
+    global _data
     _data = data
 
 def conf_get(name):
     """
-    Only public method of this module. Allows user to access configuration variables and arguments.
-    The function takes the variable name as its input, and returns the value or None is it isn't set.
+    Allows user to access configuration variables and arguments. The function takes the variable name
+    as its input, and returns the value or None is it isn't set.
     """
     global __options
     if not __options:
