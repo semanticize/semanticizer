@@ -33,7 +33,7 @@ def _writable_file(value):
     path = os.path.abspath(value)
     if not os.path.exists(path):
         parent = os.path.dirname(path)
-        if os.path.exists(parent) and bool(os.stat(parent) & stat.S_IWUSR):
+        if os.path.exists(parent) and bool(os.stat(parent).st_mode & stat.S_IWUSR):
             return path
     elif bool(os.stat(path).st_mode & stat.S_IWUSR):
         return path
@@ -186,7 +186,8 @@ def set_data(data):
     if called before the first call to conf_get().
     """
     global _data
-    _data = data
+    if type(data) is list:
+        _data = data
 
 def conf_get(name):
     """
@@ -199,8 +200,3 @@ def conf_get(name):
     if name in __options:
         return __options[name]
     return None
-  
-if __name__ == '__main__':
-    #set_data(["--langloc", "dutch nl /Users/evertlammerts/Downloads/zfs/ilps-plexer/wikipediaminer/nlwiki-20111104"])
-    print(conf_get("verbose"))
-    print(conf_get("stopword"))
