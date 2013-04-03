@@ -81,6 +81,11 @@ ARGS = {"generic":  [{"name":     "--verbose",
                       "opts":    {"help":     "Log file location (default: %(default)s)",
                                   "default":  "log.txt",
                                   "metavar":  "FILE",
+                                  "type":     _writable_file}},
+        
+                     {"name":     "--pickledir",
+                      "opts":    {"help":     "Directory to store pickles in",
+                                  "metavar":  "DIR",
                                   "type":     _writable_file}}],
             
         "service":  [{"name":     "--port",

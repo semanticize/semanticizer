@@ -4,7 +4,7 @@ import context
 from core import LinksProcessor
 
 class FeaturesProcessor(LinksProcessor):
-    def __init__(self, semanticizer_processor):
+    def __init__(self, semanticizer_processor, pickledir):
         self.features = {}
         
         semanticizers = {}
@@ -12,7 +12,7 @@ class FeaturesProcessor(LinksProcessor):
             semanticizers[langcode] = (semanticizer.wikipediaminer_root, semanticizer.title_page)
         
         for langcode, (loc, title_page) in semanticizers.iteritems():
-            self.features[langcode] = features.anchorFeatures(langcode, loc, title_page)
+            self.features[langcode] = features.anchorFeatures(langcode, loc, pickledir, title_page=title_page)
 
     def process(self, links, text, settings):
         if not settings.has_key("features") and not settings.has_key("learning"):

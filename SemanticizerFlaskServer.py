@@ -138,9 +138,9 @@ class SemanticizerFlaskServer(object):
         if conf_get("features") == True:
             self.app.logger.info("Loading features...")
             start = time.time()
-            pipeline.append(("Features", FeaturesProcessor(semanticize_processor)))
-            pipeline.append(("Articles", ArticlesProcessor(self.wikipedia_ids, conf_get("article"), conf_get("threads"))))
-            pipeline.append(("Statistics", StatisticsProcessor(self.langcodes, conf_get("threads"))))
+            pipeline.append(("Features", FeaturesProcessor(semanticize_processor, conf_get("pickledir"))))
+            pipeline.append(("Articles", ArticlesProcessor(self.wikipedia_ids, conf_get("article"), conf_get("threads"), conf_get("pickledir"))))
+            pipeline.append(("Statistics", StatisticsProcessor(self.langcodes, conf_get("threads"), conf_get("pickledir"))))
             pipeline.append(("ArticleFeatures", ArticleFeaturesProcessor()))
             pipeline.append(("ContextFeatures", ContextFeaturesProcessor()))
             self.app.logger.info("Loading features took %.2f seconds." % (time.time() - start))
@@ -154,7 +154,7 @@ class SemanticizerFlaskServer(object):
     def _init_semanticize_processor(self):
         semanticize_processor = SemanticizeProcessor()
         start = time.time()
-        self.app.logger.info("Loading semanticizers for langcodes " + self.langcodes)
+        self.app.logger.info("Loading semanticizers for langcode(s) " + ", ".join(self.langcodes))
         semanticize_processor.load_languages(self.uniqlangs)
         self.app.logger.info("Loading semanticizers took %.2f seconds." % (time.time() - start))
         return semanticize_processor

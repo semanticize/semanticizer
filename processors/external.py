@@ -11,14 +11,14 @@ import shelve
 from copy import deepcopy
 
 class ArticlesProcessor(LinksProcessor):
-    def __init__(self, wikipedia_ids, article_url, threads):
+    def __init__(self, wikipedia_ids, article_url, threads, pickledir):
         self.threads = threads
         self.article_url = article_url
         self.wikipedia_ids = wikipedia_ids
         self.article_cache = {}
         
         for langcode in self.wikipedia_ids:
-            pickle_root = '/scratch/dodijk/semanticizer/pickles/%s/' % langcode
+            pickle_root = pickledir + '/' + langcode + '/'
             self.article_cache[langcode] = shelve.open(pickle_root+'article_cache.db')
             print "Loaded %d articles for %s from cache." % (len(self.article_cache[langcode]), langcode)
             
@@ -174,14 +174,14 @@ class ArticlesProcessor(LinksProcessor):
         return result
 
 class StatisticsProcessor(LinksProcessor):
-    def __init__(self, langcodes, num_of_threads):
+    def __init__(self, langcodes, num_of_threads, pickledir):
         self.num_of_threads = num_of_threads
         self.WIKIPEDIA_STATS_URL = {}
         self.wikipedia_statistics_cache = {}
         for langcode in langcodes:
             self.WIKIPEDIA_STATS_URL[langcode] = "http://stats.grok.se/json/"+langcode+"/%d%02d/%s" # 201001/De%20Jakhalzen
 
-            pickle_root = '/scratch/dodijk/flask-semanticizer/pickles/%s/' % langcode
+            pickle_root = pickledir + '/' + langcode + '/'
             self.wikipedia_statistics_cache[langcode] = shelve.open(pickle_root+'wikipedia_statistics_cache.db')
             print "Loaded %d sets of statistics for %s from cache." % (len(self.wikipedia_statistics_cache[langcode]), langcode)
 

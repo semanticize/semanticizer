@@ -14,8 +14,8 @@ import stringUtils
 import Levenshtein
 
 class anchorFeatures:
-    def __init__(self, langcode, wikipediaminer_root, title_page=None):
-        pickle_root = '/scratch/dodijk/semanticizer/pickles/%s/' % langcode
+    def __init__(self, langcode, wikipediaminer_root, pickledir, title_page=None):
+        pickle_root = pickledir + '/' + langcode + '/'
         
         #   From Wikipedia miner CSV file:
         self.wikipediaArticleCount = 970139
@@ -280,6 +280,7 @@ if __name__ == "__main__":
     # Some settings
     langcode = "en"
     wikipediaminer_root = '/zfs/ilps-plexer/wikipediaminer/enwiki-20111007/'
+    pickledir = "/Users/evertlammerts/semanticizer/pickles/"
 
     # Test data
     link = {"label":  "Alabama",
@@ -299,7 +300,7 @@ if __name__ == "__main__":
     
     # Initialize the objects
     print "Initializing anchor features"
-    anchor_features = anchorFeatures(langcode, wikipediaminer_root)
+    anchor_features = anchorFeatures(langcode, wikipediaminer_root, pickledir)
     print "Initializing concept features"
     concept_features = conceptFeatures(langcode, wikipediaminer_root,
                                        article_url)
