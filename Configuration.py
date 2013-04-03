@@ -86,7 +86,12 @@ ARGS = {"generic":  [{"name":     "--verbose",
                      {"name":     "--pickledir",
                       "opts":    {"help":     "Directory to store pickles in",
                                   "metavar":  "DIR",
-                                  "type":     _writable_file}}],
+                                  "type":     _writable_file}},
+        
+                     {"name":     "--logformat",
+                      "opts":    {"help":     "Format for the logs",
+                                  "metavar":  "STR",
+                                  "type":     str}}],
             
         "service":  [{"name":     "--port",
                       "opts":    {"help":     "Port number to start services (counting upwards) (default: %(default)s)",
@@ -148,7 +153,11 @@ def _get_conf_vals(path='conf/semanticizer.cfg'):
         items = config.items(section)
         for key, value in items:
             if value:
-                val = value.split()
+                nargs = get_conf_prop(key, "nargs")
+                if nargs is not None and int(nargs) > 1:
+                    val = value.split()
+                else:
+                    val = [value]
                 confvars += ["--" + key] + val
             else:
                 confvars += ["--" + key]
@@ -204,4 +213,17 @@ def conf_get(name):
         _set_conf()
     if name in __options:
         return __options[name]
+    return None
+
+def get_conf_prop(name, propname):
+    """
+    Allows user to get a property for given name. Returns the value of the property, or None if none is
+    found.
+    """
+    for groupname, groupdata in ARGS.iteritems():
+        for arg in groupdata:
+            if groupdata["name"] is name:
+                if propname in groupdata["opts"]:
+                    return groupdata["opts"][propname]
+                return None
     return None
