@@ -150,7 +150,7 @@ def _get_conf_vals(path='conf/semanticizer.cfg'):
     config.read(path)
     confvars = list()
     for section in config.sections():
-        items = config.items(section)
+        items = config.items(section, raw=True)
         for key, value in items:
             if value:
                 nargs = get_conf_prop(key, "nargs")
@@ -220,10 +220,11 @@ def get_conf_prop(name, propname):
     Allows user to get a property for given name. Returns the value of the property, or None if none is
     found.
     """
+    name = "--" + name
     for groupname, groupdata in ARGS.iteritems():
         for arg in groupdata:
-            if groupdata["name"] is name:
-                if propname in groupdata["opts"]:
-                    return groupdata["opts"][propname]
+            if arg["name"] == name:
+                if propname in arg["opts"]:
+                    return arg["opts"][propname]
                 return None
     return None
