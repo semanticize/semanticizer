@@ -1,5 +1,6 @@
 from Configuration import conf_get
 from logging.handlers import TimedRotatingFileHandler
+from logging import StreamHandler
 from argparse import ArgumentTypeError
 from processors.core import SettingsProcessor, FilterProcessor
 from processors.semanticizer import SemanticizeProcessor
@@ -18,10 +19,10 @@ import time
 
 class Semanticizer(object):
     
-    def __init__(self, log, verbose=False, logformat='[%(asctime)-15s][%(levelname)s][%(module)s][%(pathname)s:%(lineno)d]: %(message)s'):
+    def __init__(self, verbose=False, logformat='[%(asctime)-15s][%(levelname)s][%(module)s][%(pathname)s:%(lineno)d]: %(message)s'):
         self.verbose = verbose
         self.logformat = logformat
-        self._set_logger(log)
+        self.logger = logging.getLogger()
     
     def list_lang(self, lm_dir):
         ngram_model = self._load_ngram_model(lm_dir)
@@ -44,19 +45,9 @@ class Semanticizer(object):
         uniqlangs, wikipedia_ids = self._load_language(langloc, ngram_model.listLangs(), stopwords)
         pipeline = self._load_pipeline(include_features, run_own_scikit, remote_scikit_url, pickle_dir, article_url, num_threads, wikipedia_ids, uniqlangs)
         server = Server()
-        server.set_logparams(self.file_handler, self.logformat)
-        server.set_debug(self.verbose)
+        server.set_debug(self.verbose, self.logformat)
         server.setup_all_routes(pipeline, stopwords, ngram_model)
         server.start(port, host)
-    
-    def _set_logger(self, log):
-        file_handler = TimedRotatingFileHandler(log, when='midnight')
-        if self.verbose == True:
-            file_handler.setLevel(logging.DEBUG)
-        file_handler.setFormatter(logging.Formatter(self.logformat))
-        self.logger = logging.getLogger()
-        self.file_handler = file_handler
-        self.logger.addHandler(self.file_handler)
         
     def _load_ngram_model(self, lm_dir):
         self.logger.info("Loading ngram model")
@@ -128,7 +119,18 @@ class Semanticizer(object):
         return semanticize_processor
 
 if __name__ == '__main__':
-    server = Semanticizer(conf_get("log"))
+    file_handler = TimedRotatingFileHandler(conf_get("log"), when='midnight')
+    file_handler.setFormatter(logging.Formatter(conf_get("logformat")))
+    stream_handler = StreamHandler()
+    stream_handler.setFormatter(logging.Formatter(conf_get("logformat")))
+    if conf_get("verbose") == True:
+        file_handler.setLevel(logging.DEBUG)
+        stream_handler.setLevel(logging.DEBUG)
+        logging.getLogger().setLevel(logging.DEBUG)
+    logging.getLogger().addHandler(file_handler)
+    logging.getLogger().addHandler(stream_handler)
+    server = Semanticizer(conf_get("verbose"), conf_get("logformat"))
+    
     if conf_get("listlang"):
         server.list_lang(conf_get("lm"))
     else:

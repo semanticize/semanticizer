@@ -16,12 +16,9 @@ class Server(object):
     def __init__(self):
         self.app = Flask(__name__)
     
-    def set_logparams(self, handler, debug_log_format):
-        self.app.logger.addHandler(handler)
-        self.app.debug_log_format = debug_log_format
-        
-    def set_debug(self, debug):
+    def set_debug(self, debug, debug_log_format):
         self.app.debug = debug
+        self.app.debug_log_format = debug_log_format
         
     def _json_dumps(self, o, pretty=False):
         if not pretty and "ujson" in locals():
