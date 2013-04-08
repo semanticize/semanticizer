@@ -3,7 +3,6 @@ import logging
 from Configuration import conf_get
 from Errors import InitError
 from Semanticizer import Semanticizer
-from argparse import ArgumentTypeError
 from logging.handlers import TimedRotatingFileHandler
 
 def init_logging():
