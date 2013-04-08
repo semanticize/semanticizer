@@ -1,13 +1,10 @@
-from Configuration import conf_get
-from logging.handlers import TimedRotatingFileHandler
-from logging import StreamHandler
-from argparse import ArgumentTypeError
 from processors.core import SettingsProcessor, FilterProcessor
 from processors.semanticizer import SemanticizeProcessor
 from processors.features import FeaturesProcessor, ArticleFeaturesProcessor, ContextFeaturesProcessor
 from processors.external import ArticlesProcessor, StatisticsProcessor
 from processors.learning import LearningProcessor
 from processors.image import AddImageProcessor
+from Errors import InitError
 from SemanticizerFlaskServer import Server
 
 import logging
@@ -19,9 +16,7 @@ import time
 
 class Semanticizer(object):
     
-    def __init__(self, verbose=False, logformat='[%(asctime)-15s][%(levelname)s][%(module)s][%(pathname)s:%(lineno)d]: %(message)s'):
-        self.verbose = verbose
-        self.logformat = logformat
+    def __init__(self):
         self.logger = logging.getLogger()
     
     def list_lang(self, lm_dir):
@@ -39,13 +34,15 @@ class Semanticizer(object):
                      article_url=None,
                      num_threads=1,
                      host='0.0.0.0',
-                     port=5000):
+                     port=5000,
+                     verbose=False,
+                     logformat='[%(asctime)-15s][%(levelname)s][%(module)s][%(pathname)s:%(lineno)d]: %(message)s' ):
         ngram_model = self._load_ngram_model(lm_dir)
         stopwords = self._load_stopwords(stopword_dir)
         uniqlangs, wikipedia_ids = self._load_language(langloc, ngram_model.listLangs(), stopwords)
         pipeline = self._load_pipeline(include_features, run_own_scikit, remote_scikit_url, pickle_dir, article_url, num_threads, wikipedia_ids, uniqlangs)
         server = Server()
-        server.set_debug(self.verbose, self.logformat)
+        server.set_debug(verbose, logformat)
         server.setup_all_routes(pipeline, stopwords, ngram_model)
         server.start(port, host)
         
@@ -69,9 +66,9 @@ class Semanticizer(object):
         wikipedia_ids = {}
         for lang, langcode, loc in langloc:
             if not langcode in stopwords:
-                raise ArgumentTypeError("No stopwords")
+                raise InitError("No stopwords for \"" + langcode + "\", stopwords are available for " + ", ".join(sorted(stopwords)))
             if not lang in available_lang:
-                raise ArgumentTypeError("Language \"" + lang + "\" is not available, available languages are: " + ", ".join(sorted(available_lang)))
+                raise InitError("Language \"" + lang + "\" is not available, available languages are: " + ", ".join(sorted(available_lang)))
             if langcode in uniqlangs:
                 continue
             wikipedia_ids[langcode] = loc.split('/')[-2]
@@ -117,32 +114,3 @@ class Semanticizer(object):
         semanticize_processor.load_languages(uniqlangs)
         self.logger.info("Loading semanticizers took %.2f seconds." % (time.time() - start))
         return semanticize_processor
-
-if __name__ == '__main__':
-    file_handler = TimedRotatingFileHandler(conf_get("log"), when='midnight')
-    file_handler.setFormatter(logging.Formatter(conf_get("logformat")))
-    stream_handler = StreamHandler()
-    stream_handler.setFormatter(logging.Formatter(conf_get("logformat")))
-    if conf_get("verbose") == True:
-        file_handler.setLevel(logging.DEBUG)
-        stream_handler.setLevel(logging.DEBUG)
-        logging.getLogger().setLevel(logging.DEBUG)
-    logging.getLogger().addHandler(file_handler)
-    logging.getLogger().addHandler(stream_handler)
-    server = Semanticizer(conf_get("verbose"), conf_get("logformat"))
-    
-    if conf_get("listlang"):
-        server.list_lang(conf_get("lm"))
-    else:
-        server.start_server(conf_get("lm"),
-                            conf_get("stopword"),
-                            conf_get("langloc"),
-                            conf_get("features"),
-                            conf_get("scikit"),
-                            conf_get("learn"),
-                            conf_get("pickledir"),
-                            conf_get("article"),
-                            conf_get("threads"),
-                            conf_get("host"),
-                            conf_get("port"))
-    
