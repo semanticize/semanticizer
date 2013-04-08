@@ -49,19 +49,19 @@ class Server(object):
     def setup_route_cleantweet(self):
         self.app.add_url_rule("/cleantweet", "cleantweet", self._cleantweet, methods=["GET", "POST"])
         
-    def setup_route_language(self, ngrammodel):
-        self.ngrammodel = ngrammodel
+    def setup_route_language(self, textcat):
+        self.textcat = textcat
         self.app.add_url_rule("/language", "language", self._language, methods=["GET", "POST"])
         
     def setup_route_inspect(self, pipeline):
         self.pipeline = pipeline
         self.app.add_url_rule("/inspect", "inspect", self._inspect, methods=["GET"])
         
-    def setup_all_routes(self, pipeline, stopwords, ngrammodel):
+    def setup_all_routes(self, pipeline, stopwords, textcat):
         self.setup_route_semanticize(pipeline)
         self.setup_route_stopwords(stopwords)
         self.setup_route_cleantweet()
-        self.setup_route_language(ngrammodel)
+        self.setup_route_language(textcat)
         self.setup_route_inspect(pipeline)
         
     def start(self, port, host):
@@ -111,7 +111,7 @@ class Server(object):
     def _language(self):
         text = self._get_text_from_request()
         self.app.logger.debug(unicode(text))
-        lang = self.ngrammodel.classify(text)
+        lang = self.textcat.classify(text)
         return self._json_dumps({"language": lang})
     
     def _inspect(self):

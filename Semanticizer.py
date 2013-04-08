@@ -4,22 +4,31 @@ from processors.features import FeaturesProcessor, ArticleFeaturesProcessor, Con
 from processors.external import ArticlesProcessor, StatisticsProcessor
 from processors.learning import LearningProcessor
 from processors.image import AddImageProcessor
-from Errors import InitError
 from SemanticizerFlaskServer import Server
+from textcat import NGram
 
 import logging
-import textcat
 import os
 import glob
 import codecs
 import time
 
 class Semanticizer(object):
+    """
+    This class is can be used to initialize all processors.*, adding them
+    to the pipeline, and starting the FlaskServer.
+    """
     
     def __init__(self):
+        """
+        Create a new Semanticizer and set the logger.
+        """
         self.logger = logging.getLogger()
     
     def list_lang(self, lm_dir):
+        """
+        Convenience function for listing all available languages
+        """
         ngram_model = self._load_ngram_model(lm_dir)
         print sorted(ngram_model.listLangs())
     
@@ -37,19 +46,32 @@ class Semanticizer(object):
                      port=5000,
                      verbose=False,
                      logformat='[%(asctime)-15s][%(levelname)s][%(module)s][%(pathname)s:%(lineno)d]: %(message)s' ):
-        ngram_model = self._load_ngram_model(lm_dir)
+        """
+        Start a SemanticizerFlaskServer with all processors loaded into the pipeline.
+        """
+        # Fetch the language models needed for the textcat language guesser
+        textcat = self._load_textcat(lm_dir)
+        # Fetch the stopwords from the stopword directory
         stopwords = self._load_stopwords(stopword_dir)
-        uniqlangs, wikipedia_ids = self._load_language(langloc, ngram_model.listLangs(), stopwords)
+        # Load the languages and corresponding WikiPedia ids from the specified language location
+        uniqlangs, wikipedia_ids = self._load_language(langloc, textcat.listLangs(), stopwords)
+        # Initialize the pipeline
         pipeline = self._load_pipeline(include_features, run_own_scikit, remote_scikit_url, pickle_dir, article_url, num_threads, wikipedia_ids, uniqlangs)
+        # Create the FlaskServer
         server = Server()
         server.set_debug(verbose, logformat)
-        server.setup_all_routes(pipeline, stopwords, ngram_model)
+        # Setup all available routes / namespaces for the HTTP server
+        server.setup_all_routes(pipeline, stopwords, textcat)
+        # And finally, start the thing
         server.start(port, host)
         
-    def _load_ngram_model(self, lm_dir):
+    def _load_textcat(self, lm_dir):
+        """
+        Load the language models (lm files) in the textcat language guesser
+        """
         self.logger.info("Loading ngram model")
-        ngram_model = textcat.NGram(lm_dir)
-        return ngram_model
+        textcat = NGram(lm_dir)
+        return textcat
     
     def _load_stopwords(self, stopword_dir):
         self.logger.info("Loading stopwords")
@@ -66,9 +88,9 @@ class Semanticizer(object):
         wikipedia_ids = {}
         for lang, langcode, loc in langloc:
             if not langcode in stopwords:
-                raise InitError("No stopwords for \"" + langcode + "\", stopwords are available for " + ", ".join(sorted(stopwords)))
+                raise ValueError("No stopwords for \"" + langcode + "\", stopwords are available for " + ", ".join(sorted(stopwords)))
             if not lang in available_lang:
-                raise InitError("Language \"" + lang + "\" is not available, available languages are: " + ", ".join(sorted(available_lang)))
+                raise ValueError("Language \"" + lang + "\" is not available, available languages are: " + ", ".join(sorted(available_lang)))
             if langcode in uniqlangs:
                 continue
             wikipedia_ids[langcode] = loc.split('/')[-2]
