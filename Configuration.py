@@ -18,7 +18,11 @@ _data = argv[1:]
 
 def _readable_path(value):
     """
-    Checks whether a path exists and raises an error if it doesn't
+    Checks whether a path exists and raises an error if it doesn't.
+    
+    @param value: The pathname to check
+    @return: The absolute path denoted by path
+    @raise ArgumentTypeError: If the path doesn't exist or isn't readbale
     """
     path = os.path.abspath(value)
     if os.path.exists(path) and bool(os.stat(path).st_mode & stat.S_IRUSR):
@@ -29,6 +33,10 @@ def _writable_file(value):
     """
     Checks whether a given file is writable, and if it doesn't exist, whether it can be
     created. Returns the full path to the file.
+    
+    @param value: The path to the file
+    @return: The absolute path denoted by value
+    @raise ArgumentTypeError: If the file doesn't exist or cannot be created (parent dir must exist)
     """
     path = os.path.abspath(value)
     if not os.path.exists(path):
@@ -43,6 +51,10 @@ def _valid_absolute_url(value):
     """
     Checks whether a given URL is valid, and throws an ArgumentTypeError if it isn't.
     Otherwise returns the given URL.
+    
+    @param value: The URL to check
+    @return: The same value
+    @raise ArgumentTypeError: If URL isn't deemed valid by the urlparse module
     """
     url = urlparse(value)
     if url.scheme and url.netloc:
@@ -50,9 +62,20 @@ def _valid_absolute_url(value):
     raise ArgumentTypeError("URL isn't valid: %s" % value)
 
 class ValidateLangloc(Action):
+    """
+    A custum Action to check whether a valid langloc was given
+    
+    @see: argparse.Action
+    """
     def __call__(self, parser, namespace, values, option_string=None):
         """
-        Checks whether a valid langloc path was given.
+        Checks whether a valid --langloc was given.
+        
+        @param parser: The current ArgumentParser
+        @param namespace: The current namespace object
+        @param values: The list of langloc values
+        @param option_string: The name of the option (in this case, just --langloc)
+        @todo: Make this action available for langloc, stopword, and lm arguments
         """
         values[2] = _readable_path(values[2])
         langloc = [(values[0], values[1], values[2])]
@@ -91,13 +114,20 @@ ARGS = {"generic":  [{"name":     "--verbose",
                      {"name":     "--logformat",
                       "opts":    {"help":     "Format for the logs",
                                   "metavar":  "STR",
+                                  "default":  "[%(asctime)-15s][%(levelname)s][%(module)s][%(pathname)s:%(lineno)d]: %(message)s",
                                   "type":     str}}],
             
         "service":  [{"name":     "--port",
-                      "opts":    {"help":     "Port number to start services (counting upwards) (default: %(default)s)",
+                      "opts":    {"help":     "Port number to start services (default: %(default)s)",
                                   "metavar":  "NUM",
                                   "type":     int,
-                                  "default":  5000}}],
+                                  "default":  5000}},
+                     
+                     {"name":     "--host",
+                      "opts":    {"help":     "Host to start services (default: %(default)s)",
+                                  "metavar":  "HOST",
+                                  "type":     str,
+                                  "default":  "0.0.0.0"}}],
             
         "language": [{"name":     "--lm",
                       "opts":    {"help":     "language model root (default: %(default)s)",
@@ -127,24 +157,17 @@ ARGS = {"generic":  [{"name":     "--verbose",
                       "opts":    {"help":     "Include features",
                                   "action":   "store_true"}},
                          
-                     {"name":     "--scikit",
-                      "opts":    {"help":     "Run own version of scikit",
-                                  "action":   "store_true"}},
-                         
                      {"name":     "--learn",
                       "opts":    {"help":     "Location scikit-learn webservices (default: %(default)s)",
                                   "metavar":  "URL",
-                                  "default":  "http://fietstas.science.uva.nl:5001",
-                                  "type":     _valid_absolute_url}}],
-            
-        "commands": [{"name":     "--listlang",
-                      "opts":    {"help":     "List languages that can be recognized",
-                                  "action":   "store_true"}}]
+                                  "type":     _valid_absolute_url}}]
         }
 
 def _get_conf_vals(path='conf/semanticizer.cfg'):
     """
     Returns all configuration keys and values in a list.
+    @param path: Path to the configuration file
+    @return: A list of configured parameters
     """
     config = SafeConfigParser(allow_no_value=True)
     config.read(path)
@@ -166,6 +189,8 @@ def _get_conf_vals(path='conf/semanticizer.cfg'):
 def _get_arg_parser():
     """
     Initialize and return an ArgumentParser based on the ARGS structure as laid-out above.
+    
+    @return: a configured instance of ArgumentParser
     """
     global _data
     parser = ArgumentParser(usage=USAGE)
@@ -198,19 +223,27 @@ def set_data(data):
     """
     Set the data that should be loaded by this configuration. Default is sys.argv[1:]. Only effective
     if called before the first call to conf_get().
+    
+    @param data: A list of arguments
     """
     global _data
     if type(data) is list:
         _data = data
 
-def conf_get(name):
+def conf_get(name=None):
     """
     Allows user to access configuration variables and arguments. The function takes the variable name
     as its input, and returns the value or None is it isn't set.
+    
+    @param name: The name of the configuration parameter to fetch. (Optional)
+    @return: The value for the given parameter if name was set and valid, None if name was invalid, or
+             the full list of configuration params if name==None
     """
     global __options
     if not __options:
         _set_conf()
+    if name == None:
+        return __options
     if name in __options:
         return __options[name]
     return None
@@ -219,6 +252,10 @@ def get_conf_prop(name, propname):
     """
     Allows user to get a property for given name. Returns the value of the property, or None if none is
     found.
+    
+    @param name: The argument we want to fetch the propoerty of
+    @param propname: The name of the property to fetch
+    @return: The value of the propoerty, or None if none is found.
     """
     name = "--" + name
     for groupname, groupdata in ARGS.iteritems():
