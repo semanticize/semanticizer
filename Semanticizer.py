@@ -65,7 +65,7 @@ class Semanticizer(object):
         server = Server()
         server.set_debug(verbose, logformat)
         # Setup all available routes / namespaces for the HTTP server
-        server.setup_all_routes(pipeline, stopwords, textcat)
+        server.setup_all_routes(pipeline, stopwords, uniqlangs, textcat)
         # And finally, start the thing
         server.start(self.serverhost, self.serverport)
         

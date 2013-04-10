@@ -64,14 +64,16 @@ class Server(object):
         else:
             abort(Response("No text provided, use: POST or GET with attribute text\n", status=400))
     
-    def setup_route_semanticize(self, pipeline):
+    def setup_route_semanticize(self, pipeline, uniqlangs):
         """
         Setup the /semanticize/<langcode> namespace.
         
         @param pipeline: The pipeline that will be used to semanticize the given text
         """
         self.pipeline = pipeline
-        self.app.add_url_rule("/semanticize/<langcode>", "semanticize", self._semanticize, methods=["GET", "POST"])
+        self.uniqlangs = uniqlangs
+        self.app.add_url_rule("/semanticize/<langcode>", "_semanticize", self._semanticize, methods=["GET", "POST"])
+        self.app.add_url_rule("/semanticize", "_autolang_semanticize", self._autolang_semanticize, methods=["GET", "POST"])
         
     def setup_route_stopwords(self, stopwords):
         """
@@ -80,13 +82,13 @@ class Server(object):
         @param stopwords: The list of stopwords
         """
         self.stopwords = stopwords
-        self.app.add_url_rule("/stopwords/<langcode>", "stopwords", self._remove_stopwords, methods=["GET", "POST"])
+        self.app.add_url_rule("/stopwords/<langcode>", "_remove_stopwords", self._remove_stopwords, methods=["GET", "POST"])
         
     def setup_route_cleantweet(self):
         """
         Setup the /cleantweet namespace. 
         """
-        self.app.add_url_rule("/cleantweet", "cleantweet", self._cleantweet, methods=["GET", "POST"])
+        self.app.add_url_rule("/cleantweet", "_cleantweet", self._cleantweet, methods=["GET", "POST"])
         
     def setup_route_language(self, textcat):
         """
@@ -95,7 +97,7 @@ class Server(object):
         @param textcat: The textcat language guesser instance to use
         """
         self.textcat = textcat
-        self.app.add_url_rule("/language", "language", self._language, methods=["GET", "POST"])
+        self.app.add_url_rule("/language", "_language", self._language, methods=["GET", "POST"])
         
     def setup_route_inspect(self, pipeline):
         """
@@ -104,9 +106,9 @@ class Server(object):
         @param pipeline: The pipeline of processors to inspect.
         """
         self.pipeline = pipeline
-        self.app.add_url_rule("/inspect", "inspect", self._inspect, methods=["GET"])
+        self.app.add_url_rule("/inspect", "_inspect", self._inspect, methods=["GET"])
         
-    def setup_all_routes(self, pipeline, stopwords, textcat):
+    def setup_all_routes(self, pipeline, stopwords, uniqlangs, textcat):
         """
         Convenience function to start all namespaces at once.
         
@@ -114,7 +116,7 @@ class Server(object):
         @param stopwords: The list of stopwords
         @param textcat: The textcat language guesser instance to use
         """
-        self.setup_route_semanticize(pipeline)
+        self.setup_route_semanticize(pipeline, uniqlangs)
         self.setup_route_stopwords(stopwords)
         self.setup_route_cleantweet()
         self.setup_route_language(textcat)
@@ -130,11 +132,35 @@ class Server(object):
         """
         self.app.run(host, port, self.app.debug, use_reloader=False)
         
+    def _autolang_semanticize(self):
+        """
+        The function handling the /semanticize namespace. It calls _semanticize to handle the request
+        after determining the language.
+        
+        @return: The body of the response, in this case a json formatted list of links and their relevance
+        @see: _semanticize
+        """
+        if request.method == "GET" and not request.args.has_key("text"):
+            return self._json_dumps({"languages": self.uniqlangs.keys()}, "pretty" in request.args)
+
+        text = self._get_text_from_request()
+        lang = self.textcat.classify(text.encode('utf-8'))
+        for key, val in self.uniqlangs.iteritems():
+            if val[0] == lang:
+                break
+        else: # cool syntax - this else is only executed when the for loop finishes without a break
+            return self._json_dumps({"language": lang, "text": text, "links": []},
+                                    "pretty" in request.args)
+    
+        semanticized = self._semanticize(key)
+        assert semanticized[-1] == "}"
+        return semanticized[:-1] + ', "language": %s}' % lang
+        
     def _semanticize(self, langcode):
         """
-        The function handling the /semanticize namespace. It uses the chain-of-command pattern
-        to run all processors, using the corresponding preprocess, process, and postprocess
-        steps.
+        The function handling the /semanticize/<langcode> namespace. It uses the chain-of-command 
+        pattern to run all processors, using the corresponding preprocess, process, and 
+        postprocess steps.
         
         @param langcode: The language to use in the semanticizing
         @return: The body of the response, in this case a json formatted list of links and their relevance
@@ -201,7 +227,7 @@ class Server(object):
         """
         text = self._get_text_from_request()
         self.app.logger.debug(unicode(text))
-        lang = self.textcat.classify(text)
+        lang = self.textcat.classify(text.encode("utf-8"))
         return self._json_dumps({"language": lang})
     
     def _inspect(self):
