@@ -1,7 +1,7 @@
 import logging
 
 from Configuration import conf_get
-from init.Semanticizer import Initializer
+from init.Initializer import Initializer
 from logging.handlers import TimedRotatingFileHandler
 
 def init_logging(log, verbose, logformat):

@@ -4,7 +4,7 @@ from processors.features import FeaturesProcessor, ArticleFeaturesProcessor, Con
 from processors.external import ArticlesProcessor, StatisticsProcessor
 from processors.learning import LearningProcessor
 from processors.image import AddImageProcessor
-from SemanticizerFlaskServer import Server
+from init.Server import Server
 from textcat import NGram
 from tempfile import gettempdir
 
