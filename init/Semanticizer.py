@@ -14,7 +14,7 @@ import glob
 import codecs
 import time
 
-class Semanticizer(object):
+class Initializer(object):
     """
     This class is can be used to initialize all processors.*, adding them
     to the pipeline, and starting the FlaskServer.

@@ -1,7 +1,7 @@
 import logging
 
 from Configuration import conf_get
-from Semanticizer import Semanticizer
+from init.Semanticizer import Initializer
 from logging.handlers import TimedRotatingFileHandler
 
 def init_logging(log, verbose, logformat):
@@ -34,10 +34,10 @@ if __name__ == '__main__':
         logging.getLogger().info(key + " : " + str(value))
     
     # Create the server
-    server = Semanticizer(conf_get("article"),
-                          conf_get("lm"),
-                          conf_get("stopword"),
-                          conf_get("langloc"))
+    server = Initializer(conf_get("article"),
+                         conf_get("lm"),
+                         conf_get("stopword"),
+                         conf_get("langloc"))
     
     # Configure the server
     if conf_get("learn"):
