@@ -24,9 +24,10 @@ def _readable_path(value):
     @return: The absolute path denoted by path
     @raise ArgumentTypeError: If the path doesn't exist or isn't readbale
     """
-    path = os.path.abspath(value)
-    if os.path.exists(path) and bool(os.stat(path).st_mode & stat.S_IRUSR):
-        return path
+    pathlist = [os.path.abspath(value), os.path.join(os.path.dirname(os.path.abspath(__file__)), value)]
+    for path in pathlist:
+        if os.path.exists(path) and bool(os.stat(path).st_mode & stat.S_IRUSR):
+            return path
     raise ArgumentTypeError("path doesn't exist or isn't readable: %s" % path)
     
 def _writable_file(value):
@@ -38,13 +39,14 @@ def _writable_file(value):
     @return: The absolute path denoted by value
     @raise ArgumentTypeError: If the file doesn't exist or cannot be created (parent dir must exist)
     """
-    path = os.path.abspath(value)
-    if not os.path.exists(path):
-        parent = os.path.dirname(path)
-        if os.path.exists(parent) and bool(os.stat(parent).st_mode & stat.S_IWUSR):
+    pathlist = [os.path.abspath(value), os.path.join(os.path.dirname(os.path.abspath(__file__)), value)]
+    for path in pathlist:
+        if not os.path.exists(path):
+            parent = os.path.dirname(path)
+            if os.path.exists(parent) and bool(os.stat(parent).st_mode & stat.S_IWUSR):
+                return path
+        elif bool(os.stat(path).st_mode & stat.S_IWUSR):
             return path
-    elif bool(os.stat(path).st_mode & stat.S_IWUSR):
-        return path
     raise ArgumentTypeError("file doesn't exist or isn't writeable (parent must exist and be writable): %s" % path)
 
 def _valid_absolute_url(value):

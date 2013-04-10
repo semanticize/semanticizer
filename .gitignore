@@ -3,3 +3,4 @@
 **/*.pyc
 **/._*
 logs/*
+/log.txt
