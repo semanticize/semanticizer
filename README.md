@@ -17,7 +17,7 @@ The [code](https://github.com/semanticize/semanticizer/) is currently not public
 available, but a release is planned for 2013. If you are interested in this, contact 
 [Daan](http://staff.science.uva.nl/~dodijk/).
 
-If you want to dive into the code, start at SemanticizerFlaskServer.py.
+If you want to dive into the code, start at Main.py.
 
 ## Requirements
 
