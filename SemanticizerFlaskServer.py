@@ -237,6 +237,6 @@ class Server(object):
         @return: The body of the response, in this case a json formatted string containing all found settings.
         """
         inspect = {}
-        for step, processor in self.pipeline:
+        for _, processor in self.pipeline:
             inspect.update(processor.inspect())
         return self._json_dumps(inspect, pretty=True)

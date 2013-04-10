@@ -258,7 +258,7 @@ def get_conf_prop(name, propname):
     @return: The value of the propoerty, or None if none is found.
     """
     name = "--" + name
-    for groupname, groupdata in ARGS.iteritems():
+    for groupdata in ARGS.itervalues():
         for arg in groupdata:
             if arg["name"] == name:
                 if propname in arg["opts"]:
