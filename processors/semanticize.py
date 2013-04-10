@@ -13,9 +13,9 @@ WIKIPEDIA_URL_TEMPLATE = 'http://%s.wikipedia.org/wiki/%s'
 TRANSLATION_LANGS = ['en', 'nl', 'fr', 'es']
 
 def tokenize(text):
-	#return wordpunct_tokenize(text)
-	# Modified to allow dots, commas and apostrofs to be in a word.
-	return regexp_tokenize(text, r'\w+([.,\']\w+)*|[^\w\s]+')
+    #return wordpunct_tokenize(text)
+    # Modified to allow dots, commas and apostrofs to be in a word.
+    return regexp_tokenize(text, r'\w+([.,\']\w+)*|[^\w\s]+')
 
 class Semanticizer:
     def __init__(self, language_code=None, wikipediaminer_root=None, sense_probability_threshold=None, translation_langs=None):
