@@ -3,4 +3,7 @@
 **/*.pyc
 **/._*
 logs/*
-/log.txt
+/log.txt*
+/.project
+/.coverage
+/.pydevproject
