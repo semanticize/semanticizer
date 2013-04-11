@@ -7,6 +7,7 @@ import re
 from json import loads
 import collections
 import stringUtils
+import os
 
 # Als je het EDIT_DISTANCE feature wil gebruiken moet je een Python Levenshtein
 # module installeren. Ik had deze gepakt:
@@ -16,6 +17,9 @@ import Levenshtein
 class anchorFeatures:
     def __init__(self, langcode, wikipediaminer_root, pickledir, title_page=None):
         pickle_root = pickledir + '/' + langcode + '/'
+        
+        if not os.path.exists(pickle_root):
+            os.makedirs(pickle_root)
         
         #   From Wikipedia miner CSV file:
         self.wikipediaArticleCount = 970139
