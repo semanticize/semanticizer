@@ -20,7 +20,7 @@ class Initializer(object):
     to the pipeline, and starting the FlaskServer.
     """
     
-    def __init__(self, wpminer_url, lm_dir, stopword_dir, langloc):
+    def __init__(self, wpminer_url=None, lm_dir=None, stopword_dir=None, langloc=None):
         """
         Create a new Semanticizer and set the logger.
         
@@ -36,7 +36,7 @@ class Initializer(object):
         self.lm_dir = lm_dir
         self.stopword_dir = stopword_dir
         self.langloc = langloc
-        # Initialize the optional configuration params
+        # Initialize the optional configuration params with defaults
         self.remote_scikit_url = None
         self.wpminer_numthreads = 1
         self.serverhost = None
@@ -54,71 +54,73 @@ class Initializer(object):
         @param logformat: The logformat used by the Flask server
         """
         # Fetch the language models needed for the textcat language guesser
-        textcat = self._load_textcat(self.lm_dir)
+        textcat = self._load_textcat()
         # Fetch the stopwords from the stopword directory
-        stopwords = self._load_stopwords(self.stopword_dir)
+        stopwords = self._load_stopwords()
         # Load the languages and corresponding WikiPedia ids from the specified language location
-        uniqlangs, wikipedia_ids = self._load_language(self.langloc, textcat.listLangs(), stopwords)
+        uniqlangs, wikipedia_ids = self._load_language(textcat.listLangs(), stopwords)
         # Initialize the pipeline
         pipeline = self._load_pipeline(uniqlangs, wikipedia_ids)
         # Create the FlaskServer
+        self.logger.info("Setting up server")
         server = Server()
         server.set_debug(verbose, logformat)
         # Setup all available routes / namespaces for the HTTP server
         server.setup_all_routes(pipeline, stopwords, uniqlangs, textcat)
+        self.logger.info("Done setting up server, now starting...")
         # And finally, start the thing
         server.start(self.serverhost, self.serverport)
         
-    def _load_textcat(self, lm_dir):
+    def _load_textcat(self):
         """
         Load the language models (lm files) in the textcat language guesser. Returns a classifier.
-        
-        @param lm_dir: The path to the language model files
         """
         self.logger.info("Loading ngram model")
-        textcat = NGram(lm_dir)
+        assert self.lm_dir != None, "Initializer.lm_dir needs to be set to load textcat"
+        textcat = NGram(self.lm_dir)
+        self.logger.info("Done loading ngram model")
         return textcat
     
-    def _load_stopwords(self, stopword_dir):
+    def _load_stopwords(self):
         """
         Load all available stopword files in the given stopword dir. We assume all files in the dir
         are stopword files, that they are named <FILENAME>.<LANGCODE>, and that they're line-based.
         Returns a dictionary that contains a dictionary of stopwords, all initialized to 0.
-        
-        @param stopword_dir: The path to the stopword files
         """
         self.logger.info("Loading stopwords")
+        assert self.stopword_dir != None, "Initializer.stopword_dir needs to be set in order to load stopwords!"
         stopwords = {}
-        for fname in glob.glob(os.path.join(stopword_dir, "stopwords.*")):
+        for fname in glob.glob(os.path.join(self.stopword_dir, "stopwords.*")):
             langcode = os.path.split(fname)[-1].split(".")[-1]
             stopwords[langcode] = {}
             for line in codecs.open(fname, 'r', 'utf-8'):
                 stopwords[langcode][line.strip()] = 0
+        self.logger.info("Done loading stopwords")
         return stopwords
             
-    def _load_language(self, langloc, available_lang, stopwords):
+    def _load_language(self, available_lang, stopwords):
         """
         Check that we have stopwords for the given language and that the language code
         is available in our textcat language guesser. Also filter out duplicate languages.
         Returns two dictionaries.
         
-        @param langloc: The "langloc" argument / configuration param
         @param available_lang: The available languages in textcat
         @param stopwords: List of languages we have stopwords for
         @return: two dictionaries
         @todo: more or less the same data twice in the return seems overhead
         """
+        self.logger.info("Loading language")
+        assert self.langloc != None, "Initializer.langloc needs to be set to load a language"
         uniqlangs = {}
         wikipedia_ids = {}
-        for lang, langcode, loc in langloc:
-            if not langcode in stopwords:
-                raise ValueError("No stopwords for \"" + langcode + "\", stopwords are available for " + ", ".join(sorted(stopwords)))
-            if not lang in available_lang:
-                raise ValueError("Language \"" + lang + "\" is not available, available languages are: " + ", ".join(sorted(available_lang)))
+        for lang, langcode, loc in self.langloc:
+            assert langcode in stopwords, "No stopwords for \"" + langcode + "\", stopwords are available for " + ", ".join(sorted(stopwords))
+            assert lang in available_lang, "Language \"" + lang + "\" is not available, available languages are: " + ", ".join(sorted(available_lang))
             if langcode in uniqlangs:
                 continue
             wikipedia_ids[langcode] = loc.split('/')[-2]
             uniqlangs[langcode] = [lang, loc]
+        self.logger.info("Done loading language")
         return (uniqlangs, wikipedia_ids)
     
     
@@ -131,6 +133,7 @@ class Initializer(object):
         @return: The pipeline
         @todo: See todo at _load_languages
         """
+        self.logger.info("Initializing pipeline")
         pipeline = []
         semanticize_processor = self._load_semanticize_processor(uniqlangs)
         pipeline.append(("Settings", SettingsProcessor()))
@@ -139,6 +142,7 @@ class Initializer(object):
         if self.include_features == True:
             self._load_features(pipeline, semanticize_processor, wikipedia_ids, uniqlangs)
         pipeline.append(("AddImage", AddImageProcessor()))
+        self.logger.info("Done initializing pipeline")
         return pipeline
     
     def _load_semanticize_processor(self, uniqlangs):
@@ -149,11 +153,13 @@ class Initializer(object):
         @return: a configured instance of SemanticizeProcessor
         @see: processors.SemanticizeProcessor
         """
+        self.logger.info("Loading semanticizer")
         semanticize_processor = SemanticizeProcessor()
         start = time.time()
         self.logger.info("Loading semanticizers for langcode(s) " + ", ".join(uniqlangs.keys()))
         semanticize_processor.load_languages(uniqlangs)
         self.logger.info("Loading semanticizers took %.2f seconds." % (time.time() - start))
+        self.logger.info("Done loading semanticizer")
         return semanticize_processor
     
     def _load_features(self, pipeline, semanticize_processor, wikipedia_ids, uniqlangs):
@@ -165,7 +171,8 @@ class Initializer(object):
         @param wikipedia_ids: A list of Wikipedia ids
         @param uniqlangs: A list of unique languages
         """
-        self.logger.info("Loading features...")
+        self.logger.info("Loading features")
+        assert self.wpminer_url != None, "Initializer.wpminer_url needs to be set to include features"
         start = time.time()
         pipeline.append(("Features", FeaturesProcessor(semanticize_processor, self.picklepath)))
         pipeline.append(("Articles", ArticlesProcessor(wikipedia_ids, self.wpminer_url, self.wpminer_numthreads, self.picklepath)))
@@ -173,7 +180,8 @@ class Initializer(object):
         pipeline.append(("ArticleFeatures", ArticleFeaturesProcessor()))
         pipeline.append(("ContextFeatures", ContextFeaturesProcessor()))
         self.logger.info("Loading features took %.2f seconds." % (time.time() - start))
-        if not self.remote_scikit_url:
+        if self.remote_scikit_url == None:
             pipeline.append(("Learning", LearningProcessor()))
         else:
             pipeline.append(("Learning", LearningProcessor(self.remote_scikit_url)))
+        self.logger.info("Done loading features")

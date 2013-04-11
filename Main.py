@@ -61,5 +61,5 @@ if __name__ == '__main__':
     try:
         server.start_server(conf_get("verbose"),
                             conf_get("logformat"))
-    except ValueError as e:
+    except AssertionError as e:
         logging.getLogger().fatal("Error running Semanticizer server: %s" % e.message)
