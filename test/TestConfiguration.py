@@ -27,7 +27,7 @@ class Test(unittest.TestCase):
         invalid_path = "/invalid/path"
         self.assertTrue(
                 Configuration._readable_path(valid_path).endswith(valid_path),
-                "_readable_path seems to return an unexpected value for %s" % valid_path)
+                "_readable_path returns an unexpected value for %s" % valid_path)
         self.assertRaises(ArgumentTypeError, Configuration._readable_path, invalid_path)
     
     def test_writable_file(self):
@@ -35,7 +35,7 @@ class Test(unittest.TestCase):
         invalid_file = "/test/test/invalid"
         self.assertTrue(
                 Configuration._writable_file(valid_file).endswith(valid_file),
-                "_writable_file seems to return an unexpected value for %s" % valid_file)
+                "_writable_file returns an unexpected value for %s" % valid_file)
         self.assertRaises(ArgumentTypeError, Configuration._writable_file, invalid_file)
     
     def test_valid_absolute_url(self):
@@ -44,7 +44,7 @@ class Test(unittest.TestCase):
         self.assertEqual(
                 Configuration._valid_absolute_url(valid_url),
                 valid_url,
-                "_valid_absolute_url seems to return an unexpected value for %s" % valid_url)
+                "_valid_absolute_url returns an unexpected value for %s" % valid_url)
         self.assertRaises(ArgumentTypeError, Configuration._valid_absolute_url, invalid_url)
     
     def test_validate_langloc(self):
