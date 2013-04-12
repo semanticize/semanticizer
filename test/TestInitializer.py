@@ -7,6 +7,7 @@ import os
 from init.Initializer import Initializer
 from tempfile import mkstemp
 from textcat import NGram
+from mock import patch
 
 
 class Test(unittest.TestCase):
@@ -111,13 +112,43 @@ class Test(unittest.TestCase):
                          duplicate entries")
 
     def test_load_pipeline(self):
-        pass
+        # Initialize
+        initializer = Initializer()
 
-    def test_load_semanticize_processor(self):
-        pass
+        # ++++++++++++++++++++++++++++
+        # ++++++++ Run tests +++++++++
+        # ++++++++++++++++++++++++++++
+
+    @patch('init.Initializer.SemanticizeProcessor', autospec=True, create=True)
+    def test_load_semanticize_processor(self, mock):
+        # Initialize
+        initializer = Initializer()
+
+        # ++++++++++++++++++++++++++++
+        # ++++++++ Run tests +++++++++
+        # ++++++++++++++++++++++++++++
+
+        # Running with wikipedia_ids as None throws an AttributeException
+        # because we access attributes
+        self.assertRaises(AttributeError,
+                          initializer._load_semanticize_processor,
+                          None)
+
+        # Running with a dict of zero wikipedia_ids should work fine
+        assert initializer._load_semanticize_processor(dict())
+
+        # use the mocked-out SemanticizeProcessor
+        print initializer._load_semanticize_processor(
+                                                {'me': ['hey', 'later'],
+                                                 'you': ['hi', 'bye']})
 
     def test_load_features(self):
-        pass
+        # Initialize
+        initializer = Initializer()
+
+        # ++++++++++++++++++++++++++++
+        # ++++++++ Run tests +++++++++
+        # ++++++++++++++++++++++++++++
 
 
 if __name__ == "__main__":
