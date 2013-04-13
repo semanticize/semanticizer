@@ -14,7 +14,10 @@ class Test(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def testName(self):
+    def test_start_server(self):
+        pass
+
+    def test_init_logging(self):
         pass
 
 

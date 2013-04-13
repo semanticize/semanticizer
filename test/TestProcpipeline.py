@@ -17,6 +17,9 @@ class Test(unittest.TestCase):
     def tearDown(self):
         pass
 
+    def test_build(self):
+        pass
+
     @patch('procpipeline.SemanticizeProcessor', autospec=True, create=True)
     def test_load_semanticize_processor(self, mock):
         # Initialize
@@ -38,6 +41,14 @@ class Test(unittest.TestCase):
         print procpipeline._load_semanticize_processor(
                                                 {'me': ['hey', 'later'],
                                                  'you': ['hi', 'bye']})
+
+    def test_load_features(self):
+        # Initialize
+
+        # ++++++++++++++++++++++++++++
+        # ++++++++ Run tests +++++++++
+        # ++++++++++++++++++++++++++++
+        pass
 
 
 if __name__ == "__main__":
