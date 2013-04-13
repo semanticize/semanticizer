@@ -10,7 +10,7 @@ from processors.learning import LearningProcessor
 from processors.image import AddImageProcessor
 
 
-def build(wikipedia_ids, feature_config=None):
+def build(wpmdata, feature_config=None):
     """
     Initialize the pipeline.
 
@@ -20,13 +20,13 @@ def build(wikipedia_ids, feature_config=None):
     """
     logging.getLogger().info("Initializing pipeline")
     pipeline = []
-    semanticize_processor = _load_semanticize_processor(wikipedia_ids)
+    semanticize_processor = _load_semanticize_processor(wpmdata)
     pipeline.append(("Settings", SettingsProcessor()))
     pipeline.append(("Semanticize", semanticize_processor))
     pipeline.append(("Filter", FilterProcessor()))
     if not feature_config is None:
         _load_features(pipeline, semanticize_processor,
-                       wikipedia_ids, feature_config)
+                       wpmdata, feature_config)
     pipeline.append(("AddImage", AddImageProcessor()))
     logging.getLogger().info("Done initializing pipeline")
     return pipeline
@@ -82,9 +82,9 @@ def _load_features(pipeline, semanticize_processor,
                       % (time.time() - start))
     if "remote_scikit_url" in feature_config \
                           and feature_config["remote_scikit_url"]:
-        pipeline.append(("Learning", LearningProcessor()))
-    else:
         pipeline.append(("Learning",
                         LearningProcessor(
                                 feature_config["remote_scikit_url"])))
+    else:
+        pipeline.append(("Learning", LearningProcessor()))
     logging.getLogger().info("Done loading features")

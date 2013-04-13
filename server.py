@@ -68,7 +68,7 @@ class Server(object):
             abort(Response("No text provided, use: POST or GET with attribute \
                             text\n", status=400))
 
-    def setup_route_semanticize(self, pipeline, wp_ids):
+    def setup_route_semanticize(self, pipeline, wpmdata):
         """
         Setup the /semanticize/<langcode> namespace.
 
@@ -76,7 +76,7 @@ class Server(object):
                          given text
         """
         self.pipeline = pipeline
-        self.wp_ids = wp_ids
+        self.wp_ids = wpmdata
         self.app.add_url_rule("/semanticize/<langcode>", "_semanticize",
                               self._semanticize, methods=["GET", "POST"])
         self.app.add_url_rule("/semanticize", "_autolang_semanticize",
@@ -121,7 +121,7 @@ class Server(object):
         self.app.add_url_rule("/inspect", "_inspect",
                               self._inspect, methods=["GET"])
 
-    def setup_all_routes(self, pipeline, wp_ids, stopwords, textcat):
+    def setup_all_routes(self, pipeline, wpmdata, stopwords, textcat):
         """
         Convenience function to start all namespaces at once.
 
@@ -129,7 +129,7 @@ class Server(object):
         @param stopwords: The list of stopwords
         @param textcat: The textcat language guesser instance to use
         """
-        self.setup_route_semanticize(pipeline, wp_ids)
+        self.setup_route_semanticize(pipeline, wpmdata)
         self.setup_route_stopwords(stopwords)
         self.setup_route_cleantweet()
         self.setup_route_language(textcat)

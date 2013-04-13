@@ -99,39 +99,22 @@ class ValidateLangloc(Action):
         langloc[values[1]] = [values[0], values[2]]
         setattr(namespace, self.dest, langloc)
 
-USAGE = "%(prog)s [options]"
+USAGE = "%(prog)s --wpmdata LANG LANGCODE LOC [other options]"
 
-ARGS = {"generic":  [
+ARGS = {"logging":  [
            {"name":     "--verbose",
-            "opts":    {"help":     "Set high verbosity",
+            "opts":    {"help":     "Switch verbose mode on",
                         "action":   "store_true"}},
 
-           {"name":     "--threads",
-            "opts":    {"help":     "Number of threads to use \
-                                     (default: %(default)s)",
-                        "metavar":  "NUM",
-                        "type":     int,
-                        "default":  16}},
-
-           {"name":     "--tmpdir",
-            "opts":    {"help":     "Number of threads to use \
-                                     (default: %(default)s)",
-                        "metavar":  "DIR",
-                        "type":     _writable_file}},
-
            {"name":     "--log",
-            "opts":    {"help":     "Log file location (default: %(default)s)",
+            "opts":    {"help":     "Path to log file (default: %(default)s)",
                         "default":  "log.txt",
                         "metavar":  "FILE",
                         "type":     _writable_file}},
 
-           {"name":     "--pickledir",
-            "opts":    {"help":     "Directory to store pickles in",
-                        "metavar":  "DIR",
-                        "type":     _writable_file}},
-
            {"name":     "--logformat",
-            "opts":    {"help":     "Format for the logs",
+            "opts":    {"help":     "Set custom format for the logs \
+                                     (optional)",
                         "metavar":  "STR",
                         "default":  "[%(asctime)-15s][%(levelname)s][%(module)s][%(pathname)s:%(lineno)d]: %(message)s",
                         "type":     str}}],
@@ -152,47 +135,57 @@ ARGS = {"generic":  [
                         "default":  "0.0.0.0"}}],
 
         "language": [
-           {"name":     "--lm",
-            "opts":    {"help":     "language model root \
+           {"name":     "--wpmdata",
+            "opts":    {"help":     "Data on a Wikipediaminer dump: the \
+                                     language, language code, and path to the \
+                                     dump.",
+                        "nargs":    3,
+                        "action":   ValidateLangloc,
+                        "metavar":  ("LANG", "LANGCODE", "LOC")}},
+
+           {"name":     "--lmpath",
+            "opts":    {"help":     "Path to language model files \
                                      (default: %(default)s)",
                         "metavar":  "DIR",
                         "default":  "LM.lrej2011",
                         "type":     _readable_path}},
 
-           {"name":     "--langloc",
-            "opts":    {"help":     "Add accepted language (see --listlang), \
-                                     followed by 2 character wikipedia \
-                                     language code and the location for \
-                                     wikipediaminer dump (default: english en \
-                                     /zfs/ilps-plexer/wikipediaminer/enwiki-20111007/)",
-                        "nargs":    3,
-                        "action":   ValidateLangloc,
-                        "metavar":  ("LANG", "LANGCODE", "LOC")}},
-
-           {"name":     "--stopword",
-            "opts":    {"help":     "Location of the stopword dir \
+           {"name":     "--stopwordpath",
+            "opts":    {"help":     "Path to stopword files \
                                      (default: %(default)s)",
                         "metavar":  "DIR",
                         "default":  "SW",
-                        "type":     _readable_path}},
-
-           {"name":     "--article",
-            "opts":    {"help":     "Location article webservices \
-                                     (default: %(default)s)",
-                        "metavar":  "URL",
-                        "default":  "http://zookst13.science.uva.nl:8080/dutchsemcor/article",
-                        "type":     _valid_absolute_url}}],
+                        "type":     _readable_path}}],
 
         "learning": [
            {"name":     "--features",
             "opts":    {"help":     "Include features",
                         "action":   "store_true"}},
 
-           {"name":     "--learn",
-            "opts":    {"help":     "Location scikit-learn webservices \
+           {"name":     "--scikiturl",
+            "opts":    {"help":     "Location of scikit-learn webservices \
+                                     (default: use internal scikit_light)",
+                        "metavar":  "URL",
+                        "type":     _valid_absolute_url}},
+
+           {"name":     "--wpmurl",
+            "opts":    {"help":     "Location article webservices \
                                      (default: %(default)s)",
                         "metavar":  "URL",
-                        "type":     _valid_absolute_url}}]
+                        "default":  "http://zookst13.science.uva.nl:8080/dutchsemcor/article",
+                        "type":     _valid_absolute_url}},
+
+           {"name":     "--wpmthreads",
+            "opts":    {"help":     "Number of threads for Wikipedia miner \
+                                     (default: %(default)s)",
+                        "metavar":  "NUM",
+                        "type":     int,
+                        "default":  16}},
+
+           {"name":     "--cachedir",
+            "opts":    {"help":     "Directory to store pickles in (default: $TEMPDIR)",
+                        "metavar":  "DIR",
+                        "type":     _writable_file}}]
         }
 
 

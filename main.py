@@ -9,7 +9,7 @@ from logging.handlers import TimedRotatingFileHandler
 
 def start_server(lm_dir,
                  stopword_dir,
-                 wp_ids,
+                 wpmdata,
                  host,
                  port,
                  verbose=False,
@@ -27,13 +27,13 @@ def start_server(lm_dir,
     # Fetch the stopwords from the stopword directory
     stopwords = inputdata.load_stopwords(stopword_dir)
     # Initialize the pipeline
-    pipeline = procpipeline.build(wp_ids, feature_config)
+    pipeline = procpipeline.build(wpmdata, feature_config)
     # Create the FlaskServer
     logging.getLogger().info("Setting up server")
     server = Server()
     server.set_debug(verbose, logformat)
     # Setup all available routes / namespaces for the HTTP server
-    server.setup_all_routes(pipeline, wp_ids, stopwords, textcat)
+    server.setup_all_routes(pipeline, wpmdata, stopwords, textcat)
     logging.getLogger().info("Done setting up server, now starting...")
     # And finally, start the thing
     server.start(host, port)
@@ -72,17 +72,17 @@ if __name__ == '__main__':
     feature_config = None
     if conf_get("features") == True:
         feature_config = {}
-        feature_config["wpminer_url"] = conf_get("article")
-        feature_config["wpminer_numthreads"] = conf_get("threads")
-        feature_config["picklepath"] = conf_get("pickledir")
-        if conf_get("learn"):
-            feature_config["remote_scikit_url"] = conf_get("learn")
+        feature_config["wpminer_url"] = conf_get("wpmurl")
+        feature_config["wpminer_numthreads"] = conf_get("wpmthreads")
+        feature_config["picklepath"] = conf_get("cachedir")
+        if conf_get("scikiturl"):
+            feature_config["remote_scikit_url"] = conf_get("scikiturl")
 
     # Start the server
     try:
-        start_server(conf_get("lm"),
-                     conf_get("stopword"),
-                     conf_get("langloc"),
+        start_server(conf_get("lmpath"),
+                     conf_get("stopwordpath"),
+                     conf_get("wpmdata"),
                      conf_get("host"),
                      conf_get("port"),
                      conf_get("verbose"),
