@@ -3,6 +3,7 @@ Testsuite for the init.Initializer module
 '''
 import unittest
 import os
+import inputdata
 
 from tempfile import mkstemp
 from textcat import NGram
@@ -14,9 +15,6 @@ class Test(unittest.TestCase):
     def setUp(self):
         self.tmpfile, self.tmpfilename = mkstemp()
 
-    def test_start_server(self):
-        pass
-
     def test_load_textcat(self):
         # Initialize
         invalid_lm_dir = os.path.dirname(self.tmpfilename)
@@ -27,22 +25,19 @@ class Test(unittest.TestCase):
         # ++++++++++++++++++++++++++++
 
         # Fail if lm_dir isn't set
-        self.assertRaises(AttributeError, initializer._load_textcat)
+        self.assertRaises(AttributeError, inputdata.load_textcat)
 
         # Fail if lm_dir is invalid
-        initializer.lm_dir = invalid_lm_dir
-        self.assertRaises(ValueError, initializer._load_textcat)
+        self.assertRaises(ValueError, inputdata.load_textcat, invalid_lm_dir)
 
         # Return an NGram object if lm_dir is valid
-        initializer.lm_dir = valid_lm_dir
-        self.assertIsInstance(initializer._load_textcat(), NGram,
+        self.assertIsInstance(inputdata.load_textcat(valid_lm_dir), NGram,
                               "_load_textcat with %s should result in a valid \
                               NGram instance. Does the path contain valid lm \
                               files?" % valid_lm_dir)
 
     def test_load_stopwords(self):
         # Initialize
-        initializer = Initializer()
         invalid_sw_dir = os.path.dirname(self.tmpfilename)
         valid_sw_dir = "../SW"
 
@@ -51,33 +46,22 @@ class Test(unittest.TestCase):
         # ++++++++++++++++++++++++++++
 
         # Fail if stopword_dir isn't set
-        self.assertRaises(AttributeError, initializer._load_stopwords)
+        self.assertRaises(AttributeError, inputdata.load_stopwords)
 
         # Fail if stopword_dir is invalid
-        initializer.stopword_dir = invalid_sw_dir
-        stopwords = initializer._load_stopwords()
+        stopwords = inputdata.load_stopwords(invalid_sw_dir)
         self.assertDictEqual(stopwords, {}, "Stopwords loaded from "
                             + invalid_sw_dir + " should be empty, but found "
                             + str(stopwords))
 
         # Load stopword dict if stopword_dir is valid
-        initializer.stopword_dir = valid_sw_dir
-        stopwords = initializer._load_stopwords()
+        stopwords = inputdata.load_stopwords(valid_sw_dir)
         self.assertTrue(len(stopwords) > 0, "Should have a list of stopwords, \
                                             but found an empty list")
-
-    def test_load_pipeline(self):
-        # Initialize
-        initializer = Initializer()
-
-        # ++++++++++++++++++++++++++++
-        # ++++++++ Run tests +++++++++
-        # ++++++++++++++++++++++++++++
 
     @patch('init.Initializer.SemanticizeProcessor', autospec=True, create=True)
     def test_load_semanticize_processor(self, mock):
         # Initialize
-        initializer = Initializer()
 
         # ++++++++++++++++++++++++++++
         # ++++++++ Run tests +++++++++
@@ -96,14 +80,6 @@ class Test(unittest.TestCase):
         print initializer._load_semanticize_processor(
                                                 {'me': ['hey', 'later'],
                                                  'you': ['hi', 'bye']})
-
-    def test_load_features(self):
-        # Initialize
-        initializer = Initializer()
-
-        # ++++++++++++++++++++++++++++
-        # ++++++++ Run tests +++++++++
-        # ++++++++++++++++++++++++++++
 
 
 if __name__ == "__main__":
