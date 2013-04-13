@@ -86,7 +86,8 @@ if __name__ == '__main__':
                      conf_get("host"),
                      conf_get("port"),
                      conf_get("verbose"),
-                     conf_get("logformat"))
+                     conf_get("logformat"),
+                     feature_config)
     except ValueError as e:
         logging.getLogger().fatal("Error running Semanticizer server: %s" \
                                   % e.message)
