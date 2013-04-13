@@ -4,7 +4,6 @@ Testsuite for the init.Initializer module
 import unittest
 import os
 
-from init.Initializer import Initializer
 from tempfile import mkstemp
 from textcat import NGram
 from mock import patch
@@ -20,7 +19,6 @@ class Test(unittest.TestCase):
 
     def test_load_textcat(self):
         # Initialize
-        initializer = Initializer()
         invalid_lm_dir = os.path.dirname(self.tmpfilename)
         valid_lm_dir = "../LM.lrej2011"
 
@@ -67,49 +65,6 @@ class Test(unittest.TestCase):
         stopwords = initializer._load_stopwords()
         self.assertTrue(len(stopwords) > 0, "Should have a list of stopwords, \
                                             but found an empty list")
-
-    def test_load_wp_languages(self):
-        # Initialize
-        initializer = Initializer()
-        path = "/Users/evertlammerts/Downloads/zfs/ilps-plexer/wikipediaminer/nlwiki-20111104/"
-
-        # ++++++++++++++++++++++++++++
-        # ++++++++ Run tests +++++++++
-        # ++++++++++++++++++++++++++++
-
-        # Throw typeerror if langloc isn't set...
-        self.assertRaises(TypeError, initializer._load_wp_languages)
-        # ... or is not iterable
-        initializer.langloc = 15
-        self.assertRaises(TypeError, initializer._load_wp_languages)
-
-        # Throw valueerror if langloc can't be unpacked
-        initializer.langloc = "hallo"
-        self.assertRaises(ValueError, initializer._load_wp_languages)
-        initializer.langloc = {'a': 'b'}
-        self.assertRaises(ValueError, initializer._load_wp_languages)
-
-        # Return an emnpty dict if value is empty
-        initializer.langloc = {}
-        self.assertDictEqual(initializer._load_wp_languages(), {},
-                              "_load_wp_languages should return an empty dict")
-
-        # Test the transformation is done right
-        initializer.langloc = [("dutch", "nl", path)]
-        expected = {'nl': ['dutch', path]}
-        actual = initializer._load_wp_languages()
-        self.assertDictEqual(actual, expected,
-                             "_load_wp_languages should return " + \
-                             str(expected) + ", got " + str(actual) \
-                             + "instead")
-
-        # Test uniqueness
-        initializer.langloc = [("dutch", "nl", path), \
-                               ("dutch", "nl", path)]
-        self.assertEqual(len(initializer._load_wp_languages()),
-                         1,
-                         "_load_wp_languages should have filtered \
-                         duplicate entries")
 
     def test_load_pipeline(self):
         # Initialize
