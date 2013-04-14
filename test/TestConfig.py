@@ -1,6 +1,13 @@
 '''
-Testsuite for the config module
+Testsuite for the config.py module
 '''
+# Disable check for calling protected members
+# pylint: disable-msg=W0212
+# Disable check for naming conventions that disturb setUp and tearDown
+# pylint: disable-msg=C0103
+# Disable check for too many public methods
+# pylint: disable-msg=R0904
+
 import unittest
 import config
 from os import remove
@@ -11,21 +18,26 @@ from ConfigParser import MissingSectionHeaderError
 
 
 class Test(unittest.TestCase):
+    """Testclass for config.py"""
 
     def setUp(self):
+        """setup the test by creating a tempfile and a test config"""
         self.tmpfile, self.tmpfilename = mkstemp()
         self.testconfig = {
-                "port": 6000,
-                "lmpath": self.tmpfilename,
-                "verbose": None
+                'port': 6000,
+                'lmpath': self.tmpfilename,
+                'verbose': None
                 }
 
     def tearDown(self):
+        """Tear down by removing the tempfile created during setup"""
         remove(self.tmpfilename)
 
     def test_readable_path(self):
-        valid_path = "/"
-        invalid_path = "/invalid/path"
+        """Test the function that guarantees a path given in the config
+        is readable"""
+        valid_path = '/'
+        invalid_path = '/invalid/path'
         self.assertTrue(
                 config._readable_path(valid_path).endswith(valid_path),
                 "_readable_path returns an unexpected value for %s" \
@@ -35,8 +47,10 @@ class Test(unittest.TestCase):
                           invalid_path)
 
     def test_writable_file(self):
+        """Test the function that guarantees a path given in the config
+        is writable"""
         valid_file = self.tmpfilename
-        invalid_file = "/test/test/invalid"
+        invalid_file = '/test/test/invalid'
         self.assertTrue(
                 config._writable_file(valid_file).endswith(valid_file),
                 "_writable_file returns an unexpected value for %s" \
@@ -46,8 +60,10 @@ class Test(unittest.TestCase):
                           invalid_file)
 
     def test_valid_absolute_url(self):
-        valid_url = "http://www.google.com:890/something?param=1&else=2"
-        invalid_url = "ha//\\\st||al}avista"
+        """Test the function that guarantees a value given in the config
+        is a valid URL"""
+        valid_url = 'http://www.google.com:890/something?param=1&else=2'
+        invalid_url = 'ha//%st||al}avista'
         self.assertEqual(
                 config._valid_absolute_url(valid_url),
                 valid_url,
@@ -57,21 +73,24 @@ class Test(unittest.TestCase):
                           config._valid_absolute_url,
                           invalid_url)
 
-    def test_validate_langloc(self):
+    def test_validate_wpm_data(self):
+        """Test the Action that guarantees a value given in the config
+        is writable"""
         valid_langloc = ["one", "two", self.tmpfilename]
         invalid_langloc = ["one", "two", "/some/nonexisting/file"]
 
         class Object(object):
+            """A stub to use as namespace"""
             pass
 
         namespace = Object()
-        action = config.ValidateLangloc(["--langloc"], "langloc")
+        action = config.ValidateWpmData(["--langloc"], "langloc")
         action.__call__(None, namespace, valid_langloc)
         self.assertTrue(hasattr(namespace, "langloc"),
-                        "ValidateLangloc didn't set a valid langloc!")
+                        "ValidateWpmData didn't set a valid langloc!")
         action.__call__(None, namespace, valid_langloc)
         self.assertTrue(len(getattr(namespace, "langloc")) == 1,
-                        "ValidateLangloc should have two locations, has %d \
+                        "ValidateWpmData should have two locations, has %d \
                         instead" % len(getattr(namespace, "langloc")))
         self.assertRaises(ArgumentTypeError, action.__call__,
                           None,
@@ -79,37 +98,40 @@ class Test(unittest.TestCase):
                           invalid_langloc)
 
     def test_get_conf_vals(self):
+        """Test the params are being parsed as we expect"""
         # the expected result after parsing the config
         result = ["--lmpath", self.tmpfilename, "--port", "6000", "--verbose"]
         # writing a random line to the config file and test that ConfigParser
         # raises a MissingSectionHeaderError
-        f = open(self.tmpfilename, 'w')
-        f.write("somekey = somevalue\n")
-        f.close()
+        tmpfile = open(self.tmpfilename, 'w')
+        tmpfile.write("somekey = somevalue\n")
+        tmpfile.close()
         self.assertRaises(MissingSectionHeaderError,
                           config._get_conf_vals,
                           self.tmpfilename)
         # writing valid values to the config file and comparing the result to
         # what we expect
-        f = open(self.tmpfilename, 'w')
-        f.write("[generic]\n")
+        tmpfile = open(self.tmpfilename, 'w')
+        tmpfile.write("[generic]\n")
         for key, value in self.testconfig.iteritems():
             if value:
-                f.write(key + " = " + str(value) + "\n")
+                tmpfile.write(key + " = " + str(value) + "\n")
             else:
-                f.write(key + "\n")
-        f.close()
+                tmpfile.write(key + "\n")
+        tmpfile.close()
         self.assertEqual(config._get_conf_vals(self.tmpfilename),
                          result,
                          "_get_conf_vals doesn't create the expected list: ")
 
     def test_get_arg_parser(self):
+        """Test we get a valid ArgumentParser"""
         self.assertIsInstance(config._get_arg_parser(),
                               ArgumentParser,
                               "_get_arg_parser doesn't return an instance of \
                               ArgumentParser")
 
     def test_set_data_and_set_conf(self):
+        """Test the set_data and set_conf functions"""
         # generate and set data
         configuration = []
         for key, value in self.testconfig.iteritems():
@@ -129,6 +151,7 @@ class Test(unittest.TestCase):
         self.assertRaises(SystemExit, config._set_conf)
 
     def test_conf_get(self):
+        """Test the most important function of the config module: conf_get"""
         # generate and set data
         configuration = []
         for key, value in self.testconfig.iteritems():

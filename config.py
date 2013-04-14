@@ -25,6 +25,7 @@ def _readable_path(value):
     @return: The absolute path denoted by path
     @raise ArgumentTypeError: If the path doesn't exist or isn't readbale
     """
+    path = ''
     pathlist = [os.path.abspath(value),
                 os.path.join(os.path.dirname(os.path.abspath(__file__)), value)
                 ]
@@ -44,6 +45,7 @@ def _writable_file(value):
     @raise ArgumentTypeError: If the file doesn't exist or cannot be created \
                               (parent dir must exist)
     """
+    path = ''
     pathlist = [os.path.abspath(value),
                 os.path.join(os.path.dirname(os.path.abspath(__file__)), value)
                 ]
@@ -74,7 +76,7 @@ def _valid_absolute_url(value):
     raise ArgumentTypeError("URL isn't valid: %s" % value)
 
 
-class ValidateLangloc(Action):
+class ValidateWpmData(Action):
     """
     A custum Action to check whether a valid langloc was given
 
@@ -140,7 +142,7 @@ ARGS = {"logging":  [
                                      language, language code, and path to the \
                                      dump.",
                         "nargs":    3,
-                        "action":   ValidateLangloc,
+                        "action":   ValidateWpmData,
                         "metavar":  ("LANG", "LANGCODE", "LOC")}},
 
            {"name":     "--lmpath",
@@ -183,7 +185,8 @@ ARGS = {"logging":  [
                         "default":  16}},
 
            {"name":     "--cachedir",
-            "opts":    {"help":     "Directory to store pickles in (default: $TEMPDIR)",
+            "opts":    {"help":     "Directory to store pickles in"
+                                    + "(default: $TEMPDIR)",
                         "metavar":  "DIR",
                         "type":     _writable_file}}]
         }
@@ -220,7 +223,6 @@ def _get_arg_parser():
 
     @return: a configured instance of ArgumentParser
     """
-    global _data
     parser = ArgumentParser(usage=USAGE)
     for groupname, groupdata in ARGS.iteritems():
         group = parser.add_argument_group(groupname)
@@ -235,7 +237,7 @@ def _set_conf():
     Read argument list and defaults, read configuration and overwrite defaults
     where necessary, read the program arguments and return the parser
     """
-    global __options, _data
+    global __options
     parser = _get_arg_parser()
     conf_vals = _get_conf_vals()
     args = vars(parser.parse_args(conf_vals))
@@ -274,7 +276,6 @@ def conf_get(name=None):
              None if name was invalid, or the full list of configuration \
              params if name==None
     """
-    global __options
     if not __options:
         _set_conf()
     if name == None:
