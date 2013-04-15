@@ -44,45 +44,48 @@ class FilterProcessor(LinksProcessor):
         return (links, text, settings)
 
     def postprocess(self, links, text, settings):
-        if settings.has_key("filter"):
-            links = self.filter_links(settings["filter"].split(","), links, settings)
+        if "filter" in settings:
+            links = self.filter_links(settings["filter"].split(","),
+                                      links, settings)
 
         return (links, text, settings)
-    
+
     def filter_links(self, filters, links, settings):
-        filters_gte = [filter.split(">=") for filter in filters if ">=" in filter]
-        filters_gt = [filter.split(">") for filter in filters \
-                      if ">" in filter and not ">=" in filter]
-    
-        filter_unique = ("unique" in filters) and settings.has_key("context")
-    
-        if len(filters_gte) == 0 and len(filters_gt) == 0 and not filter_unique: 
-           return links
-    
+        filters_gte = [fltr.split(">=") for fltr in filters if ">=" in fltr]
+        filters_gt = [fltr.split(">") for fltr in filters \
+                      if ">" in fltr and not ">=" in fltr]
+
+        filter_unique = ("unique" in filters) and "context" in settings
+
+        if len(filters_gte) == 0 and len(filters_gt) == 0 \
+                                 and not filter_unique:
+            return links
+
         filtered_links = []
+        # Q: why do we not apply the gt filter if a gte filter fails?
         for link in links:
             skip = False
-            for filter in filters_gte:
-                if not link[filter[0]] >= float(filter[1]):
+            for fltr in filters_gte:
+                if not link[fltr[0]] >= float(fltr[1]):
                     skip = True
                     break
             else:
-                for filter in filters_gt:
-                    if not link[filter[0]] > float(filter[1]):
+                for fltr in filters_gt:
+                    if not link[fltr[0]] > float(fltr[1]):
                         skip = True
                         break
-    
+
             if filter_unique:
                 self.context_links.setdefault(settings["context"], {})
                 if link["title"] in self.context_links[settings["context"]]:
                     skip = True
-    
+
             if not skip:
                 filtered_links.append(link)
-    
+
                 if filter_unique:
                     self.context_links[settings["context"]][link["title"]] = link
-                
+
         print "Filtered %d links to %d" % (len(links), len(filtered_links))
     
         return filtered_links
