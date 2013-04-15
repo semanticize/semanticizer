@@ -18,9 +18,9 @@ class SemanticizeProcessor(LinksProcessor):
         for langcode in languages:
             self.languages[langcode] = (languages[langcode][0],
                                         languages[langcode][1])
-            self.semanticizers[langcode] = Semanticizer(languages[langcode][0],
+            self.semanticizers[langcode] = Semanticizer(langcode,
                                                         languages[langcode][1],
-                                                        None, None)
+                                                        None)
 
     def preprocess(self, links, text, settings):
         """Semanticize the given text and return the links, text, and
