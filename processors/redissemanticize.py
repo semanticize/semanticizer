@@ -94,10 +94,10 @@ class Semanticizer:
                         if len(label_data) < 4:
                             continue
                         sense_ids = [int(x) for x in label_data[4:]]
-                        label = [float(x) for x in label_data[0:4]]
+                        label = [int(x) for x in label_data[0:4]]
                         for sense in sense_ids:
-                            sense_data = rds.lrange('txt:' + anchor
-                                                    + ':' + str(sense), 0, -1)
+                            sense_data = [int(x) for x in rds.lrange('txt:' +
+                                            anchor + ':' + str(sense), 0, -1)]
                             if label[2] == 0:
                                 link_probability = 0
                                 sense_probability = 0
@@ -116,10 +116,8 @@ class Semanticizer:
                                 if label[0] == 0:
                                     prior_probability = 0
                                 else:
-                                    prior_probability = float(
-                                                          sense_data[0]
-                                                        ) \
-                                                        / label[0]
+                                    prior_probability = float(sense_data[0]) \
+                                                           / label[0]
                                 link = {
                                     "label": anchor,
                                     "text": ngram,

@@ -2,7 +2,7 @@
 The Processor wrapping Semanticizer
 """
 from processors.core import LinksProcessor
-from processors.semanticize import Semanticizer
+from processors.redissemanticize import Semanticizer
 
 
 class SemanticizeProcessor(LinksProcessor):
