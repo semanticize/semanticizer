@@ -143,6 +143,7 @@ class Server(object):
         @param host: The hostname to bind on
         @param port: The port to bind on
         """
+        print "Server started on %s:%d" % (host, port)
         self.app.run(host, port, self.app.debug, use_reloader=False)
 
     def _autolang_semanticize(self):
