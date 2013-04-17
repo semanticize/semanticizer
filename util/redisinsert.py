@@ -9,7 +9,7 @@ import redis
 import unicodedata
 import os
 import stat
-import logging
+import sys
 
 
 wpm_dump_filenames = {
@@ -22,6 +22,7 @@ rds = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 translation_langs = ['en', 'nl', 'fr', 'es']
 
+
 def check_dump_path(path):
     """
     Checks whether a path exists and raises an error if it doesn't.
@@ -29,27 +30,41 @@ def check_dump_path(path):
     @param path: The pathname to check
     @raise IOError: If the path doesn't exist or isn't readbale
     """
-    pathlist = [path, os.path.abspath(path)]
+    pathlist = [os.path.normpath(path) + os.sep,
+                os.path.normpath(os.path.abspath(path)) + os.sep]
     for fullpath in pathlist:
-        logging.getLogger().info("Checking " + fullpath)
-        if os.path.exists(fullpath) and \
-           bool(os.stat(fullpath).st_mode & stat.S_IRUSR):
-            for filename in wpm_dump_filenames:
-                if os.path.exists(filename):
-                    logging.getLogger().info("Found " + fullpath + filename)
+        print "Checking " + fullpath
+        if os.path.exists(fullpath):
+            for _, filename in wpm_dump_filenames.iteritems():
+                if os.path.isfile(fullpath + filename) == True:
+                    print "Found " + fullpath + filename
                 else:
-                    logging.getLogger().fatal("Cannot find " + fullpath
-                                              + filename + ", exiting")
                     raise IOError("Cannot find " + fullpath + filename)
-            return os.path.normpath(fullpath) + os.sep
+            return fullpath
+        else:
+            print fullpath + " doesn't exist"
     raise IOError("Cannot find " + path)
 
 
 def load_wpminer_dump(langname, langcode, path):
-    """"""
+    """
+    <langcode>:name = language name
+    <langcode>:path = wpminer path
+    <langcode>:txt:<text> = set(prob, prob, prob, prob [, senseid...])
+    <langcode>:txt:<text>:<senseid> = set(prob, prob, bool, bool)
+    <langcode>:norm:<text> = list([text, ...])
+    <langcode>:trnsl = set([senseid, ...])
+    <langcode>:trnsl:<senseid> = list([langcode, ...])
+    <langcode>:trnsl:<senseid>:<langcode> = translated title
+    <langcode>:titles:<pageid> = title
+    <langcode>:ids:<pagetitle> = id
+    """
     path = check_dump_path(path)
+    rds.set(langcode + ":name", langname)
+    rds.set(langcode + ":path", path)
     load_labels(path + wpm_dump_filenames["labels"], langcode)
     load_translations(path + wpm_dump_filenames["translations"], langcode)
+    load_page_titles(path + wpm_dump_filenames["pages"], langcode)
 
 
 def load_labels(filename, prefix):
@@ -86,24 +101,49 @@ def load_translations(filename, prefix):
     print 'Loading translations into redis...'
     pipe = rds.pipeline()
     linenr = 0
-    for line in codecs.open(filename, "r", "utf-8"):
+    trnsl_file = codecs.open(filename, "r", "utf-8")
+    for line in trnsl_file:
         linenr += 1
         try:
             tr_id_str, translation_part = line.strip()[:-1].split(",m{'")
-            tr_id = int(tr_id_str)
+            tr_id = tr_id_str
             parts = translation_part.split(",'")
-            pipe.sadd(prefix + ":translations", tr_id)
+            pipe.sadd(prefix + ":trnsl", tr_id)
             #self.translation[tr_id] = {}
             for i in range(0, len(parts), 2):
                 lang = parts[i]
                 if lang in translation_langs:
-                    pipe.rpush(prefix + ":translations:" + tr_id, lang)
-                    pipe.sadd(prefix + ":translations:" + tr_id + ":" + lang, parts[i + 1])
-                    #self.translation[tr_id][parts[i]] = parts[i + 1]
+                    pipe.rpush(prefix + ":trnsl:" + tr_id, lang)
+                    pipe.sadd(prefix + ":trnsl:" + tr_id + ":" + lang,
+                              parts[i + 1])
             pipe.execute()
         except:
             print "Error loading on line " + str(linenr) + ": " + line
             continue
+    trnsl_file.close()
+    print 'Done loading translations'
+
+
+def load_page_titles(filename, prefix):
+    """"""
+    print 'Loading page titles...'
+    pipe = rds.pipeline()
+    linenr = 0
+    titles_file = codecs.open(filename, "r", "utf-8")
+    for line in titles_file:
+        linenr += 1
+        try:
+            splits = line.split(',')
+            pageid = splits[0]
+            title = splits[1][1:]
+            pipe.set(prefix + ":titles:" + pageid, title)
+            pipe.set(prefix + ":ids:" + title, pageid)
+            pipe.execute()
+        except:
+            print "Error loading on line " + str(linenr) + ": " + line
+            continue
+    titles_file.close()
+    print 'Done loading pages (%d pages loaded)' % linenr
 
 
 def normalize(raw):
@@ -126,4 +166,11 @@ def remove_accents(input_str):
     return u"".join([c for c in nkfd_form if not unicodedata.combining(c)])
 
 if __name__ == '__main__':
-    load_labels('/Users/evertlammerts/Downloads/zfs/ilps-plexer/wikipediaminer/nlwiki-20111104/label.csv')
+    if len(sys.argv) < 4:
+        print "Usage: %s language_name language_code path_to_wpm_dump" \
+               % sys.argv[0]
+        sys.exit(1)
+    try:
+        load_wpminer_dump(sys.argv[1], sys.argv[2], sys.argv[3])
+    except IOError as err:
+        print err.message
