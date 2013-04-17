@@ -5,11 +5,10 @@ Created on 15 Apr 2013
 '''
 
 import codecs
-import redis
 import unicodedata
 import os
-import stat
 import sys
+from util.wpmutil import WpmUtil
 
 
 wpm_dump_filenames = {
@@ -17,8 +16,6 @@ wpm_dump_filenames = {
     'labels': 'label.csv',
     'pages': 'page.csv'
 }
-
-rds = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 translation_langs = ['en', 'nl', 'fr', 'es']
 
@@ -60,16 +57,19 @@ def load_wpminer_dump(langname, langcode, path):
     <langcode>:ids:<pagetitle> = id
     """
     path = check_dump_path(path)
+    wpm = WpmUtil(langcode)
+    rds = wpm.conn
     rds.set(langcode + ":name", langname)
     rds.set(langcode + ":path", path)
-    load_labels(path + wpm_dump_filenames["labels"], langcode)
-    load_translations(path + wpm_dump_filenames["translations"], langcode)
-    load_page_titles(path + wpm_dump_filenames["pages"], langcode)
+    load_labels(wpm, path + wpm_dump_filenames["labels"])
+    load_translations(wpm, path + wpm_dump_filenames["translations"])
+    load_page_titles(wpm, path + wpm_dump_filenames["pages"])
 
 
-def load_labels(filename, prefix):
+def load_labels(wpm, filename):
     """"""
     print 'Loading labels into redis...'
+    rds = wpm.conn
     pipe = rds.pipeline()
     linenr = 0
     labels_file = codecs.open(filename, "r", "utf-8")
@@ -80,14 +80,15 @@ def load_labels(filename, prefix):
             senses = senses_part[:-1].split('s')[1:]
             stats = stats_part[1:].split(',')
             text = stats[0]
-            txtkey = prefix + ':txt:' + text
+            txtkey = wpm.ns_txt_txt(text)
             pipe.rpush(txtkey, *[st for st in stats[1:]])
             for sense_text in senses:
                 sense_parts = sense_text[1:-1].split(',')
                 pipe.rpush(txtkey, sense_parts[0])
-                pipe.rpush(txtkey + ':' + sense_parts[0], *sense_parts[1:])
+                pipe.rpush(wpm.ns_txt_txt_sid(text, sense_parts[0]),
+                           *sense_parts[1:])
             normalized = normalize(text)
-            pipe.sadd(prefix + ':norm:' + normalized, text)
+            pipe.sadd(wpm.ns_norm_ntxt(normalized), text)
             pipe.execute()
         except:
             print "Error loading on line " + str(linenr) + ": " + line
@@ -96,9 +97,10 @@ def load_labels(filename, prefix):
     labels_file.close()
 
 
-def load_translations(filename, prefix):
+def load_translations(wpm, filename):
     """"""
     print 'Loading translations into redis...'
+    rds = wpm.conn
     pipe = rds.pipeline()
     linenr = 0
     trnsl_file = codecs.open(filename, "r", "utf-8")
@@ -108,13 +110,13 @@ def load_translations(filename, prefix):
             tr_id_str, translation_part = line.strip()[:-1].split(",m{'")
             tr_id = tr_id_str
             parts = translation_part.split(",'")
-            pipe.sadd(prefix + ":trnsl", tr_id)
+            pipe.sadd(wpm.ns_trnsl, tr_id)
             #self.translation[tr_id] = {}
             for i in range(0, len(parts), 2):
                 lang = parts[i]
                 if lang in translation_langs:
-                    pipe.rpush(prefix + ":trnsl:" + tr_id, lang)
-                    pipe.sadd(prefix + ":trnsl:" + tr_id + ":" + lang,
+                    pipe.rpush(wpm.ns_trnsl_sid(tr_id), lang)
+                    pipe.sadd(wpm.ns_trnsl_sid_lang(tr_id, lang),
                               parts[i + 1])
             pipe.execute()
         except:
@@ -124,9 +126,10 @@ def load_translations(filename, prefix):
     print 'Done loading translations'
 
 
-def load_page_titles(filename, prefix):
+def load_page_titles(wpm, filename):
     """"""
     print 'Loading page titles...'
+    rds = wpm.conn
     pipe = rds.pipeline()
     linenr = 0
     titles_file = codecs.open(filename, "r", "utf-8")
@@ -136,8 +139,8 @@ def load_page_titles(filename, prefix):
             splits = line.split(',')
             pageid = splits[0]
             title = splits[1][1:]
-            pipe.set(prefix + ":titles:" + pageid, title)
-            pipe.set(prefix + ":ids:" + title, pageid)
+            pipe.set(wpm.ns_titles_pid(pageid), title)
+            pipe.set(wpm.ns_ids_title(title), pageid)
             pipe.execute()
         except:
             print "Error loading on line " + str(linenr) + ": " + line
