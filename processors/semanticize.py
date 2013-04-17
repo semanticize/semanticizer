@@ -1,11 +1,9 @@
-from collections import defaultdict
-import sys
-import os
-import urllib
-import codecs
+from util.wpmutil import WpmUtil
 from nltk import regexp_tokenize
 from nltk.util import ngrams as nltk_ngrams
-
+import sys
+import urllib
+import codecs
 import unicodedata
 
 #PICKLE_ROOT = './enwiki-20111007-pickles/'
@@ -24,30 +22,18 @@ class Semanticizer:
     """"""
 
     def __init__(self, language_code, wikipediaminer_root,
-                 sense_probability_threshold,
-                 translation_langs=['en', 'nl', 'fr', 'es']):
+                 sense_probability_threshold):
         """"""
-        self.translation = {}
-        self.page_title = {}
-        self.title_page = {}
-        self.labels = {}
-        self.normalized = defaultdict(list)
         self.category_parents = {}
         self.category_title = {}
         self.article_parents = {}
         self.language_code = language_code
         self.wikipediaminer_root = wikipediaminer_root
         self.sense_probability_threshold = sense_probability_threshold
-        self.translation_langs = translation_langs
         self.wikipedia_url_template = 'http://%s.wikipedia.org/wiki/%s'
+        self.wpm = WpmUtil(language_code)
 
         #self.load_sentiment_lexicon('./sentiment_lexicon_nl.txt')
-
-        self.load_translations(os.path.join(self.wikipediaminer_root,
-                                            'translations.csv'))
-        self.load_labels(os.path.join(self.wikipediaminer_root, 'label.csv'))
-        self.load_page_titles(os.path.join(self.wikipediaminer_root,
-                                           'page.csv'))
 
     def semanticize(self, sentence, normalize_dash=True,
                     normalize_accents=True, normalize_lower=False,
@@ -73,43 +59,41 @@ class Semanticizer:
 
         for ngram in ngrams:
             normal_ngram = self.normalize(ngram)
-            if normal_ngram in self.normalized:
+            if self.wpm.normalized_entity_exists(normal_ngram):
                 normalized_ngram = self.normalize(ngram, normalize_dash,
                                                   normalize_accents,
                                                   normalize_lower)
-                for anchor in self.normalized[normal_ngram]:
+                anchors = self.wpm.get_all_entities(normal_ngram)
+                for anchor in anchors:
                     normalized_anchor = self.normalize(anchor, normalize_dash,
                                                        normalize_accents,
                                                        normalize_lower)
                     print normalized_ngram, normalized_anchor
                     if normalized_ngram == normalized_anchor:
-                        assert anchor in self.labels
-                        label = self.labels[anchor]
-                        if len(label) < 5:
-                            continue
-                        for sense in label[4]:
-                            if label[2] == 0:
+                        if not self.wpm.entity_exists(anchor):
+                            raise LookupError("Data corrupted, cannot "
+                                              + "find %s in the database" \
+                                              % anchor)
+                        entity = self.wpm.get_entity_data(anchor)
+                        for sense in entity['senses']:
+                            sense_str = str(sense)
+                            sense_data = self.wpm.get_sense_data(anchor,
+                                                                 sense_str)
+                            if entity['cnttextocc'] == 0:
                                 link_probability = 0
                                 sense_probability = 0
                             else:
-                                link_probability = float(label[1]) / label[3]
-                                # sense_probability is # of links to target
-                                # with anchor text over # of times anchor text
-                                # used
-                                sense_probability = float(label[4][sense][1]) \
-                                                    / label[3]
+                                link_probability = float(entity['cntlinkdoc']) / entity['cnttextdoc']
+                                sense_probability = float(sense_data['cntlinkdoc']) / entity['cnttextdoc']
                             if sense_probability > sense_probability_threshold:
-                                title = unicode(self.page_title[sense])
+                                title = unicode(self.wpm.get_sense_title(sense_str))
                                 url = self.wikipedia_url_template \
                                       % (self.language_code,
                                          urllib.quote(title.encode('utf-8')))
-                                if label[0] == 0:
+                                if entity['cntlinkocc'] == 0:
                                     prior_probability = 0
                                 else:
-                                    prior_probability = float(
-                                                          label[4][sense][0]
-                                                        ) \
-                                                        / label[0]
+                                    prior_probability = float(sense_data['cntlinkocc']) / entity['cntlinkocc']
                                 link = {
                                     "label": anchor,
                                     "text": ngram,
@@ -124,43 +108,25 @@ class Semanticizer:
                                     link["translations"] = {self.language_code:
                                                             {"title": title,
                                                              "url": url}}
-                                    if sense in self.translation:
-                                        for lang in self.translation[sense]:
+                                    if self.wpm.sense_has_trnsl(sense_str):
+                                        for lang in self.wpm.get_trnsl_langs(sense_str):
+                                            trnsl = self.wpm.get_sense_trnsl(sense_str, lang)
                                             link["translations"][lang] = {
-                                                'title': unicode(self.translation[sense][lang]),
-                                                'url': self.wikipedia_url_template % (lang, urllib.quote(unicode(self.translation[sense][lang]).encode('utf-8')))
+                                                'title': unicode(trnsl),
+                                                'url': self.wikipedia_url_template % (lang, urllib.quote(unicode(trnsl).encode('utf-8')))
                                             }
                                 if counts:
-                                    link["occCount"] = label[2]
-                                    link["docCount"] = label[3]
-                                    link["linkOccCount"] = label[0]
-                                    link["linkDocCount"] = label[1]
-                                    link["senseOccCount"] = label[4][sense][0]
-                                    link["senseDocCount"] = label[4][sense][1]
-                                    link['fromTitle'] = label[4][sense][2]
-                                    link['fromRedirect'] = label[4][sense][3]
+                                    link["occCount"] = entity['cnttextocc']
+                                    link["docCount"] = entity['cnttextdoc']
+                                    link["linkOccCount"] = entity['cntlinkocc']
+                                    link["linkDocCount"] = entity['cntlinkdoc']
+                                    link["senseOccCount"] = int(sense_data['cntlinkocc'])
+                                    link["senseDocCount"] = int(sense_data['cntlinkdoc'])
+                                    link['fromTitle'] = sense_data['from_title']
+                                    link['fromRedirect'] = sense_data['from_redir']
                                 result["links"].append(link)
 
         return result
-
-    def load_translations(self, filename):
-        """"""
-        print 'Loading translations...'
-        linenr = 0
-        for line in codecs.open(filename, "r", "utf-8"):
-            linenr += 1
-            try:
-                tr_id_str, translation_part = line.strip()[:-1].split(",m{'")
-                tr_id = int(tr_id_str)
-                parts = translation_part.split(",'")
-                self.translation[tr_id] = {}
-                for i in range(0, len(parts), 2):
-                    lang = parts[i]
-                    if lang in self.translation_langs:
-                        self.translation[tr_id][parts[i]] = parts[i + 1]
-            except:
-                print "Error loading on line " + str(linenr) + ": " + line
-                continue
 
     def normalize(self, raw, dash=True, accents=True, lower=True):
         """"""
@@ -182,65 +148,6 @@ class Semanticizer:
             input_unicode = input_str
         nkfd_form = unicodedata.normalize('NFKD', input_unicode)
         return u"".join([c for c in nkfd_form if not unicodedata.combining(c)])
-
-    def load_page_titles(self, filename):
-        """"""
-        print 'Loading page titles...'
-        linenr = 0
-        titles_file = codecs.open(filename, "r", "utf-8")
-        for line in titles_file:
-            linenr += 1
-            try:
-                splits = line.split(',')
-                pageid = int(splits[0])
-                title = splits[1][1:]
-                self.page_title[pageid] = title
-                self.title_page[title] = pageid
-            except:
-                print "Error loading on line " + str(linenr) + ": " + line
-                continue
-        titles_file.close()
-        print '%d pages loaded.' % len(self.page_title)
-
-    # See Wikipedia Miner documentation at:
-    # http://wikipedia-miner.cms.waikato.ac.nz/wiki/
-    # (The CSV summary files)
-    # http://wikipedia-miner.cms.waikato.ac.nz/doc/
-    #
-    # DbLabel(long LinkOccCount, long LinkDocCount,
-    #         long TextOccCount, long TextDocCount,
-    #         java.util.ArrayList<DbSenseForLabel> Senses)
-    #
-    # DbSenseForLabel(int Id, long LinkOccCount, long LinkDocCount,
-    #                 boolean FromTitle, boolean FromRedirect)
-    def load_labels(self, filename):
-        """"""
-        print 'Loading labels...'
-        linenr = 0
-        labels_file = codecs.open(filename, "r", "utf-8")
-        for line in labels_file:
-            linenr += 1
-            try:
-                stats_part, senses_part = line.split(',v{')
-                senses = senses_part[:-1].split('s')[1:]
-                stats = stats_part[1:].split(',')
-                text = stats[0]
-                label = [int(x) for x in stats[1:]]
-                label.append({})
-                for sense_text in senses:
-                    sense_parts = sense_text[1:-1].split(',')
-                    label[-1][int(sense_parts[0])] = \
-                        [int(x) for x in sense_parts[1:3]] \
-                        + [sense_parts[3] == 'T', sense_parts[4] == 'T']
-
-                self.labels[text] = label
-
-                normalized = self.normalize(text)
-                self.normalized[normalized].append(text)
-            except:
-                print "Error loading on line " + str(linenr) + ": " + line
-                continue
-        labels_file.close()
 
     def load_category_parents(self, filename):
         """"""
