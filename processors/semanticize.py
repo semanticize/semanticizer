@@ -6,12 +6,6 @@ import urllib
 import codecs
 import unicodedata
 
-#PICKLE_ROOT = './enwiki-20111007-pickles/'
-#DEFAULT_LANGUAGE_CODE = 'en'
-#WIKIPEDIAMINER_ROOT = '/zfs/ilps-plexer/wikipediaminer/enwiki-20111007/'
-#SENSEPRO0THRESHOLD = 0.01
-#TRANSLATION_LANGS = ['en', 'nl', 'fr', 'es']
-
 
 def tokenize(text):
     """"""
@@ -24,16 +18,11 @@ class Semanticizer:
     def __init__(self, language_code, wikipediaminer_root,
                  sense_probability_threshold):
         """"""
-        self.category_parents = {}
-        self.category_title = {}
-        self.article_parents = {}
         self.language_code = language_code
         self.wikipediaminer_root = wikipediaminer_root
         self.sense_probability_threshold = sense_probability_threshold
         self.wikipedia_url_template = 'http://%s.wikipedia.org/wiki/%s'
         self.wpm = WpmUtil(language_code)
-
-        #self.load_sentiment_lexicon('./sentiment_lexicon_nl.txt')
 
     def semanticize(self, sentence, normalize_dash=True,
                     normalize_accents=True, normalize_lower=False,
@@ -42,10 +31,8 @@ class Semanticizer:
         """"""
         if sense_probability_threshold == None:
             sense_probability_threshold = self.sense_probability_threshold
-        #result = {"sentiment_clues": {}, "links": []}
         result = {"links": []}
         ngrams = set()
-        #tokens = [wordpunct_tokenize(sentence)]
         tokens = [tokenize(sentence),
                   tokenize(sentence.replace('-', ' ')),
                   tokenize(sentence.replace('.', ' ')),
@@ -68,7 +55,6 @@ class Semanticizer:
                     normalized_anchor = self.normalize(anchor, normalize_dash,
                                                        normalize_accents,
                                                        normalize_lower)
-                    print normalized_ngram, normalized_anchor
                     if normalized_ngram == normalized_anchor:
                         if not self.wpm.entity_exists(anchor):
                             raise LookupError("Data corrupted, cannot "
@@ -148,64 +134,3 @@ class Semanticizer:
             input_unicode = input_str
         nkfd_form = unicodedata.normalize('NFKD', input_unicode)
         return u"".join([c for c in nkfd_form if not unicodedata.combining(c)])
-
-    def load_category_parents(self, filename):
-        """"""
-        print 'Loading category parents...'
-        linenr = 0
-        cat_file = codecs.open(filename, "r", "utf-8")
-        for line in cat_file:
-            linenr += 1
-            try:
-                line = line.replace('v{', '').replace('}\n', '')
-                ids = line.split(',')
-            except:
-                print "Error loading on line " + str(linenr) + ": " + line
-                continue
-            category_id = int(ids[0])
-            self.category_parents[category_id] = []
-            for parent_id in ids[1:]:
-                self.category_parents[category_id].append(int(parent_id))
-        cat_file.close()
-        print '%d category parents loaded.' % len(self.category_parents)
-
-    def load_category_titles(self, filename):
-        """"""
-        print 'Loading category titles...'
-        cat_file = codecs.open(filename, "r", "utf-8")
-        for line in cat_file:
-            if not line.startswith('INSERT INTO `category` VALUES'):
-                continue
-            splits = line[31:-3].split('),(')
-            for split in splits:
-                data = split.split(',')
-                self.category_title[int(data[0])] = ','.join(data[1:-4])[1:-1]
-        cat_file.close()
-        print '%d category titles loaded.' % len(self.category_title)
-
-    def load_article_parents(self, filename):
-        """"""
-        print 'Loading article parents...'
-        parents_file = codecs.open(filename, "r", "utf-8")
-        for line in parents_file:
-            line = line.replace('v{', '').replace('}\n', '')
-            ids = line.split(',')
-            article_id = int(ids[0])
-            if article_id == 44731:
-                print line
-            self.article_parents[article_id] = []
-            for parent_id in ids[1:]:
-                self.article_parents[article_id].append(int(parent_id))
-        parents_file.close()
-        print '%d article parents loaded.' % len(self.article_parents)
-
-if __name__ == '__main__':
-    from nltk import sent_tokenize
-
-    semanticizer = Semanticizer()
-    print 'Loading text...'
-    text_stdin = sys.stdin.read()
-    sentences = sent_tokenize(text_stdin)
-    for sntnc in sentences:
-        print sntnc
-        print semanticizer.semanticize(sntnc)
