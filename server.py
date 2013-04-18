@@ -9,6 +9,7 @@ except ImportError:
     import json
 
 import re
+from wpm.wpmutil import get_wpmdata
 from flask import Flask, Response, request, abort
 
 
@@ -68,7 +69,7 @@ class Server(object):
             abort(Response("No text provided, use: POST or GET with attribute \
                             text\n", status=400))
 
-    def setup_route_semanticize(self, pipeline, wpmdata):
+    def setup_route_semanticize(self, pipeline, langcodes):
         """
         Setup the /semanticize/<langcode> namespace.
 
@@ -76,30 +77,12 @@ class Server(object):
                          given text
         """
         self.pipeline = pipeline
-        self.wp_ids = wpmdata
+        self.langcodes = langcodes
         self.app.add_url_rule("/semanticize/<langcode>", "_semanticize",
                               self._semanticize, methods=["GET", "POST"])
         self.app.add_url_rule("/semanticize", "_autolang_semanticize",
                               self._autolang_semanticize,
                               methods=["GET", "POST"])
-
-    def setup_route_stopwords(self, stopwords):
-        """
-        Setup the /stopwords/<langcode> namespace.
-
-        @param stopwords: The list of stopwords
-        """
-        self.stopwords = stopwords
-        self.app.add_url_rule("/stopwords/<langcode>",
-                              "_remove_stopwords",
-                              self._remove_stopwords, methods=["GET", "POST"])
-
-    def setup_route_cleantweet(self):
-        """
-        Setup the /cleantweet namespace.
-        """
-        self.app.add_url_rule("/cleantweet", "_cleantweet",
-                              self._cleantweet, methods=["GET", "POST"])
 
     def setup_route_language(self, textcat):
         """
@@ -121,17 +104,14 @@ class Server(object):
         self.app.add_url_rule("/inspect", "_inspect",
                               self._inspect, methods=["GET"])
 
-    def setup_all_routes(self, pipeline, wpmdata, stopwords, textcat):
+    def setup_all_routes(self, pipeline, langcodes, textcat):
         """
         Convenience function to start all namespaces at once.
 
         @param pipeline: The pipeline of processors
-        @param stopwords: The list of stopwords
         @param textcat: The textcat language guesser instance to use
         """
-        self.setup_route_semanticize(pipeline, wpmdata)
-        self.setup_route_stopwords(stopwords)
-        self.setup_route_cleantweet()
+        self.setup_route_semanticize(pipeline, langcodes)
         self.setup_route_language(textcat)
         self.setup_route_inspect(pipeline)
 
@@ -156,20 +136,20 @@ class Server(object):
         @see: _semanticize
         """
         if request.method == "GET" and not "text" in  request.args:
-            return self._json_dumps({"languages": self.wp_ids.keys()},
+            return self._json_dumps({"languages": self.langcodes},
                                     "pretty" in request.args)
 
         text = self._get_text_from_request()
         lang = self.textcat.classify(text.encode('utf-8'))
-        for key, val in self.wp_ids.iteritems():
-            if val[0] == lang:
+        for langcode in self.langcodes:
+            if get_wpmdata(langcode).get_lang_name() == lang:
                 break
         else:
             return self._json_dumps({"language": lang, "text": text,
                                      "links": []},
                                     "pretty" in request.args)
 
-        semanticized = self._semanticize(key)
+        semanticized = self._semanticize(langcode)
         assert semanticized[-1] == "}"
         return semanticized[:-1] + ', "language": %s}' % lang
 
@@ -208,43 +188,6 @@ class Server(object):
         self.app.logger.debug("Semanticizing: Created %d characters of JSON." \
                               % len(result))
         return result
-
-    def _remove_stopwords(self, langcode):
-        """
-        The function that handles the /stopwords namespace. Will remove all
-        stopwords from the given string.
-
-        @param langcode: The language to remove stopwords for
-        @return: The body of the response, in this case a json formatted \
-                 string containing the cleaned text.
-        """
-        if not langcode in self.stopwords:
-            abort(404)
-        text = self._get_text_from_request()
-        text = " ".join([w for w in re.split('\s+', text) \
-                         if not w in self.stopwords[langcode]])
-        return self._json_dumps({"cleaned_text": text})
-
-    def _cleantweet(self):
-        """
-        The function that handles the /cleantweet namespace. Will use regular
-        expressions to completely clean a given tweet.
-
-        @return: The body of the response, in this case a json formatted \
-                 string containing the cleaned tweet.
-        """
-        # RegEx for CleanTweet
-        ru = re.compile(r"(@\w+)")
-        rl = re.compile(r"(http://[a-zA-Z0-9_=\-\.\?&/#]+)")
-        rp = re.compile(r"[-!\"#\$%&'\(\)\*\+,\.\/:;<=>\?@\[\\\]\^_`\{\|\}~]")
-        rt = re.compile(r"(\bRT\b)")
-        text = self._get_text_from_request()
-        text = ru.sub(" ", text)
-        text = rl.sub(" ", text)
-        text = rp.sub(" ", text)
-        text = rt.sub(" ", text)
-        text = " ".join([w for w in re.split('\s+', text) if len(w) > 1])
-        return self._json_dumps({"cleaned_text": text})
 
     def _language(self):
         """

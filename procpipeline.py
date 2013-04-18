@@ -10,7 +10,7 @@ from processors.learning import LearningProcessor
 from processors.image import AddImageProcessor
 
 
-def build(wpmdata, feature_config=None):
+def build(langcodes, feature_config=None):
     """
     Initialize the pipeline.
 
@@ -20,19 +20,18 @@ def build(wpmdata, feature_config=None):
     """
     logging.getLogger().info("Initializing pipeline")
     pipeline = []
-    semanticize_processor = _load_semanticize_processor(wpmdata)
+    semanticize_processor = _load_semanticize_processor(langcodes)
     pipeline.append(("Settings", SettingsProcessor()))
     pipeline.append(("Semanticize", semanticize_processor))
     pipeline.append(("Filter", FilterProcessor()))
     if not feature_config is None:
-        _load_features(pipeline, semanticize_processor,
-                       wpmdata, feature_config)
+        _load_features(pipeline, langcodes, feature_config)
     pipeline.append(("AddImage", AddImageProcessor()))
     logging.getLogger().info("Done initializing pipeline")
     return pipeline
 
 
-def _load_semanticize_processor(wikipedia_ids):
+def _load_semanticize_processor(langcodes):
     """
     Load the Semanticizer.
 
@@ -44,16 +43,15 @@ def _load_semanticize_processor(wikipedia_ids):
     semanticize_processor = SemanticizeProcessor()
     start = time.time()
     logging.getLogger().info("Loading semanticizers for langcode(s) "
-                     + ", ".join(wikipedia_ids.keys()))
-    semanticize_processor.load_languages(wikipedia_ids)
+                     + ", ".join(langcodes))
+    semanticize_processor.load_languages(langcodes)
     logging.getLogger().info("Loading semanticizers took %.2f seconds." \
                      % (time.time() - start))
     logging.getLogger().info("Done loading semanticizer")
     return semanticize_processor
 
 
-def _load_features(pipeline, semanticize_processor,
-                   wikipedia_ids, feature_config):
+def _load_features(pipeline, langcodes, feature_config):
     """
     Load all features into the pipeline
 
@@ -65,15 +63,14 @@ def _load_features(pipeline, semanticize_processor,
     logging.getLogger().info("Loading features")
     start = time.time()
     pipeline.append(("Features",
-                     FeaturesProcessor(semanticize_processor,
-                                       feature_config["picklepath"])))
+                     FeaturesProcessor(langcodes)))
     pipeline.append(("Articles",
-                     ArticlesProcessor(wikipedia_ids,
+                     ArticlesProcessor(langcodes,
                                        feature_config["wpminer_url"],
                                        feature_config["wpminer_numthreads"],
                                        feature_config["picklepath"])))
     pipeline.append(("Statistics",
-                     StatisticsProcessor(wikipedia_ids.keys(),
+                     StatisticsProcessor(langcodes,
                                          feature_config["wpminer_numthreads"],
                                          feature_config["picklepath"])))
     pipeline.append(("ArticleFeatures", ArticleFeaturesProcessor()))

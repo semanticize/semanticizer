@@ -1,4 +1,5 @@
 from core import LinksProcessor
+from wpm.wpmutil import get_wpmdata
 
 from Queue import Queue, Empty
 from threading import Thread
@@ -13,13 +14,13 @@ from copy import deepcopy
 
 
 class ArticlesProcessor(LinksProcessor):
-    def __init__(self, wikipedia_ids, article_url, threads, pickledir):
+    def __init__(self, langcodes, article_url, threads, pickledir):
         self.threads = threads
         self.article_url = article_url
-        self.wikipedia_ids = wikipedia_ids
+        self.langcodes = langcodes
         self.article_cache = {}
 
-        for langcode in self.wikipedia_ids:
+        for langcode in langcodes:
             pickle_root = pickledir + '/' + langcode + '/'
             self.article_cache[langcode] = shelve.open(pickle_root
                                                        + 'article_cache.db')
@@ -41,7 +42,7 @@ class ArticlesProcessor(LinksProcessor):
         if not "article" in settings and not "features" in settings and not \
                "learning" in settings:
             return (links, text, settings)
-        if not settings["langcode"] in self.wikipedia_ids:
+        if not settings["langcode"] in self.langcodes:
             return (links, text, settings)
 
         # Start threads
@@ -55,7 +56,7 @@ class ArticlesProcessor(LinksProcessor):
         if not "article" in settings and not "features" in settings and not \
                "learning" in settings:
             return (links, text, settings)
-        if not settings["langcode"] in self.wikipedia_ids:
+        if not settings["langcode"] in self.langcodes:
             return (links, text, settings)
 
         self.queue.join()
@@ -151,10 +152,8 @@ class ArticlesProcessor(LinksProcessor):
         if article in self.article_cache[langcode]:
             resultDoc = self.article_cache[langcode][article]
         else:
-            if self.wikipedia_ids[langcode][1][-1] == '/':
-                wikipedia_name = self.wikipedia_ids[langcode][1].split('/')[-2]
-            else:
-                wikipedia_name = self.wikipedia_ids[langcode][1].split('/')[-1]
+            wpm = get_wpmdata(langcode)
+            wikipedia_name = wpm.get_wikipedia_name()
             url = self.article_url + "?"
             url += urllib.urlencode({"wikipedia": wikipedia_name,
                                      "title": article,

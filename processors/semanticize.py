@@ -1,9 +1,7 @@
-from util.wpmutil import WpmUtil
+from wpm.wpmutil import get_wpmdata
 from nltk import regexp_tokenize
 from nltk.util import ngrams as nltk_ngrams
-import sys
 import urllib
-import codecs
 import unicodedata
 
 
@@ -15,14 +13,12 @@ def tokenize(text):
 class Semanticizer:
     """"""
 
-    def __init__(self, language_code, wikipediaminer_root,
-                 sense_probability_threshold):
+    def __init__(self, language_code, sense_probability_threshold):
         """"""
         self.language_code = language_code
-        self.wikipediaminer_root = wikipediaminer_root
         self.sense_probability_threshold = sense_probability_threshold
         self.wikipedia_url_template = 'http://%s.wikipedia.org/wiki/%s'
-        self.wpm = WpmUtil(language_code)
+        self.wpm = get_wpmdata(language_code)
 
     def semanticize(self, sentence, normalize_dash=True,
                     normalize_accents=True, normalize_lower=False,

@@ -10,17 +10,14 @@ class SemanticizeProcessor(LinksProcessor):
 
     def __init__(self):
         """Set the class variables"""
-        self.languages = {}
+        self.langcodes = []
         self.semanticizers = {}
 
-    def load_languages(self, languages):
+    def load_languages(self, langcodes):
         """Save the languages and load the semanticizer"""
-        for langcode in languages:
-            self.languages[langcode] = (languages[langcode][0],
-                                        languages[langcode][1])
-            self.semanticizers[langcode] = Semanticizer(langcode,
-                                                        languages[langcode][1],
-                                                        None)
+        self.langcodes = langcodes
+        for langcode in langcodes:
+            self.semanticizers[langcode] = Semanticizer(langcode, None)
 
     def preprocess(self, links, text, settings):
         """Semanticize the given text and return the links, text, and
@@ -64,4 +61,4 @@ class SemanticizeProcessor(LinksProcessor):
 
     def inspect(self):
         """Return the loaded languages"""
-        return {self.__class__.__name__: self.languages}
+        return {self.__class__.__name__: self.langcodes}

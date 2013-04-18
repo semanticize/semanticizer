@@ -145,18 +145,24 @@ ARGS = {"logging":  [
                         "action":   ValidateWpmData,
                         "metavar":  ("LANG", "LANGCODE", "LOC")}},
 
+           {"name":     "--wpmdatasource",
+            "opts":    {"help":     "Class to fetch data with \
+                                     (default: %(default)s)",
+                        "default":  "wpm.wpmdata_inproc.WpmDataInProc",
+                        "metavar":  'CLASS',
+                        "type":     str}},
+
+           {"name":     "--langcodes",
+            "opts":    {"help":     "Supported language codes (must have \
+                                     their wikipediaminer dumps loaded)",
+                        "default":  "",
+                        "metavar":  'LANGCODE[,LANGCODE[, ...]]'}},
+
            {"name":     "--lmpath",
             "opts":    {"help":     "Path to language model files \
                                      (default: %(default)s)",
                         "metavar":  "DIR",
                         "default":  "LM.lrej2011",
-                        "type":     _readable_path}},
-
-           {"name":     "--stopwordpath",
-            "opts":    {"help":     "Path to stopword files \
-                                     (default: %(default)s)",
-                        "metavar":  "DIR",
-                        "default":  "SW",
                         "type":     _readable_path}}],
 
         "learning": [

@@ -1,5 +1,5 @@
 import sys
-from util.wpmutil import WpmLoader
+from wpm.wpmdata_redis import WpmLoader
 
 if __name__ == '__main__':
     if len(sys.argv) < 4:
