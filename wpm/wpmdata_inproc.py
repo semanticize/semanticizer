@@ -127,13 +127,13 @@ class WpmDataInProc(object):
                 'senses': self.labels[entity][1].keys()}
 
     def get_sense_data(self, entity, sense):
-        return {'cntlinkocc': int(self.labels[entity][1][sense][0]),
-                'cntlinkdoc': int(self.labels[entity][1][sense][1]),
-                'from_title': self.labels[entity][1][sense][2],
-                'from_redir': self.labels[entity][1][sense][3]}
+        return {'cntlinkocc': int(self.labels[entity][1][int(sense)][0]),
+                'cntlinkdoc': int(self.labels[entity][1][int(sense)][1]),
+                'from_title': self.labels[entity][1][int(sense)][2],
+                'from_redir': self.labels[entity][1][int(sense)][3]}
 
     def get_sense_title(self, sid):
-        return self.page_title[sid]
+        return self.page_title[int(sid)]
 
     def get_title_id(self, title):
         try:
@@ -142,13 +142,13 @@ class WpmDataInProc(object):
             return None
 
     def sense_has_trnsl(self, sid):
-        return sid in self.translation
+        return int(sid) in self.translation
 
     def get_trnsl_langs(self, sid):
-        return self.translation[sid]
+        return self.translation[int(sid)]
 
     def get_sense_trnsl(self, sid, lang):
-        return self.translation[sid][lang]
+        return self.translation[int(sid)][lang]
 
     def get_wikipedia_name(self):
         if self.path[-1] == '/':
