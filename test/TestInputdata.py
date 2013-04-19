@@ -36,30 +36,6 @@ class Test(unittest.TestCase):
                               % valid_lm_dir + "valid_lm_dir NGram instance."
                               + "Does the path contain valid lm files?")
 
-    def test_load_stopwords(self):
-        # Initialize
-        invalid_sw_dir = os.path.dirname(self.tmpfilename)
-        valid_sw_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                    "../SW")
-
-        # ++++++++++++++++++++++++++++
-        # ++++++++ Run tests +++++++++
-        # ++++++++++++++++++++++++++++
-
-        # Fail if stopword_dir isn't set
-        self.assertRaises(TypeError, inputdata.load_stopwords)
-
-        # Fail if stopword_dir is invalid
-        stopwords = inputdata.load_stopwords(invalid_sw_dir)
-        self.assertDictEqual(stopwords, {}, "Stopwords loaded from "
-                            + invalid_sw_dir + " should be empty, but found "
-                            + str(stopwords))
-
-        # Load stopword dict if stopword_dir is valid
-        stopwords = inputdata.load_stopwords(valid_sw_dir)
-        self.assertTrue(len(stopwords) > 0, "Should have a list of stopwords, "
-                                            + "but found an empty list")
-
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

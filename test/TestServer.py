@@ -26,12 +26,6 @@ class Test(unittest.TestCase):
     def test_setup_route_semanticize(self):
         pass
 
-    def test_setup_route_stopwords(self):
-        pass
-
-    def test_setup_route_cleantweet(self):
-        pass
-
     def test_setup_route_language(self):
         pass
 

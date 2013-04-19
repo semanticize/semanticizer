@@ -73,30 +73,6 @@ class Test(unittest.TestCase):
                           config._valid_absolute_url,
                           invalid_url)
 
-    def test_validate_wpm_data(self):
-        """Test the Action that guarantees a value given in the config
-        is writable"""
-        valid_langloc = ["one", "two", self.tmpfilename]
-        invalid_langloc = ["one", "two", "/some/nonexisting/file"]
-
-        class Object(object):
-            """A stub to use as namespace"""
-            pass
-
-        namespace = Object()
-        action = config.ValidateWpmData(["--langloc"], "langloc")
-        action.__call__(None, namespace, valid_langloc)
-        self.assertTrue(hasattr(namespace, "langloc"),
-                        "ValidateWpmData didn't set a valid langloc!")
-        action.__call__(None, namespace, valid_langloc)
-        self.assertTrue(len(getattr(namespace, "langloc")) == 1,
-                        "ValidateWpmData should have two locations, has %d \
-                        instead" % len(getattr(namespace, "langloc")))
-        self.assertRaises(ArgumentTypeError, action.__call__,
-                          None,
-                          namespace,
-                          invalid_langloc)
-
     def test_get_conf_vals(self):
         """Test the params are being parsed as we expect"""
         # the expected result after parsing the config
