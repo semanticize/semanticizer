@@ -1,13 +1,13 @@
 import redis
 import codecs
-from wpm.wpmbase import WpmData
+from wpm.base import Data
 from wpm.wpmutil import normalize
 from wpm.wpmutil import check_dump_path
 from wpm.wpmutil import dump_filenames
 
 
-class WpmDataRedis:
-    def __init__(self, langcode, langname=None, path=None):
+class WpmDataRedis(Data):
+    def __init__(self, langcode, **kwargs):
         """
         <langcode>:name = language name
         <langcode>:path = wpminer path
@@ -116,8 +116,6 @@ class WpmDataRedis:
         nr_of_tokens = len(title.split())
         return self.conn.zscore(self.ns_ngrms_n(str(nr_of_tokens)),
                                 title)
-
-WpmData.register(WpmDataRedis)
 
 
 class WpmLoader:

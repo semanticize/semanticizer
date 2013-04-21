@@ -1,4 +1,4 @@
-from wpm.wpmbase import WpmData
+from wpm.base import Data
 from collections import defaultdict
 from wpm.wpmutil import normalize
 from wpm.wpmutil import check_dump_path
@@ -6,7 +6,7 @@ from wpm.wpmutil import dump_filenames
 import codecs
 
 
-class WpmDataInProc(object):
+class WpmDataInProc(Data):
 
     def __init__(self, langcode, langname=None, path=None):
         """load data"""
@@ -166,6 +166,3 @@ class WpmDataInProc(object):
             return self.ngram_in_title[title]
         except KeyError:
             return None
-
-
-WpmData.register(WpmDataInProc)

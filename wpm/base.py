@@ -1,7 +1,7 @@
 import abc
 
 
-class WpmData(object):
+class Data(object):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
