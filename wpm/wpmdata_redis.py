@@ -7,7 +7,7 @@ from wpm.wpmutil import dump_filenames
 
 
 class WpmDataRedis(Data):
-    def __init__(self, langcode, **kwargs):
+    def __init__(self, langcode, host='localhost', port=6379):
         """
         <langcode>:name = language name
         <langcode>:path = wpminer path
@@ -21,7 +21,7 @@ class WpmDataRedis(Data):
         <langcode>:ids:<pagetitle> = id
         <langcode>:<n>grms = zset([words{score}, [...]])
         """
-        self.conn = redis.StrictRedis(host='localhost', port=6379,
+        self.conn = redis.StrictRedis(host=host, port=port,
                                       db=0, decode_responses=True)
         self.separator = ':'
         self.ns_name = '%s%sname' % (langcode, self.separator)

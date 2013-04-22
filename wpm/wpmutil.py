@@ -1,4 +1,4 @@
-datasource = None
+wpm_dumps = {}
 dump_filenames = {
     'translations': 'translations.csv',
     'labels': 'label.csv',
@@ -6,19 +6,11 @@ dump_filenames = {
 }
 
 
-def get_wpmdata(langcode, **kwargs):
-    if 'instance' not in get_wpmdata.__dict__:
-        get_wpmdata.instance = {}
-    if not langcode in get_wpmdata.instance:
-        get_wpmdata.instance[langcode] = _create_instance(langcode, **kwargs)
-    return get_wpmdata.instance[langcode]
-
-
-def _create_instance(langcode, **kwargs):
+def load_wpm_dump(datasource, langcode, **kwargs):
     importdata = datasource.rsplit('.', 1)
     mod = __import__(importdata[0], fromlist=[importdata[1]])
     class_ = getattr(mod, importdata[1])
-    return class_(langcode, **kwargs)
+    wpm_dumps[langcode] = class_(langcode, **kwargs)
 
 
 def normalize(raw):

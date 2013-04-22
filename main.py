@@ -55,40 +55,35 @@ def init_logging(log, verbose, logformat):
 
 if __name__ == '__main__':
     # Init the logger
-    init_logging(conf_get("log"),
-                 conf_get("verbose"),
-                 conf_get("logformat"))
+    init_logging(conf_get('logging', 'path'),
+                 conf_get('logging', 'verbose'),
+                 conf_get('logging', 'format'))
 
     # Set the datasource and init it
-    wpmdata_params = conf_get('wpmdata')
-    wpmutil.datasource = conf_get("wpmdatasource")
-    for langcode, langdata in wpmdata_params.iteritems():
-        wpmutil.get_wpmdata(langcode, langname=langdata[0], path=langdata[1])
-
-    # Print the configuration when in debug mode
-    options = conf_get()
-    logging.getLogger().info("Starting with configuration:")
-    for key, value in options.iteritems():
-        logging.getLogger().info(key + " : " + str(value))
+    wpmlangs = conf_get('wpm', 'languages')
+    for langcode, langconfig in wpmlangs.iteritems():
+        wpmutil.load_wpm_dump(langconfig['source'], langcode, **langconfig['initparams'])
 
     # If we use learning features, configure them
     feature_conf = None
-    if conf_get("features") == True:
+    if conf_get('linkprocs', 'includefeatures') == True:
         feature_conf = {}
-        feature_conf["wpminer_url"] = conf_get("wpmurl")
-        feature_conf["wpminer_numthreads"] = conf_get("wpmthreads")
-        feature_conf["picklepath"] = conf_get("cachedir")
-        if conf_get("scikiturl"):
-            feature_conf["remote_scikit_url"] = conf_get("scikiturl")
+        feature_conf["wpminer_url"] = conf_get('wpm', 'bdburl')
+        feature_conf["wpminer_numthreads"] = conf_get('wpm', 'threads')
+        feature_conf["picklepath"] = conf_get('misc', 'tempdir')
+        try:
+            feature_conf["remote_scikit_url"] = conf_get('scikit', 'url')
+        except KeyError:
+            pass
 
     # Start the server
     try:
-        start_server(conf_get("lmpath"),
-                     conf_get("langcodes").split(','),
-                     conf_get("host"),
-                     conf_get("port"),
-                     conf_get("verbose"),
-                     conf_get("logformat"),
+        start_server(conf_get('textcat', 'lmpath'),
+                     conf_get('wpm', 'languages').keys(),
+                     conf_get('server', 'host'),
+                     conf_get('server', 'port'),
+                     conf_get('logging', 'verbose'),
+                     conf_get('logging', 'format'),
                      feature_conf)
     except ValueError as e:
         logging.getLogger().fatal("Error running Semanticizer server: %s" \

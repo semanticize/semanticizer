@@ -1,4 +1,4 @@
-from wpm.wpmutil import get_wpmdata
+import wpm.wpmutil as wpmutil
 from nltk import regexp_tokenize
 from nltk.util import ngrams as nltk_ngrams
 import urllib
@@ -18,7 +18,7 @@ class Semanticizer:
         self.language_code = language_code
         self.sense_probability_threshold = sense_probability_threshold
         self.wikipedia_url_template = 'http://%s.wikipedia.org/wiki/%s'
-        self.wpm = get_wpmdata(language_code)
+        self.wpm = wpmutil.wpm_dumps[language_code]
 
     def semanticize(self, sentence, normalize_dash=True,
                     normalize_accents=True, normalize_lower=False,

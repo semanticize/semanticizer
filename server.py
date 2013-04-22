@@ -9,7 +9,7 @@ except ImportError:
     import json
 
 import re
-from wpm.wpmutil import get_wpmdata
+import wpm.wpmutil as wpmutil
 from flask import Flask, Response, request, abort
 
 
@@ -142,7 +142,7 @@ class Server(object):
         text = self._get_text_from_request()
         lang = self.textcat.classify(text.encode('utf-8'))
         for langcode in self.langcodes:
-            if get_wpmdata(langcode).get_lang_name() == lang:
+            if wpmutil.wpm_dumps[langcode].get_lang_name() == lang:
                 break
         else:
             return self._json_dumps({"language": lang, "text": text,

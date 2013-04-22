@@ -1,7 +1,7 @@
 import cPickle as pickle
 
 from math import log
-from wpm.wpmutil import get_wpmdata
+import wpm.wpmutil as wpmutil
 import re
 import collections
 import processors.stringUtils as stringUtils
@@ -19,7 +19,7 @@ class anchorFeatures:
 
         if not os.path.exists(pickle_root):
             os.makedirs(pickle_root)'''
-        self.wpm = get_wpmdata(langcode)
+        self.wpm = wpmutil.wpm_dumps[langcode]
         #   From Wikipedia miner CSV file:
         self.wikipediaArticleCount = 970139
         self.wikipediaCategoryCount = 63108

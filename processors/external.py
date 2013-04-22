@@ -1,5 +1,5 @@
 from core import LinksProcessor
-from wpm.wpmutil import get_wpmdata
+import wpm.wpmutil as wpmutil
 
 from Queue import Queue, Empty
 from threading import Thread
@@ -152,7 +152,7 @@ class ArticlesProcessor(LinksProcessor):
         if article in self.article_cache[langcode]:
             resultDoc = self.article_cache[langcode][article]
         else:
-            wpm = get_wpmdata(langcode)
+            wpm = wpmutil.wpm_dumps[langcode]
             wikipedia_name = wpm.get_wikipedia_name()
             url = self.article_url + "?"
             url += urllib.urlencode({"wikipedia": wikipedia_name,

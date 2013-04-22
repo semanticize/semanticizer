@@ -8,10 +8,10 @@ import codecs
 
 class WpmDataInProc(Data):
 
-    def __init__(self, langcode, langname=None, path=None):
+    def __init__(self, langcode, language=None, path=None):
         """load data"""
         self.path = check_dump_path(path)
-        self.langname = langname
+        self.langname = language
         self.langcode = langcode
         self.translation_langs = ['en', 'nl', 'fr', 'es']
         self.labels = {}
