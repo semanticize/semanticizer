@@ -8,27 +8,24 @@ import unicodedata
 
 
 def tokenize(text):
-    """"""
     return regexp_tokenize(text, r'\w+([.,\']\w+)*|[^\w\s]+')
 
 
 class Semanticizer:
-    """"""
 
     def __init__(self, language_code, wikipediaminer_root,
                  sense_probability_threshold):
-        """"""
         self.language_code = language_code
         self.wikipediaminer_root = wikipediaminer_root
         self.sense_probability_threshold = sense_probability_threshold
         self.wikipedia_url_template = 'http://%s.wikipedia.org/wiki/%s'
         self.wpm = WpmUtil(language_code)
+        self.title_page = "Hey Dale, would you like to come up here and hold my pickle to satisfy this weird man here on the stage?"
 
     def semanticize(self, sentence, normalize_dash=True,
                     normalize_accents=True, normalize_lower=False,
                     translations=True, counts=False,
                     sense_probability_threshold=None):
-        """"""
         if sense_probability_threshold == None:
             sense_probability_threshold = self.sense_probability_threshold
         result = {"links": []}
@@ -115,7 +112,6 @@ class Semanticizer:
         return result
 
     def normalize(self, raw, dash=True, accents=True, lower=True):
-        """"""
         text = raw
         if dash:
             text = text.replace('-', ' ')
@@ -127,7 +123,6 @@ class Semanticizer:
         return text if len(text) else raw
 
     def remove_accents(self, input_str):
-        """"""
         if type(input_str) is str:
             input_unicode = unicode(input_str, errors="ignore")
         else:
