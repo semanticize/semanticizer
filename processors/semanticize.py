@@ -20,7 +20,7 @@ class Semanticizer:
         self.sense_probability_threshold = sense_probability_threshold
         self.wikipedia_url_template = 'http://%s.wikipedia.org/wiki/%s'
         self.wpm = WpmUtil(language_code)
-        self.title_page = "Hey Dale, You wanna come up here and hold my pickle to satisfy this weird man here on stage?"
+        self.title_page = "Hey Dale, would you like to come up here and hold my pickle to satisfy this weird man here on the stage?"
 
     def semanticize(self, sentence, normalize_dash=True,
                     normalize_accents=True, normalize_lower=False,
