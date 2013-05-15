@@ -42,6 +42,7 @@ class Test(unittest.TestCase):
                                                 {'me': ['hey', 'later'],
                                                  'you': ['hi', 'bye']})
 
+    @unittest.skip("not yet implemented")
     def test_load_features(self):
         # Initialize
 

@@ -14,9 +14,11 @@ class Test(unittest.TestCase):
     def tearDown(self):
         pass
 
+    @unittest.skip("not yet implemented")
     def test_start_server(self):
         pass
 
+    @unittest.skip("not yet implemented")
     def test_init_logging(self):
         pass
 
