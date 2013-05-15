@@ -30,8 +30,9 @@ If you want to dive into the code, start at Main.py.
  * networkx
  * lxml
  * flask
- * scikit-learn
+ * scikit-learn (optional, see point 5)
  * scipy (optional, see point 5)
+ * mock (optional, used by the tests)
 
 3. Create semanticizer/logs folder
 
