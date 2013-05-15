@@ -24,13 +24,14 @@ If you want to dive into the code, start at Main.py.
 1. The software has been tested with Python 2.7.3 on OS X 2.8
 
 2. The following Python modules need to be installed (I used pip):
+ * redis
  * nltk
  * python-Levenshtein
  * networkx
  * lxml
  * flask
  * scikit-learn
- * scipy (see 6)
+ * scipy (optional, see point 5)
 
 3. Create semanticizer/logs folder
 
