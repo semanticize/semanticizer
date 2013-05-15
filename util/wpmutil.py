@@ -146,7 +146,6 @@ class WpmLoader:
         self.load_page_titles(wpm, path + self.dump_filenames["pages"])
 
     def load_labels(self, wpm, filename):
-        """"""
         print 'Loading labels into redis...'
         rds = wpm.conn
         pipe = rds.pipeline()
@@ -176,7 +175,6 @@ class WpmLoader:
         labels_file.close()
 
     def load_translations(self, wpm, filename):
-        """"""
         print 'Loading translations into redis...'
         rds = wpm.conn
         pipe = rds.pipeline()
@@ -204,7 +202,6 @@ class WpmLoader:
         print 'Done loading translations'
 
     def load_page_titles(self, wpm, filename):
-        """"""
         print 'Loading page titles...'
         rds = wpm.conn
         pipe = rds.pipeline()
@@ -226,7 +223,6 @@ class WpmLoader:
         print 'Done loading pages (%d pages loaded)' % linenr
 
     def normalize(self, raw):
-        """"""
         text = raw
         text = text.replace('-', ' ')
         text = self.remove_accents(text)
@@ -235,7 +231,6 @@ class WpmLoader:
         return text if len(text) else raw
 
     def remove_accents(self, input_str):
-        """"""
         if type(input_str) is str:
             input_unicode = unicode(input_str, errors="ignore")
         else:
