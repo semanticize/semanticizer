@@ -17,6 +17,8 @@ class Server(object):
     The HTTP server that will serve the complete namespace
     """
 
+    APPLICATION_JSON="application/json"
+
     def __init__(self):
         """
         Initialize the server. The constructor creates the initial Flask server
@@ -78,7 +80,7 @@ class Server(object):
         self.pipeline = pipeline
         self.wp_ids = wpmdata
         self.app.add_url_rule("/semanticize/<langcode>", "_semanticize",
-                              self._semanticize, methods=["GET", "POST"])
+                              self._semanticize_handler, methods=["GET", "POST"])
         self.app.add_url_rule("/semanticize", "_autolang_semanticize",
                               self._autolang_semanticize,
                               methods=["GET", "POST"])
@@ -155,7 +157,7 @@ class Server(object):
                  of links and their relevance
         @see: _semanticize
         """
-        if request.method == "GET" and not "text" in  request.args:
+        if request.method == "GET" and not "text" in request.args:
             return self._json_dumps({"languages": self.wp_ids.keys()},
                                     "pretty" in request.args)
 
@@ -169,11 +171,17 @@ class Server(object):
                                      "links": []},
                                     "pretty" in request.args)
 
-        semanticized = self._semanticize(key)
-        assert semanticized[-1] == "}"
-        return semanticized[:-1] + ', "language": %s}' % lang
+        settings = {"langcode": langcode}
+        for key, value in request.args.iteritems():
+            assert key not in settings
+            settings[key] = value
 
-    def _semanticize(self, langcode):
+        sem_result = self._semanticize(key, settings, text)
+        sem_result["language"] = lang
+        json = self._json_dumps(sem_result, "pretty" in settings)
+        return Response(json, mimetype=Server.APPLICATION_JSON)
+
+    def _semanticize_handler(self, langcode):
         """
         The function handling the /semanticize/<langcode> namespace. It uses
         the chain-of-command pattern to run all processors, using the
@@ -192,6 +200,19 @@ class Server(object):
             assert key not in settings
             settings[key] = value
 
+        sem_result = self._semanticize(langcode, settings, text)
+        json = self._json_dumps(sem_result, "pretty" in settings)
+
+        self.app.logger.debug("Semanticizing: Created %d characters of JSON." \
+                              % len(json))
+        return Response(json, mimetype=Server.APPLICATION_JSON)
+
+    def _semanticize(self, langcode, settings, text):
+        """
+        Method that performs the actual semantization.
+        """
+        links = []
+
         for function in ("preprocess", "process", "postprocess"):
             for step, processor in self.pipeline:
                 self.app.logger.debug("Semanticizing: %s for step %s" \
@@ -203,10 +224,8 @@ class Server(object):
             self.app.logger.debug("Semanticizing: %s pipeline with %d steps \
                                    done" % (function, len(self.pipeline)))
 
-        result = self._json_dumps({"links": links, "text": text},
-                                  "pretty" in settings)
-        self.app.logger.debug("Semanticizing: Created %d characters of JSON." \
-                              % len(result))
+        result = {"links": links, "text": text}
+
         return result
 
     def _remove_stopwords(self, langcode):
