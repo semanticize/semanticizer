@@ -59,16 +59,20 @@ class Server(object):
 
         @return: the value of "text"
         """
+        content_type = request.headers['Content-Type']
         if request.method == "POST":
-            if not request.headers['Content-Type'] == 'text/plain':
+            if content_type == 'application/x-www-form-urlencoded':
+                return request.form['text']
+            elif content_type == 'text/plain':
+                return request.data
+            else:
                 abort(Response("Unsupported Content Type, use: text/plain\n",
                                status=415))
-            return request.data
         elif "text" in request.args:
             return request.args["text"]
         else:
             abort(Response("No text provided, use: POST or GET with attribute \
-                            text\n", status=400))
+                            'text'\n", status=400))
 
     def setup_route_semanticize(self, pipeline, wpmdata):
         """
@@ -196,7 +200,7 @@ class Server(object):
         self.app.logger.debug("Semanticizing text: " + text)
         links = []
         settings = {"langcode": langcode}
-        for key, value in request.args.iteritems():
+        for key, value in request.values.iteritems():
             assert key not in settings
             settings[key] = value
 
