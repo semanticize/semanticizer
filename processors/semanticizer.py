@@ -35,13 +35,20 @@ class SemanticizeProcessor(LinksProcessor):
                                         not "accents" in settings["normalize"])
                 normalize_lower = "normalize" in settings and \
                                   "lower" in settings["normalize"]
+                sense_probability_threshold = settings["sense_probability_threshold"] if "sense_probability_threshold" in settings else "0.0"
+                try :
+                    sense_probability_threshold = float(sense_probability_threshold)
+                except ValueError:
+                    sense_probability_threshold = 0.0
+
+                print "sense_probability_threshold:",sense_probability_threshold
                 results = self.semanticizers[settings["langcode"]] \
                             .semanticize(text, counts=True,
                                          normalize_dash=normalize_dash,
                                          normalize_accents=normalize_accents,
                                          normalize_lower=normalize_lower,
                                          translations=translations,
-                                         sense_probability_threshold=-1)
+                                         sense_probability_threshold=sense_probability_threshold)
                 links = results["links"]
             else:
                 links = []
