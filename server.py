@@ -256,18 +256,30 @@ class Server(object):
         @return: The body of the response, in this case a json formatted \
                  string containing the cleaned tweet.
         """
+        text = self._get_text_from_request()
+        clean_text = self.cleantweet(text)
+
+        return self._json_dumps({"cleaned_text": clean_text})
+
+    def cleantweet(self, text):
+        """
+        Tweet cleaner/tokenizer.
+
+        Uses regular expressions to completely clean, and tokenize, a
+        given tweet.
+        """
         # RegEx for CleanTweet
         ru = re.compile(r"(@\w+)")
         rl = re.compile(r"(http://[a-zA-Z0-9_=\-\.\?&/#]+)")
         rp = re.compile(r"[-!\"#\$%&'\(\)\*\+,\.\/:;<=>\?@\[\\\]\^_`\{\|\}~]")
         rt = re.compile(r"(\bRT\b)")
-        text = self._get_text_from_request()
+
         text = ru.sub(" ", text)
         text = rl.sub(" ", text)
         text = rp.sub(" ", text)
         text = rt.sub(" ", text)
         text = " ".join([w for w in re.split('\s+', text) if len(w) > 1])
-        return self._json_dumps({"cleaned_text": text})
+        return text
 
     def _language(self):
         """
