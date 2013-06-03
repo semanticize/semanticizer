@@ -4,6 +4,7 @@ The Processor wrapping Semanticizer
 from processors.core import LinksProcessor
 from processors.semanticize import Semanticizer
 
+from nltk.tokenize.punkt import PunktSentenceTokenizer
 
 class SemanticizeProcessor(LinksProcessor):
     """Processor handling the semanticizing"""
@@ -22,7 +23,10 @@ class SemanticizeProcessor(LinksProcessor):
                                                         languages[langcode][1],
                                                         None)
 
-    def preprocess(self, links, text, settings):
+    # def preprocess(self, links, text, settings):
+    #     return (links, text, settings)
+
+    def process(self, links, text, settings):
         """Semanticize the given text and return the links, text, and
         settings"""
         links = []
@@ -41,17 +45,25 @@ class SemanticizeProcessor(LinksProcessor):
                 except ValueError:
                     sense_probability_threshold = 0.0
 
-                print "sense_probability_threshold:",sense_probability_threshold
-                results = self.semanticizers[settings["langcode"]] \
-                            .semanticize(text, counts=True,
-                                         normalize_dash=normalize_dash,
-                                         normalize_accents=normalize_accents,
-                                         normalize_lower=normalize_lower,
-                                         translations=translations,
-                                         sense_probability_threshold=sense_probability_threshold)
-                links = results["links"]
-            else:
+                split_sentences = "split_sentences" in settings
+                print "split_sentences:",split_sentences
+
+                if split_sentences:
+                    sentences = PunktSentenceTokenizer().tokenize(text)
+                else:
+                    sentences = [text]
+
+                sem = self.semanticizers[settings["langcode"]]
                 links = []
+
+                for sentence in sentences:
+                    results =  sem.semanticize(sentence, counts=True,
+                                               normalize_dash=normalize_dash,
+                                               normalize_accents=normalize_accents,
+                                               normalize_lower=normalize_lower,
+                                               translations=translations,
+                                               sense_probability_threshold=sense_probability_threshold)
+                    links.extend(results["links"])
 
         return (links, text, settings)
 
