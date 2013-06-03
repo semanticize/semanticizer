@@ -35,9 +35,12 @@ class Semanticizer:
                   tokenize(sentence.replace('.', ' ')),
                   tokenize(sentence.replace('.', ''))]
 
+        # HACK
+        MAX_NGRAM_LEN = 7
         # get all ngrams for this sentence
         for words in tokens:
-            for n in range(1, len(words) + 1):
+            max_len = min(MAX_NGRAM_LEN, len(words) + 1)
+            for n in range(1, max_len):
                 for ngram in nltk_ngrams(words, n):
                     ngrams.add(' '.join(ngram))
 
