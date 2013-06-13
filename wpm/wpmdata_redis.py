@@ -147,7 +147,6 @@ class WpmLoader:
         self.load_page_titles(path + dump_filenames["pages"])
 
     def load_labels(self, filename):
-        """"""
         print 'Loading labels into redis...'
         rds = self.wpm.conn
         pipe = rds.pipeline()
@@ -178,7 +177,6 @@ class WpmLoader:
         labels_file.close()
 
     def load_translations(self, filename):
-        """"""
         print 'Loading translations into redis...'
         rds = self.wpm.conn
         pipe = rds.pipeline()
@@ -206,7 +204,6 @@ class WpmLoader:
         print 'Done loading translations'
 
     def load_page_titles(self, filename):
-        """"""
         print 'Loading page titles...'
         rds = self.wpm.conn
         pipe = rds.pipeline()

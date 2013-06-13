@@ -6,12 +6,10 @@ import unicodedata
 
 
 def tokenize(text):
-    """"""
     return regexp_tokenize(text, r'\w+([.,\']\w+)*|[^\w\s]+')
 
 
 class Semanticizer:
-    """"""
 
     def __init__(self, language_code, sense_probability_threshold):
         """"""
@@ -19,12 +17,12 @@ class Semanticizer:
         self.sense_probability_threshold = sense_probability_threshold
         self.wikipedia_url_template = 'http://%s.wikipedia.org/wiki/%s'
         self.wpm = wpmutil.wpm_dumps[language_code]
+        self.title_page = {} # This needs to be removed
 
     def semanticize(self, sentence, normalize_dash=True,
                     normalize_accents=True, normalize_lower=False,
                     translations=True, counts=False,
                     sense_probability_threshold=None):
-        """"""
         if sense_probability_threshold == None:
             sense_probability_threshold = self.sense_probability_threshold
         result = {"links": []}
@@ -111,7 +109,6 @@ class Semanticizer:
         return result
 
     def normalize(self, raw, dash=True, accents=True, lower=True):
-        """"""
         text = raw
         if dash:
             text = text.replace('-', ' ')
@@ -123,7 +120,6 @@ class Semanticizer:
         return text if len(text) else raw
 
     def remove_accents(self, input_str):
-        """"""
         if type(input_str) is str:
             input_unicode = unicode(input_str, errors="ignore")
         else:
