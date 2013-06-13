@@ -39,21 +39,16 @@ class SemanticizeProcessor(LinksProcessor):
                                         not "accents" in settings["normalize"])
                 normalize_lower = "normalize" in settings and \
                                   "lower" in settings["normalize"]
-                sense_probability_threshold = settings["sense_probability_threshold"] if "sense_probability_threshold" in settings else "0.0"
-                try :
-                    sense_probability_threshold = float(sense_probability_threshold)
-                except ValueError:
-                    sense_probability_threshold = 0.0
 
-                split_sentences = "split_sentences" in settings
-                print "split_sentences:",split_sentences
-
-                if split_sentences:
-                    sentences = PunktSentenceTokenizer().tokenize(text)
-                else:
-                    sentences = [text]
-
-                sem = self.semanticizers[settings["langcode"]]
+                results = self.semanticizers[settings["langcode"]] \
+                            .semanticize(text, counts=True,
+                                         normalize_dash=normalize_dash,
+                                         normalize_accents=normalize_accents,
+                                         normalize_lower=normalize_lower,
+                                         translations=translations,
+                                         sense_probability_threshold=-1)
+                links = results["links"]
+            else:
                 links = []
 
                 for sentence in sentences:
