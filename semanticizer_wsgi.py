@@ -3,7 +3,7 @@
 A stripped down, WSGI compatible, version of the semanticizer.
 
 Usage:
-  gunicorn --bind 0.0.0.0:5001 --workers 4 semanticizer_wsgi.py
+  gunicorn --bind 0.0.0.0:5001 --workers 4 semanticizer_wsgi:app
 
 """
 
@@ -18,6 +18,7 @@ import procpipeline
 # Kurwa broken config handling in config.py
 WPMDATA = {'nl': ['dutch', '/zfs/ilps-plexer/wikipediaminer/nlwiki-20111104']}
 
+# WSGI app!
 app = Flask(__name__)
 app.debug = True
 
