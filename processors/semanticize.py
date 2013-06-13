@@ -68,7 +68,7 @@ class Semanticizer:
                             else:
                                 link_probability = float(entity['cntlinkdoc']) / entity['cnttextdoc']
                                 sense_probability = float(sense_data['cntlinkdoc']) / entity['cnttextdoc']
-                            if sense_probability >= sense_probability_threshold:
+                            if sense_probability > sense_probability_threshold:
                                 title = unicode(self.wpm.get_sense_title(sense_str))
                                 url = self.wikipedia_url_template \
                                       % (self.language_code,
