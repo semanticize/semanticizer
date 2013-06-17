@@ -87,8 +87,8 @@ class MultipleEntityFeaturesProcessor(LinksProcessor):
         # Find stuff
         result_list = []
         for link in linked_entities:
-            if link['id'] in self.link_dict:
-                link_label = self.link_dict[link['id']]
+            if str(link['id']) in self.link_dict:
+                link_label = self.link_dict[str(link['id'])]
                 for sub_link in link_label:
                     if current_label != sub_link[0]:
                         result_list.append((sub_link[0], link['id'],
