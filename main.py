@@ -16,12 +16,10 @@ import procpipeline
 from config import conf_get
 from server import Server
 from logging.handlers import TimedRotatingFileHandler
-from textcat import NGram
 import wpm.wpmutil as wpmutil
 
 
-def start_server(lm_dir,
-                 langcodes,
+def start_server(langcodes,
                  host,
                  port,
                  verbose=False,
@@ -34,8 +32,6 @@ def start_server(lm_dir,
     @param verbose: Set whether the Flask server should be verbose
     @param logformat: The logformat used by the Flask server
     """
-    # Fetch the language models needed for the textcat language guesser
-    textcat = NGram(lm_dir)
     # Initialize the pipeline
     pipeline = procpipeline.build(langcodes, feature_config)
     # Create the FlaskServer
@@ -43,7 +39,7 @@ def start_server(lm_dir,
     server = Server()
     server.set_debug(verbose, logformat)
     # Setup all available routes / namespaces for the HTTP server
-    server.setup_all_routes(pipeline, langcodes, textcat)
+    server.setup_all_routes(pipeline, langcodes)
     logging.getLogger().info("Done setting up server, now starting...")
     # And finally, start the thing
     server.start(host, port)
@@ -91,8 +87,7 @@ if __name__ == '__main__':
 
     # Start the server
     try:
-        start_server(conf_get('textcat', 'lmpath'),
-                     conf_get('wpm', 'languages').keys(),
+        start_server(conf_get('wpm', 'languages').keys(),
                      conf_get('server', 'host'),
                      conf_get('server', 'port'),
                      conf_get('logging', 'verbose'),

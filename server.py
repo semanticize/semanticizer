@@ -99,19 +99,9 @@ class Server(object):
         self.langcodes = langcodes
         self.app.add_url_rule("/semanticize/<langcode>", "_semanticize",
                               self._semanticize_handler, methods=["GET", "POST"])
-        self.app.add_url_rule("/semanticize", "_autolang_semanticize",
-                              self._autolang_semanticize,
+        self.app.add_url_rule("/semanticize", "_semanticize_usage",
+                              self._semanticize_usage,
                               methods=["GET", "POST"])
-
-    def setup_route_language(self, textcat):
-        """
-        Setup the /language namespace.
-
-        @param textcat: The textcat language guesser instance to use
-        """
-        self.textcat = textcat
-        self.app.add_url_rule("/language", "_language",
-                              self._language, methods=["GET", "POST"])
 
     def setup_route_inspect(self, pipeline):
         """
@@ -123,15 +113,13 @@ class Server(object):
         self.app.add_url_rule("/inspect", "_inspect",
                               self._inspect, methods=["GET"])
 
-    def setup_all_routes(self, pipeline, langcodes, textcat):
+    def setup_all_routes(self, pipeline, langcodes):
         """
         Convenience function to start all namespaces at once.
 
         @param pipeline: The pipeline of processors
-        @param textcat: The textcat language guesser instance to use
         """
         self.setup_route_semanticize(pipeline, langcodes)
-        self.setup_route_language(textcat)
         self.setup_route_inspect(pipeline)
 
     def start(self, host, port):
@@ -145,37 +133,19 @@ class Server(object):
         print "Server started on %s:%d" % (host, port)
         self.app.run(host, port, self.app.debug, use_reloader=False)
 
-    def _autolang_semanticize(self):
+    def _semanticize_usage(self):
         """
-        The function handling the /semanticize namespace. It calls _semanticize
-        to handle the request after determining the language.
+        The function handling the /semanticize namespace. Returns the available
+        languages.
 
         @return: The body of the response, in this case a json formatted list \
                  of links and their relevance
         @see: _semanticize
         """
-        if request.method == "GET" and not "text" in request.args:
-            return self._json_dumps({"languages": self.langcodes},
-                                    "pretty" in request.args)
 
-        text = self._get_text_from_request()
-        lang = self.textcat.classify(text.encode('utf-8'))
-        for langcode in self.langcodes:
-            if wpmutil.wpm_dumps[langcode].get_lang_name() == lang:
-                break
-        else:
-            return self._json_dumps({"language": lang, "text": text,
-                                     "links": []},
-                                    "pretty" in request.args)
+        json = self._json_dumps({"languages": self.langcodes},
+                                 "pretty" in request.args)
 
-        settings = {"langcode": langcode}
-        for key, value in request.args.iteritems():
-            assert key not in settings
-            settings[key] = value
-
-        sem_result = self._semanticize(key, settings, text)
-        sem_result["language"] = lang
-        json = self._json_dumps(sem_result, "pretty" in settings)
         return Response(json, mimetype=Server.APPLICATION_JSON)
 
     def _semanticize_handler(self, langcode):
@@ -224,19 +194,6 @@ class Server(object):
         result = {"links": links, "text": text}
 
         return result
-
-    def _language(self):
-        """
-        Function that handles the /language namespace. Will try to use the
-        textcat instance for classifying the string and detecting the language.
-
-        @return: The body of the response, in this case a json formatted \
-                 string containing the detected language.
-        """
-        text = self._get_text_from_request()
-        self.app.logger.debug(unicode(text))
-        lang = self.textcat.classify(text.encode("utf-8"))
-        return self._json_dumps({"language": lang})
 
     def _inspect(self):
         """
