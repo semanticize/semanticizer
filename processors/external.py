@@ -23,6 +23,7 @@ from lxml import etree as ElementTree
 
 import datetime
 import shelve
+import os
 from copy import deepcopy
 
 
@@ -34,9 +35,11 @@ class ArticlesProcessor(LinksProcessor):
         self.article_cache = {}
 
         for langcode in langcodes:
-            pickle_root = pickledir + '/' + langcode + '/'
-            self.article_cache[langcode] = shelve.open(pickle_root
-                                                       + 'article_cache.db')
+            pickle_root = os.path.join(pickledir, langcode)
+            if not os.path.isdir(pickle_root):
+                os.makedirs(pickle_root)
+            self.article_cache[langcode] = \
+                shelve.open(os.path.join(pickle_root, 'article_cache.db'))
             print "Loaded %d articles for %s from cache." \
                   % (len(self.article_cache[langcode]), langcode)
 
@@ -226,10 +229,12 @@ class StatisticsProcessor(LinksProcessor):
                           + langcode \
                           + "/%d%02d/%s"  # 201001/De%20Jakhalzen
 
-            pickle_root = pickledir + '/' + langcode + '/'
+            pickle_root = os.path.join(pickledir, langcode)
+            if not os.path.isdir(pickle_root):
+                os.makedirs(pickle_root)
             self.wikipedia_statistics_cache[langcode] = \
-                                   shelve.open(pickle_root \
-                                            + 'wikipedia_statistics_cache.db')
+                shelve.open(os.path.join(pickle_root, \
+                                         'wikipedia_statistics_cache.db'))
             print "Loaded %d sets of statistics for %s from cache." \
                   % (len(self.wikipedia_statistics_cache[langcode]), langcode)
 
