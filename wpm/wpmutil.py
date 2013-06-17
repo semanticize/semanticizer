@@ -32,7 +32,7 @@ def load_wpm_dump(datasource, langcode, **kwargs):
 
 
 def normalize(raw):
-    """"""
+    """Replaces hyphens with spaces, removes accents, lower cases and strips the input text."""
     text = raw
     text = text.replace('-', ' ')
     text = remove_accents(text)
@@ -42,7 +42,7 @@ def normalize(raw):
 
 
 def remove_accents(input_str):
-    """"""
+    """Replaces accented characters in the input with their non-accented counterpart."""
     import unicodedata
     if type(input_str) is str:
         input_unicode = unicode(input_str, errors="ignore")
