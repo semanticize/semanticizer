@@ -36,16 +36,18 @@ except ImportError:
 from flask import Flask, Response, request
 
 import procpipeline
+from config import conf_get
+import wpm.wpmutil as wpmutil
 
-# Kurwa broken config handling in config.py
-WPMDATA = {'nl': ['dutch', '/zfs/ilps-plexer/wikipediaminer/nlwiki-20111104']}
+wpm_languages = conf_get('wpm', 'languages')
+wpmutil.init_datasource(wpm_languages)
+PIPELINE = procpipeline.build(wpm_languages, feature_config=None)
 
 # WSGI app!
 app = Flask(__name__)
 app.debug = True
 
 APPLICATION_JSON = "application/json"
-PIPELINE = procpipeline.build(WPMDATA, feature_config=None)
 
 # RegExens for CleanTweet
 CLEAN_TWEET = \
@@ -151,11 +153,11 @@ def _json_dumps(obj, pretty=False):
     @return: The JSON string
     """
     if not pretty and "ujson" in locals():
-        return ujson.dumps(o)
+        return ujson.dumps(obj)
     elif not pretty:
-        return json.dumps(o)
+        return json.dumps(obj)
     else:
-        return json.dumps(o, indent=4)
+        return json.dumps(obj, indent=4)
 
 def _get_text_from_request():
     """
