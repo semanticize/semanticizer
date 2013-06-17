@@ -29,7 +29,7 @@ to the OAIR2013 article or alternatively any of these articles.
 The [online documentation](http://semanticize.uva.nl/doc/) 
 describes how to use the Semanticizer Web API. This [REST](http://en.wikipedia.org/wiki/Representational_state_transfer)-like web service returns [JSON](http://www.json.org/) and is exposed to public at: http://semanticize.uva.nl/api/. Currently an access key for the webservice is not needed.
 
-The [code](https://github.com/semanticize/semanticizer/) is released under LGPL license (see below). If you are have any questions, contact 
+The [code](https://github.com/semanticize/semanticizer/) is released under LGPL license (see below). If you have any questions, contact 
 [Daan](http://staff.science.uva.nl/~dodijk/).
 
 If you want to dive into the code, start at Main.py.
