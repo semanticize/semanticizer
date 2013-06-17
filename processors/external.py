@@ -56,7 +56,7 @@ class ArticlesProcessor(LinksProcessor):
 
     def preprocess(self, links, text, settings):
         if not "article" in settings and not "features" in settings and not \
-               "learning" in settings:
+               "learning" in settings and "multi" not in settings:
             return (links, text, settings)
         if not settings["langcode"] in self.langcodes:
             return (links, text, settings)

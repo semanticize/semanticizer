@@ -18,6 +18,7 @@ from processors.core import SettingsProcessor, FilterProcessor
 from processors.semanticizer import SemanticizeProcessor
 from processors.features import FeaturesProcessor, ArticleFeaturesProcessor, \
                                 ContextFeaturesProcessor
+from processors.multiple import MultipleEntityFeaturesProcessor
 from processors.external import ArticlesProcessor, StatisticsProcessor
 from processors.learning import LearningProcessor
 from processors.image import AddImageProcessor
@@ -87,6 +88,7 @@ def _load_features(pipeline, langcodes, feature_config):
                                          feature_config["wpminer_numthreads"],
                                          feature_config["picklepath"])))
     pipeline.append(("ArticleFeatures", ArticleFeaturesProcessor()))
+    pipeline.append(("MultipleFeatures", MultipleEntityFeaturesProcessor()))
     pipeline.append(("ContextFeatures", ContextFeaturesProcessor()))
     logging.getLogger().info("Loading features took %.2f seconds." \
                       % (time.time() - start))
