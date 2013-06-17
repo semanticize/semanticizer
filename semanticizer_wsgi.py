@@ -36,23 +36,19 @@ except ImportError:
 from flask import Flask, Response, request
 
 import procpipeline
+from config import conf_get
 import wpm.wpmutil as wpmutil
 
-from config import conf_get
 
-# Semanticizer
-
-for langcode, langconfig in conf_get('wpm', 'languages').iteritems():
-        wpmutil.load_wpm_dump(langconfig['source'], langcode, \
-                              **langconfig['initparams'])
+wpm_languages = conf_get('wpm', 'languages')
+wpmutil.init_datasource(wpm_languages)
+PIPELINE = procpipeline.build(wpm_languages, feature_config=None)
 
 # WSGI app!
 app = Flask(__name__)
 app.debug = True
 
 APPLICATION_JSON = "application/json"
-PIPELINE = procpipeline.build(conf_get('wpm', 'languages'), \
-                              feature_config=None)
 
 # RegExens for CleanTweet
 CLEAN_TWEET = \

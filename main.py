@@ -70,8 +70,7 @@ if __name__ == '__main__':
 
     # Set the datasource and init it
     wpmlangs = conf_get('wpm', 'languages')
-    for langcode, langconfig in wpmlangs.iteritems():
-        wpmutil.load_wpm_dump(langconfig['source'], langcode, **langconfig['initparams'])
+    wpmutil.init_datasource(wpmlangs)
 
     # If we use learning features, configure them
     feature_conf = None

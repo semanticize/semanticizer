@@ -19,6 +19,11 @@ dump_filenames = {
 }
 
 
+def init_datasource(wpm_languages):
+    """Set the datasource and init it"""
+    for langcode, langconfig in wpm_languages.iteritems():
+        load_wpm_dump(langconfig['source'], langcode, **langconfig['initparams'])
+
 def load_wpm_dump(datasource, langcode, **kwargs):
     importdata = datasource.rsplit('.', 1)
     mod = __import__(importdata[0], fromlist=[importdata[1]])
@@ -27,7 +32,7 @@ def load_wpm_dump(datasource, langcode, **kwargs):
 
 
 def normalize(raw):
-    """"""
+    """Replaces hyphens with spaces, removes accents, lower cases and strips the input text."""
     text = raw
     text = text.replace('-', ' ')
     text = remove_accents(text)
@@ -37,7 +42,7 @@ def normalize(raw):
 
 
 def remove_accents(input_str):
-    """"""
+    """Replaces accented characters in the input with their non-accented counterpart."""
     import unicodedata
     if type(input_str) is str:
         input_unicode = unicode(input_str, errors="ignore")
