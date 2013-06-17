@@ -19,6 +19,11 @@ dump_filenames = {
 }
 
 
+def init_datasource(wpm_languages):
+    """Set the datasource and init it"""
+    for langcode, langconfig in wpm_languages.iteritems():
+        load_wpm_dump(langconfig['source'], langcode, **langconfig['initparams'])
+
 def load_wpm_dump(datasource, langcode, **kwargs):
     importdata = datasource.rsplit('.', 1)
     mod = __import__(importdata[0], fromlist=[importdata[1]])
