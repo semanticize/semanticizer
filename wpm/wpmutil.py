@@ -31,12 +31,18 @@ def load_wpm_dump(datasource, langcode, **kwargs):
     wpm_dumps[langcode] = class_(langcode, **kwargs)
 
 
-def normalize(raw):
-    """Replaces hyphens with spaces, removes accents, lower cases and strips the input text."""
+def normalize(raw, dash=True, accents=True, lower=True):
+    """Replaces hyphens with spaces, removes accents, lower cases and strips the input text.
+
+    All steps, except for the strip(), can be disabled with the optional arguments.
+    """
     text = raw
-    text = text.replace('-', ' ')
-    text = remove_accents(text)
-    text = text.lower()
+    if dash:
+        text = text.replace('-', ' ')
+    if accents:
+        text = remove_accents(text)
+    if lower:
+        text = text.lower()
     text = text.strip()
     return text if len(text) else raw
 

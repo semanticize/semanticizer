@@ -15,7 +15,6 @@ import wpm.wpmutil as wpmutil
 from nltk import regexp_tokenize
 from nltk.util import ngrams as nltk_ngrams
 import urllib
-import unicodedata
 
 
 def tokenize(text):
@@ -25,7 +24,7 @@ def tokenize(text):
 class Semanticizer:
 
     def __init__(self, language_code, sense_probability_threshold):
-        """"""
+        """constructor"""
         self.language_code = language_code
         self.sense_probability_threshold = sense_probability_threshold
         self.wikipedia_url_template = 'http://%s.wikipedia.org/wiki/%s'
@@ -52,16 +51,16 @@ class Semanticizer:
                     ngrams.add(' '.join(ngram))
 
         for ngram in ngrams:
-            normal_ngram = self.normalize(ngram)
+            normal_ngram = wpmutil.normalize(ngram)
             if self.wpm.normalized_entity_exists(normal_ngram):
-                normalized_ngram = self.normalize(ngram, normalize_dash,
-                                                  normalize_accents,
-                                                  normalize_lower)
+                normalized_ngram = wpmutil.normalize(ngram, normalize_dash,
+                                                     normalize_accents,
+                                                     normalize_lower)
                 anchors = self.wpm.get_all_entities(normal_ngram)
                 for anchor in anchors:
-                    normalized_anchor = self.normalize(anchor, normalize_dash,
-                                                       normalize_accents,
-                                                       normalize_lower)
+                    normalized_anchor = wpmutil.normalize(anchor, normalize_dash,
+                                                          normalize_accents,
+                                                          normalize_lower)
                     if normalized_ngram == normalized_anchor:
                         if not self.wpm.entity_exists(anchor):
                             raise LookupError("Data corrupted, cannot "
@@ -120,22 +119,3 @@ class Semanticizer:
                                 result["links"].append(link)
 
         return result
-
-    def normalize(self, raw, dash=True, accents=True, lower=True):
-        text = raw
-        if dash:
-            text = text.replace('-', ' ')
-        if accents:
-            text = self.remove_accents(text)
-        if lower:
-            text = text.lower()
-        text = text.strip()
-        return text if len(text) else raw
-
-    def remove_accents(self, input_str):
-        if type(input_str) is str:
-            input_unicode = unicode(input_str, errors="ignore")
-        else:
-            input_unicode = input_str
-        nkfd_form = unicodedata.normalize('NFKD', input_unicode)
-        return u"".join([c for c in nkfd_form if not unicodedata.combining(c)])
