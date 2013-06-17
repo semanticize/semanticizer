@@ -11,17 +11,27 @@
 # You should have received a copy of the GNU Lesser General Public License 
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import sys
-sys.path.append(".")
-from wpm.wpmdata_redis import WpmLoader
+server:
+  port: 5000
+  host: 0.0.0.0
 
-if __name__ == '__main__':
-    if len(sys.argv) < 4:
-        print "Usage: %s language_name language_code path_to_wpm_dump" \
-               % sys.argv[0]
-        sys.exit(1)
-    try:
-        loader = WpmLoader()
-        loader.load_wpminer_dump(sys.argv[1], sys.argv[2], sys.argv[3])
-    except IOError as err:
-        print err.message
+wpm:
+  languages:
+    en:
+      source: wpm.wpmdata_redis.WpmDataRedis
+      initparams:
+        host: localhost
+        port: 6379
+  threads: 16
+  bdburl: http://wikipedia-miner.cms.waikato.ac.nz/services/exploreArticle
+
+linkprocs:
+  features: false
+
+logging:
+  verbose: true
+  path: log.txt
+  format: '[%(asctime)-15s][%(levelname)s][%(module)s][%(pathname)s:%(lineno)d]: %(message)s'
+
+misc:
+  tempdir: /tmp

@@ -17,21 +17,16 @@ server:
 
 wpm:
   languages:
-    nl:
-      source: wpm.wpmdata_redis.WpmDataRedis
-      initparams:
-        host: localhost
-        port: 6379
     en:
       source: wpm.wpmdata_inproc.WpmDataInProc
       initparams:
-        path: /zfs/ilps-plexer/wikipediaminer/nlwiki-20111104
+        path: ./enwiki-20110722
         language: english
   threads: 16
-  bdburl: http://zookst13.science.uva.nl:8080/dutchsemcor/article
+  bdburl: http://wikipedia-miner.cms.waikato.ac.nz/services/exploreArticle
 
 linkprocs:
-  includefeatures: true
+  features: false
 
 logging:
   verbose: true
@@ -39,4 +34,4 @@ logging:
   format: '[%(asctime)-15s][%(levelname)s][%(module)s][%(pathname)s:%(lineno)d]: %(message)s'
 
 misc:
-  tempdir: /tmp/
+  tempdir: /tmp
