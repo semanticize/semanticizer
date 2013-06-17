@@ -30,9 +30,6 @@ wpm:
   threads: 16
   bdburl: http://zookst13.science.uva.nl:8080/dutchsemcor/article
 
-textcat:
-  lmpath: LM.lrej2011
-
 linkprocs:
   includefeatures: true
 
@@ -40,9 +37,6 @@ logging:
   verbose: true
   path: log.txt
   format: '[%(asctime)-15s][%(levelname)s][%(module)s][%(pathname)s:%(lineno)d]: %(message)s'
-
-scikit:
-  url: http://fietstas.science.uva.nl:5001
 
 misc:
   tempdir: /tmp/
