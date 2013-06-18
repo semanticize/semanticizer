@@ -15,6 +15,7 @@ import wpm.wpmutil as wpmutil
 from nltk import regexp_tokenize
 from nltk.util import ngrams as nltk_ngrams
 import urllib
+from config import conf_get
 
 
 def tokenize(text):
@@ -31,6 +32,11 @@ class Semanticizer:
         self.wpm = wpmutil.wpm_dumps[language_code]
         self.title_page = {} # This needs to be removed
 
+        try:
+            self.max_ngram_length = conf_get('semanticize', 'max_ngram_length')
+        except KeyError:
+            self.max_ngram_length = None
+
     def semanticize(self, sentence, normalize_dash=True,
                     normalize_accents=True, normalize_lower=False,
                     translations=True, counts=False,
@@ -39,15 +45,19 @@ class Semanticizer:
             sense_probability_threshold = self.sense_probability_threshold
         result = {"links": []}
         ngrams = set()
-        tokens = [tokenize(sentence),
-                  tokenize(sentence.replace('-', ' ')),
-                  tokenize(sentence.replace('.', ' ')),
-                  tokenize(sentence.replace('.', ''))]
+        token_lists = [tokenize(sentence),
+                       tokenize(sentence.replace('-', ' ')),
+                       tokenize(sentence.replace('.', ' ')),
+                       tokenize(sentence.replace('.', ''))]
 
         # get all ngrams for this sentence
-        for words in tokens:
-            for n in range(1, len(words) + 1):
-                for ngram in nltk_ngrams(words, n):
+        for token_list in token_lists:
+            max_len = len(token_list) + 1
+            if self.max_ngram_length is not None:
+                max_len = min(max_len, self.max_ngram_length)
+
+            for n in range(1, max_len):
+                for ngram in nltk_ngrams(token_list, n):
                     ngrams.add(' '.join(ngram))
 
         for ngram in ngrams:
