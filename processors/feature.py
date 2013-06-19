@@ -20,9 +20,6 @@ import collections
 import processors.stringUtils as stringUtils
 import os
 
-# Als je het EDIT_DISTANCE feature wil gebruiken moet je een Python Levenshtein
-# module installeren. Ik had deze gepakt:
-# http://pypi.python.org/pypi/python-Levenshtein/0.10.2
 import Levenshtein
 
 
