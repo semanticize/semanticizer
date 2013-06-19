@@ -17,6 +17,8 @@ The Processor wrapping Semanticizer
 from processors.core import LinksProcessor
 from processors.semanticize import Semanticizer
 
+from nltk.tokenize.punkt import PunktSentenceTokenizer
+
 
 class SemanticizeProcessor(LinksProcessor):
     """Processor handling the semanticizing"""
@@ -33,28 +35,35 @@ class SemanticizeProcessor(LinksProcessor):
             self.semanticizers[langcode] = Semanticizer(langcode, None)
 
     def preprocess(self, links, text, settings):
-        """Semanticize the given text and return the links, text, and
-        settings"""
+        """
+        Semanticize the given text and return the links, text, and
+        settings.
+        """
         links = []
-        if "langcode" in settings:
-            if settings["langcode"] in self.semanticizers:
-                translations = "translations" in settings
-                normalize_dash = not("normalize" in settings and \
-                                     not "dash" in settings["normalize"])
-                normalize_accents = not("normalize" in settings and \
-                                        not "accents" in settings["normalize"])
-                normalize_lower = "normalize" in settings and \
-                                  "lower" in settings["normalize"]
-                results = self.semanticizers[settings["langcode"]] \
-                            .semanticize(text, counts=True,
-                                         normalize_dash=normalize_dash,
-                                         normalize_accents=normalize_accents,
-                                         normalize_lower=normalize_lower,
-                                         translations=translations,
-                                         sense_probability_threshold=-1)
-                links = results["links"]
+        if "langcode" in settings and settings["langcode"] in self.semanticizers:
+            translations = "translations" in settings
+            normalize_dash = not("normalize" in settings and \
+                                 not "dash" in settings["normalize"])
+            normalize_accents = not("normalize" in settings and \
+                                    not "accents" in settings["normalize"])
+            normalize_lower = "normalize" in settings and \
+                              "lower" in settings["normalize"]
+
+            if "split_sentences" in settings:
+                sentences = PunktSentenceTokenizer().tokenize(text)
             else:
-                links = []
+                sentences = [text]
+
+            sem = self.semanticizers[settings["langcode"]]
+            for sentence in sentences:
+                results = sem.semanticize(sentence, counts=True,
+                                          normalize_dash=normalize_dash,
+                                          normalize_accents=normalize_accents,
+                                          normalize_lower=normalize_lower,
+                                          translations=translations,
+                                          sense_probability_threshold=-1)
+
+                links.extend(results["links"])
 
         return (links, text, settings)
 
