@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>UvA Semanticizer Web API</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" media="all" href="public/stylesheets/normalize.css" />
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="page">
+
+      <div class="header">
+        
+          
+          <h1>UvA Semanticizer Web API</h1>
+<p>The UvA Semanticizer Web API is a web service for semantic linking
+created in 2012 by <a href="http://staff.science.uva.nl/~dodijk/">Daan Odijk</a> at
+<a href="http://ilps.science.uva.nl/">ILPS</a> (University of Amsterdam). 
+This project since received contributions from (in alphabetical order): 
+<a href="http://staff.science.uva.nl/~buitinck/">Lars Buitinck</a>, 
+<a href="http://graus.nu/">David Graus</a>, 
+<a href="http://staff.science.uva.nl/~tkenter1/">Tom Kenter</a>, 
+<a href="http://www.evertlammerts.nl/">Evert Lammerts</a>, 
+<a href="http://edgar.meij.pro/">Edgar Meij</a>, 
+<a href="http://staff.science.uva.nl/~dodijk/">Daan Odijk</a>, 
+<a href="http://www.anneschuth.nl/">Anne Schuth</a> and 
+<a href="http://nl.linkedin.com/pub/isaac-sijaranamual/">Isaac Sijaranamual</a>.</p>
+<p>The algorithms for this webservice are developed for and described in a
+OAIR2013 publication on <a href="http://ilps.science.uva.nl/biblio/feeding-second-screen-semantic-linking-based-subtitles">Feeding the Second Screen</a> by 
+<a href="http://staff.science.uva.nl/~dodijk/">Daan Odijk</a>, 
+<a href="http://edgar.meij.pro/">Edgar Meij</a> and 
+<a href="http://staff.science.uva.nl/~mdr/">Maarten de Rijke</a>. 
+Part of this research was inspired by earlier ILPS publications: 
+<a href="http://ilps.science.uva.nl/biblio/adding-semantics-microblog-posts">Adding Semantics to Microblog Posts</a> 
+and <a href="http://ilps.science.uva.nl/node/889">Mapping Queries To The Linking Open Data Cloud</a>.
+If you use this webservice for your own research, please include a reference 
+to any of these articles.</p>
+<p>The <a href="https://github.com/semanticize/semanticizer/">code</a> is released under 
+LGPL license. If you have any questions, contact 
+<a href="http://staff.science.uva.nl/~dodijk/">Daan</a>.
+Currently an access key for the webservice is not needed.</p>
+<p>This documents describes how to use the Semanticizer Web API. This 
+<a href="http://en.wikipedia.org/wiki/Representational_state_transfer">REST</a>-like 
+web service returns <a href="http://www.json.org/">JSON</a> 
+and is exposed to public at: <a href="http://semanticize.uva.nl/api/">http://semanticize.uva.nl/api/</a>.</p>
+<p>The documentation gives examples of HTTP calls, that you could use from e.g.:
+command line using <a href="http://en.wikipedia.org/wiki/CURL">cURL</a>: 
+<code>$ curl &quot;http://semanticize.uva.nl/api/&quot;</code> or 
+using <a href="http://api.jquery.com/jQuery.ajax/">jQuery.ajax()</a> in 
+<a href="http://en.wikipedia.org/wiki/JavaScript">JavaScript</a>. </p>
+<hr>
+<h2>Semanticizer Web API</h2>
+<p>Let&#39;s have a look at the Web API. We&#39;ll send a short text to the webservice
+using the Web API. The text can also be sent as the body of a
+<a href="http://en.wikipedia.org/wiki/POST_%28HTTP%29">HTTP POST</a> call. 
+Below is response of the Web API and the URL, specifying that we have a short 
+Dutch text and that we want the output to be <em>pretty</em> (i.e. human readable).</p>
+<blockquote>
+<p><a href="http://semanticize.uva.nl/api/nl?text=UvA&amp;pretty">http://semanticize.uva.nl/api/nl?text=UvA&amp;pretty</a></p>
+</blockquote>
+
+          
+            <div class='highlight'><pre>{
+    <span class="string">"text"</span>: <span class="string">"UvA"</span>,
+    <span class="string">"status"</span>: <span class="string">"OK"</span>,
+    <span class="string">"links"</span>: [
+        {
+            <span class="string">"id"</span>: <span class="number">14815</span>,
+            <span class="string">"text"</span>: <span class="string">"UvA"</span>, 
+            <span class="string">"label"</span>: <span class="string">"UvA"</span>, 
+            <span class="string">"title"</span>: <span class="string">"Universiteit van Amsterdam"</span>, 
+            <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/Universiteit%20van%20Amsterdam"</span>, 
+            <span class="string">"linkProbability"</span>: <span class="number">0.2946058091286307</span>, 
+            <span class="string">"priorProbability"</span>: <span class="number">1.0</span>, 
+            <span class="string">"senseProbability"</span>: <span class="number">0.2946058091286307</span> 
+        }
+    ]
+}</pre></div>
+          
+        
+
+        
+      </div>
+
+      
+        
+        <p>What is returned is a JSON object containing the original text, a <code>status</code> message 
+and a list of links. The only link detected in this short text is a link to the
+<a href="http://nl.wikipedia.org/wiki/Universiteit%20van%20Amsterdam">Wikipedia page of the UvA</a>.</p>
+<p>Every link has a number of properties, including the part of the text based on 
+which the link is made (<code>text</code> and <code>label</code>, see Normalization below), the title 
+of the target Wikipedia page (<code>title</code>) and a <code>url</code> for that page. </p>
+<p>Finally, each link has three heuristic measures that estimate the likelihood of
+a link being correct for the <code>label</code>: <code>priorProbability</code>, <code>linkProbability</code> and 
+<code>senseProbability</code>. How these three measures are computed will be discussed 
+below. </p>
+<hr>
+<h3>Counts and Heuristics</h3>
+<p>To understand how the three heuristics measures are computed we first look
+at the raw numbers from which these are computed, by adding counts to the
+API call:</p>
+<blockquote>
+<p><a href="http://semanticize.uva.nl/api/nl?text=UvA&amp;pretty&amp;counts">http://semanticize.uva.nl/api/nl?text=UvA&amp;pretty&amp;counts</a></p>
+</blockquote>
+
+        
+          <div class='highlight'><pre>{
+    <span class="string">"text"</span>: <span class="string">"UvA"</span>, 
+    <span class="string">"status"</span>: <span class="string">"OK"</span>,
+    <span class="string">"links"</span>: [
+        {
+            <span class="string">"id"</span>: <span class="number">14815</span>, 
+            <span class="string">"text"</span>: <span class="string">"UvA"</span>, 
+            <span class="string">"label"</span>: <span class="string">"UvA"</span>, 
+            <span class="string">"title"</span>: <span class="string">"Universiteit van Amsterdam"</span>, 
+            <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/Universiteit%20van%20Amsterdam"</span>, 
+            <span class="string">"linkProbability"</span>: <span class="number">0.2946058091286307</span>, 
+            <span class="string">"priorProbability"</span>: <span class="number">1.0</span>, 
+            <span class="string">"senseProbability"</span>: <span class="number">0.2946058091286307</span>, 
+            <span class="string">"docCount"</span>: <span class="number">241</span>,
+            <span class="string">"occCount"</span>: <span class="number">326</span>, 
+            <span class="string">"linkDocCount"</span>: <span class="number">71</span>, 
+            <span class="string">"linkOccCount"</span>: <span class="number">75</span>, 
+            <span class="string">"senseDocCount"</span>: <span class="number">71</span>, 
+            <span class="string">"senseOccCount"</span>: <span class="number">75</span> 
+        }
+    ]
+}</pre></div>
+        
+      
+        
+        <p>We now have four new properties for the link:</p>
+<ul>
+<li><code>occCount</code> is the number of times the <code>label</code> appears on Wikipedia</li>
+<li><code>docCount</code> is the number of documents in which the <code>label</code> appears on Wikipedia</li>
+<li><code>linkOccCount</code> is the number of times the <code>label</code> appears as 
+ <a href="http://en.wikipedia.org/wiki/HTML_anchor#Anchor">anchor</a> 
+ text for a link on Wikipedia</li>
+<li><code>linkDocCount</code> is the number of documents in which the <code>label</code> appears as 
+ <a href="http://en.wikipedia.org/wiki/HTML_anchor#Anchor">anchor</a> 
+ text for a link on Wikipedia</li>
+<li><code>senseOccCount</code> is the number of times the <code>label</code> appears as 
+ <a href="http://en.wikipedia.org/wiki/HTML_anchor#Anchor">anchor</a> 
+ text for a link to <code>title</code> on Wikipedia</li>
+<li><code>senseDocCount</code> is the number of documents in which the <code>label</code> appears as 
+ <a href="http://en.wikipedia.org/wiki/HTML_anchor#Anchor">anchor</a> 
+ text for a link to <code>title</code> on Wikipedia</li>
+</ul>
+<p>From these counts we compute the three heuristic measures that estimate the 
+likelihood of a link being correct for the <code>label</code>. Note that we can have
+more than one <code>title</code> using the same <code>label</code>. The three heuristics are:</p>
+<ul>
+<li><code>linkProbability</code> is computed by dividing the <code>linkDocCount</code> by <code>docCount</code> 
+ and thus equals the percentage of documents in which the <code>label</code> appears as 
+ <a href="http://en.wikipedia.org/wiki/HTML_anchor#Anchor">anchor</a> 
+ text for any link on Wikipedia.</li>
+<li><code>priorProbability</code> is computed by dividing <code>senseDocCount</code> by <code>linkDocCount</code> 
+ and thus equals the percentage of documents  where <code>title</code> is the target when 
+ <code>label</code> appears as <a href="http://en.wikipedia.org/wiki/HTML_anchor#Anchor">anchor</a> 
+ text on Wikipedia.</li>
+<li><code>senseProbability</code> is the product of <code>linkProbability</code> and <code>priorProbability</code>
+ and thus equals the percentage of documents where <code>label</code> is a used as 
+ <a href="http://en.wikipedia.org/wiki/HTML_anchor#Anchor">anchor</a> text to link 
+ to <code>target</code> out of all pages where <code>label</code> appears on Wikipedia.</li>
+</ul>
+<p>More generally, you can regard <code>linkProbability</code> as a measure of how likely
+<code>label</code> is to be a link, <code>priorProbability</code> as a measure of how disambiguous <code>label</code>
+is and <code>senseProbability</code> as a measure combining both characteristics.</p>
+<hr>
+<h3>Translations</h3>
+<p>Wikipedia appears in many languages, so we list links to translations as well:</p>
+<blockquote>
+<p><a href="http://semanticize.uva.nl/api/nl?text=UvA&amp;pretty&amp;translations">http://semanticize.uva.nl/api/nl?text=UvA&amp;pretty&amp;translations</a></p>
+</blockquote>
+
+        
+          <div class='highlight'><pre>{
+    <span class="string">"text"</span>: <span class="string">"UvA"</span>, 
+    <span class="string">"status"</span>: <span class="string">"OK"</span>,
+    <span class="string">"links"</span>: [
+        {
+            <span class="string">"id"</span>: <span class="number">14815</span>,
+            <span class="string">"text"</span>: <span class="string">"UvA"</span>, 
+            <span class="string">"label"</span>: <span class="string">"UvA"</span>, 
+            <span class="string">"title"</span>: <span class="string">"Universiteit van Amsterdam"</span>, 
+            <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/Universiteit%20van%20Amsterdam"</span>, 
+            <span class="string">"linkProbability"</span>: <span class="number">0.2946058091286307</span>, 
+            <span class="string">"priorProbability"</span>: <span class="number">1.0</span>, 
+            <span class="string">"senseProbability"</span>: <span class="number">0.2946058091286307</span>, 
+            <span class="string">"translations"</span>: {
+                <span class="string">"fr"</span>: {
+                    <span class="string">"url"</span>: <span class="string">"http://fr.wikipedia.org/wiki/Universit%C3%A9%20d%27Amsterdam"</span>, 
+                    <span class="string">"title"</span>: <span class="string">"Universit\u00e9 d'Amsterdam"</span>
+                }, 
+                <span class="string">"en"</span>: {
+                    <span class="string">"url"</span>: <span class="string">"http://en.wikipedia.org/wiki/University%20of%20Amsterdam"</span>, 
+                    <span class="string">"title"</span>: <span class="string">"University of Amsterdam"</span>
+                }, 
+                <span class="string">"nl"</span>: {
+                    <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/Universiteit%20van%20Amsterdam"</span>, 
+                    <span class="string">"title"</span>: <span class="string">"Universiteit van Amsterdam"</span>
+                }, 
+                <span class="string">"es"</span>: {
+                    <span class="string">"url"</span>: <span class="string">"http://es.wikipedia.org/wiki/Universidad%20de%20%C3%81msterdam"</span>, 
+                    <span class="string">"title"</span>: <span class="string">"Universidad de \u00c1msterdam"</span>
+                }
+            }
+        }
+    ]
+}</pre></div>
+        
+      
+        
+        <hr>
+<h3>Images</h3>
+<p>We obtain a representative image for a Wikipedia page, by scanning the article
+for the first image that is larger than 36 pixels in any dimension. </p>
+<blockquote>
+<p><a href="http://semanticize.uva.nl/api/nl?text=UvA&amp;pretty&amp;image">http://semanticize.uva.nl/api/nl?text=UvA&amp;pretty&amp;image</a></p>
+</blockquote>
+
+        
+          <div class='highlight'><pre>{
+    <span class="string">"text"</span>: <span class="string">"UvA"</span>, 
+    <span class="string">"status"</span>: <span class="string">"OK"</span>,
+    <span class="string">"links"</span>: [
+        {
+            <span class="string">"id"</span>: <span class="number">14815</span>,
+            <span class="string">"text"</span>: <span class="string">"UvA"</span>, 
+            <span class="string">"label"</span>: <span class="string">"UvA"</span>, 
+            <span class="string">"title"</span>: <span class="string">"Universiteit van Amsterdam"</span>, 
+            <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/Universiteit%20van%20Amsterdam"</span>, 
+            <span class="string">"linkProbability"</span>: <span class="number">0.2946058091286307</span>, 
+            <span class="string">"priorProbability"</span>: <span class="number">1.0</span>, 
+            <span class="string">"senseProbability"</span>: <span class="number">0.2946058091286307</span>,
+            <span class="string">"image_url"</span>: <span class="string">"http://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Agnietenkapel_%28Amsterdam%29.jpg/220px-Agnietenkapel_%28Amsterdam%29.jpg"</span>
+        }
+    ]
+}</pre></div>
+        
+      
+        
+        <p><img src="http://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Agnietenkapel_%28Amsterdam%29.jpg/220px-Agnietenkapel_%28Amsterdam%29.jpg" alt="UvA" height="80" style="float:right;" />
+For the UvA query the <code>image_url</code> to picture of the Agnietenkapel shown on the 
+right is returned. 
+Note that is not always possible to find a representative image. In that case, 
+no <code>image_url</code> will be included in the output.</p>
+<hr>
+<h3>Normalization</h3>
+<p>The input string is normalized before semantic linking is performed. The same
+normalization is applied on the input string as well as on the anchor text in
+Wikipedia. Currently, three normalization methods are implemented:</p>
+<ul>
+<li><code>dash</code> will replace all dashes (-) with a space, making &#39;Déjà-vu-feeling&#39; the 
+same as &#39;Déjà vu feeling&#39;.</li>
+<li><code>accents</code> will remove accents from characters and convert the string to
+<a href="http://www.unicode.org/reports/tr44/tr44-4.html">normal form KD (NFKD)</a>. 
+This will yield in &#39;Déjà vu&#39; being equal to &#39;Deja vu&#39; after normalization.</li>
+<li><code>lower</code> will lowercase all text, making &#39;Déjà vu&#39; the same as &#39;déjà_vu&#39;.</li>
+</ul>
+<p>By default <code>dash</code> and <code>accents</code> are applied, but different combinations can
+be used:</p>
+<blockquote>
+<p><a href="http://semanticize.uva.nl/api/nl?text=UvA&amp;pretty&amp;normalize=lower,dash,accents">http://semanticize.uva.nl/api/nl?text=UvA&amp;pretty&amp;normalize=lower,dash,accents</a></p>
+</blockquote>
+
+        
+          <div class='highlight'><pre>{
+    <span class="string">"text"</span>: <span class="string">"UvA"</span>, 
+    <span class="string">"status"</span>: <span class="string">"OK"</span>,
+    <span class="string">"links"</span>: [
+        {
+            <span class="string">"text"</span>: <span class="string">"UvA"</span>, 
+            <span class="string">"linkProbability"</span>: <span class="number">0.14285714285714285</span>, 
+            <span class="string">"id"</span>: <span class="number">94094</span>, 
+            <span class="string">"senseProbability"</span>: <span class="number">0.0</span>, 
+            <span class="string">"title"</span>: <span class="string">"Uva"</span>, 
+            <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/Uva"</span>, 
+            <span class="string">"label"</span>: <span class="string">"UVA"</span>, 
+            <span class="string">"priorProbability"</span>: <span class="number">0.0</span>
+        }, 
+        {
+            <span class="string">"text"</span>: <span class="string">"UvA"</span>, 
+            <span class="string">"linkProbability"</span>: <span class="number">0.14285714285714285</span>, 
+            <span class="string">"id"</span>: <span class="number">14815</span>, 
+            <span class="string">"senseProbability"</span>: <span class="number">0.14285714285714285</span>, 
+            <span class="string">"title"</span>: <span class="string">"Universiteit van Amsterdam"</span>, 
+            <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/Universiteit%20van%20Amsterdam"</span>, 
+            <span class="string">"label"</span>: <span class="string">"UVA"</span>, 
+            <span class="string">"priorProbability"</span>: <span class="number">1.0</span>
+        }, 
+        {
+            <span class="string">"text"</span>: <span class="string">"UvA"</span>, 
+            <span class="string">"linkProbability"</span>: <span class="number">0.0</span>, 
+            <span class="string">"id"</span>: <span class="number">94094</span>, 
+            <span class="string">"senseProbability"</span>: <span class="number">0.0</span>, 
+            <span class="string">"title"</span>: <span class="string">"Uva"</span>, 
+            <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/Uva"</span>, 
+            <span class="string">"label"</span>: <span class="string">"UVa"</span>, 
+            <span class="string">"priorProbability"</span>: <span class="number">0</span>
+        }, 
+        {
+            <span class="string">"text"</span>: <span class="string">"UvA"</span>, 
+            <span class="string">"linkProbability"</span>: <span class="number">0.2946058091286307</span>, 
+            <span class="string">"id"</span>: <span class="number">14815</span>, 
+            <span class="string">"senseProbability"</span>: <span class="number">0.2946058091286307</span>, 
+            <span class="string">"title"</span>: <span class="string">"Universiteit van Amsterdam"</span>, 
+            <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/Universiteit%20van%20Amsterdam"</span>, 
+            <span class="string">"label"</span>: <span class="string">"UvA"</span>, 
+            <span class="string">"priorProbability"</span>: <span class="number">1.0</span>
+        }, 
+        {
+            <span class="string">"text"</span>: <span class="string">"UvA"</span>, 
+            <span class="string">"linkProbability"</span>: <span class="number">0.25</span>, 
+            <span class="string">"id"</span>: <span class="number">1237144</span>, 
+            <span class="string">"senseProbability"</span>: <span class="number">0.03571428571428571</span>, 
+            <span class="string">"title"</span>: <span class="string">"Uva (Vimioso)"</span>, 
+            <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/Uva%20%28Vimioso%29"</span>, 
+            <span class="string">"label"</span>: <span class="string">"Uva"</span>, 
+            <span class="string">"priorProbability"</span>: <span class="number">0.14285714285714285</span>
+        }, 
+        {
+            <span class="string">"text"</span>: <span class="string">"UvA"</span>, 
+            <span class="string">"linkProbability"</span>: <span class="number">0.25</span>, 
+            <span class="string">"id"</span>: <span class="number">958058</span>, 
+            <span class="string">"senseProbability"</span>: <span class="number">0.21428571428571427</span>, 
+            <span class="string">"title"</span>: <span class="string">"Uva (Sri Lanka)"</span>, 
+            <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/Uva%20%28Sri%20Lanka%29"</span>, 
+            <span class="string">"label"</span>: <span class="string">"Uva"</span>, 
+            <span class="string">"priorProbability"</span>: <span class="number">0.8571428571428571</span>
+        }, 
+        {
+            <span class="string">"text"</span>: <span class="string">"UvA"</span>, 
+            <span class="string">"linkProbability"</span>: <span class="number">0.25</span>, 
+            <span class="string">"id"</span>: <span class="number">94094</span>, 
+            <span class="string">"senseProbability"</span>: <span class="number">0.0</span>, 
+            <span class="string">"title"</span>: <span class="string">"Uva"</span>, 
+            <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/Uva"</span>, 
+            <span class="string">"label"</span>: <span class="string">"Uva"</span>, 
+            <span class="string">"priorProbability"</span>: <span class="number">0.0</span>
+        }
+    ]
+}</pre></div>
+        
+      
+        
+        <hr>
+<h3>Filters</h3>
+<p>Our retrieval model for semantic linking is recall oriented. This means that
+we produce very many link candidates, even if they are not very relevant. In fact,
+if a label is used as anchor text on Wikipedia just once it is considered a link
+candidate if the label occurs in the input string.</p>
+<p>This makes it clear that it is important to rank and filter the link candidates 
+that are produced. For these the earlier mentioned heuristic measures can be used.
+In our experience, <code>senseProbability</code> is best suited for this. A value of at least
+0.3 produces sensible results. Furthermore, making sure that a label is used as
+a link in at least a minimal number of documents (say 5 times).</p>
+<p>You can apply a filter for this:</p>
+<blockquote>
+<p> <a href="http://semanticize.uva.nl/api/nl?text=Karel%20de%20Grote&amp;pretty&amp;filter=senseProbability%3E0.3,linkDocCount%3E=5&amp;counts">http://semanticize.uva.nl/api/nl?text=Karel%20de%20Grote&amp;pretty&amp;filter=senseProbability%3E0.3,linkDocCount%3E=5&amp;counts</a></p>
+</blockquote>
+
+        
+          <div class='highlight'><pre>{
+    <span class="string">"text"</span>: <span class="string">"Karel de Grote"</span>, 
+    <span class="string">"status"</span>: <span class="string">"OK"</span>,
+    <span class="string">"links"</span>: [
+        {
+            <span class="string">"id"</span>: <span class="number">5337</span>, 
+            <span class="string">"text"</span>: <span class="string">"Karel de Grote"</span>, 
+            <span class="string">"label"</span>: <span class="string">"Karel de Grote"</span>, 
+            <span class="string">"title"</span>: <span class="string">"Karel de Grote"</span>, 
+            <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/Karel%20de%20Grote"</span>, 
+            <span class="string">"linkProbability"</span>: <span class="number">0.8417582417582418</span>, 
+            <span class="string">"priorProbability"</span>: <span class="number">0.9989094874591058</span>, 
+            <span class="string">"senseProbability"</span>: <span class="number">0.8417582417582418</span>, 
+            <span class="string">"docCount"</span>: <span class="number">910</span>
+            <span class="string">"occCount"</span>: <span class="number">1441</span>, 
+            <span class="string">"linkDocCount"</span>: <span class="number">766</span>, 
+            <span class="string">"linkOccCount"</span>: <span class="number">917</span>, 
+            <span class="string">"senseOccCount"</span>: <span class="number">916</span>, 
+            <span class="string">"senseDocCount"</span>: <span class="number">766</span>, 
+        }
+    ]
+}</pre></div>
+        
+      
+        
+        <hr>
+<h3>Context</h3>
+<p>You can specify a context, in which you can filter links to make sure they are unique.</p>
+<blockquote>
+<p> <a href="http://semanticize.uva.nl/api/nl?context=test&amp;filter=unique&amp;text=UvA">http://semanticize.uva.nl/api/nl?context=test&amp;filter=unique&amp;text=UvA</a></p>
+</blockquote>
+
+        
+          <div class='highlight'><pre>{
+    <span class="string">"text"</span>: <span class="string">"UvA"</span>,
+    <span class="string">"status"</span>: <span class="string">"OK"</span>,
+    <span class="string">"links"</span>: [
+        {
+            <span class="string">"id"</span>: <span class="number">14815</span>,
+            <span class="string">"text"</span>: <span class="string">"UvA"</span>, 
+            <span class="string">"label"</span>: <span class="string">"UvA"</span>, 
+            <span class="string">"title"</span>: <span class="string">"Universiteit van Amsterdam"</span>, 
+            <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/Universiteit%20van%20Amsterdam"</span>, 
+            <span class="string">"linkProbability"</span>: <span class="number">0.2946058091286307</span>, 
+            <span class="string">"priorProbability"</span>: <span class="number">1.0</span>, 
+            <span class="string">"senseProbability"</span>: <span class="number">0.2946058091286307</span> 
+        }
+    ]
+}</pre></div>
+        
+      
+        
+        <p>Doing the same request again will result in no links:</p>
+<blockquote>
+<p> <a href="http://semanticize.uva.nl/api/nl?context=test&amp;filter=unique&amp;text=UvA">http://semanticize.uva.nl/api/nl?context=test&amp;filter=unique&amp;text=UvA</a></p>
+</blockquote>
+
+        
+          <div class='highlight'><pre>{
+    <span class="string">"text"</span>: <span class="string">"UvA"</span>, 
+    <span class="string">"status"</span>: <span class="string">"OK"</span>,
+    <span class="string">"links"</span>: []
+}</pre></div>
+        
+      
+        
+        <hr>
+<h3>Machine Learning Models</h3>
+<p>The webservice can also be used for computing features and applying machine 
+learning models that are trained in specific settings. This part is 
+still undergoing heavy development. Therefore, computing these features and 
+applying models are currently not publicly available. If you are interested in 
+this, contact <a href="http://staff.science.uva.nl/~dodijk/">Daan</a>.</p>
+
+        
+      
+      <div class="fleur">h</div>
+    </div>
+  </div>
+</body>
+</html>
