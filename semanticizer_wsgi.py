@@ -16,7 +16,9 @@
 A stripped down, WSGI compatible, version of the semanticizer.
 
 Usage:
-  gunicorn --bind 0.0.0.0:5001 --workers 4 semanticizer_wsgi:app
+  gunicorn --bind 0.0.0.0:5001 --workers 4 semanticizer_wsgi:application
+or
+  uwsgi --http :5001 --master --processes 4 --wsgi-file semanticizer_wsgi.py
 
 """
 
@@ -44,9 +46,9 @@ wpm_languages = conf_get('wpm', 'languages')
 wpmutil.init_datasource(wpm_languages)
 PIPELINE = procpipeline.build(wpm_languages, feature_config=None)
 
-# WSGI app!
-app = Flask(__name__)
-app.debug = True
+# WSGI application!
+application = Flask(__name__)
+application.debug = True
 
 APPLICATION_JSON = "application/json"
 
@@ -59,13 +61,13 @@ CLEAN_TWEET = \
      }
 
 
-@app.route('/')
+@application.route('/')
 def hello_world():
     """Hello World!"""
     return 'Hello World!\n'
 
 
-@app.route('/semanticize/<langcode>', methods=['GET', 'POST'])
+@application.route('/semanticize/<langcode>', methods=['GET', 'POST'])
 def _semanticize_handler(langcode):
     """
     The function handling the /semanticize/<langcode> namespace. It uses
@@ -76,10 +78,10 @@ def _semanticize_handler(langcode):
     @return: The body of the response, in this case a json formatted list \
              of links and their relevance
     """
-    # self.app.logger.debug("Semanticizing: start")
+    # self.application.logger.debug("Semanticizing: start")
     text = _get_text_from_request()
 
-    # self.app.logger.debug("Semanticizing text: " + text)
+    # self.application.logger.debug("Semanticizing text: " + text)
     settings = {"langcode": langcode}
     for key, value in request.values.iteritems():
         assert key not in settings
@@ -88,12 +90,12 @@ def _semanticize_handler(langcode):
     sem_result = _semanticize(langcode, settings, text)
     json = _json_dumps(sem_result, "pretty" in settings)
 
-    # self.app.logger.debug("Semanticizing: Created %d characters of JSON." \
+    # self.application.logger.debug("Semanticizing: Created %d characters of JSON." \
     #                       % len(json))
     return Response(json, mimetype=APPLICATION_JSON)
 
 
-@app.route('/cleantweet', methods=['GET', 'POST'])
+@application.route('/cleantweet', methods=['GET', 'POST'])
 def _cleantweet():
     """
     The function that handles the /cleantweet namespace. Will use regular
@@ -131,13 +133,13 @@ def _semanticize(langcode, settings, text):
 
     for function in ("preprocess", "process", "postprocess"):
         for step, processor in PIPELINE:
-            # self.app.logger.debug("Semanticizing: %s for step %s" \
+            # self.application.logger.debug("Semanticizing: %s for step %s" \
             #                       % (function, step))
             (links, text, settings) = getattr(processor, function)(links,
                                                                    text,
                                                                    settings
                                                                    )
-        # self.app.logger.debug("Semanticizing: %s pipeline with %d steps \
+        # self.application.logger.debug("Semanticizing: %s pipeline with %d steps \
         #                        done" % (function, len(self.pipeline)))
 
     result = {"links": links, "text": text}
@@ -185,4 +187,4 @@ def _get_text_from_request():
 
 
 if __name__ == '__main__':
-    app.run()
+    application.run()
