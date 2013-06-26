@@ -50,7 +50,8 @@ class Semanticizer:
                        tokenize(sentence.replace('.', ' ')),
                        tokenize(sentence.replace('.', ''))]
 
-        # get all ngrams for this sentence
+        # get all ngrams for this sentence, limit to max_ngram_length
+        # if applicable
         for token_list in token_lists:
             max_len = len(token_list) + 1
             if self.max_ngram_length is not None:
