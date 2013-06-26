@@ -11,6 +11,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import unicodedata
+# from unidecode import unidecode
+
 wpm_dumps = {}
 dump_filenames = {
     'translations': 'translations.csv',
@@ -52,13 +55,14 @@ def normalize(raw, dash=True, accents=True, lower=True):
 def remove_accents(input_str):
     """Replaces accented characters in the input with their
     non-accented counterpart."""
-    import unicodedata
     if type(input_str) is str:
         input_unicode = unicode(input_str, errors="ignore")
     else:
         input_unicode = input_str
     nkfd_form = unicodedata.normalize('NFKD', input_unicode)
     return u"".join([c for c in nkfd_form if not unicodedata.combining(c)])
+
+    # return unidecode(input_str)
 
 
 def check_dump_path(path):
