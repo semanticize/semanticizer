@@ -50,6 +50,7 @@ PIPELINE = procpipeline.build(wpm_languages, feature_config=None)
 application = Flask(__name__)
 application.debug = True
 
+
 APPLICATION_JSON = "application/json"
 
 # RegExens for CleanTweet

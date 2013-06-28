@@ -10,12 +10,10 @@
 # 
 # You should have received a copy of the GNU Lesser General Public License 
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-
+import sys
 from wpm.base import Data
 from collections import defaultdict
-from wpm.wpmutil import normalize
-from wpm.wpmutil import check_dump_path
-from wpm.wpmutil import dump_filenames
+from wpm.wpmutil import check_dump_path, dump_filenames, normalize
 import codecs
 
 
