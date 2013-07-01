@@ -17,11 +17,21 @@ server:
 
 wpm:
   languages:
+    # memory backend
     nl:
-      source: wpm.wpmdata_redis.WpmDataRedis
+      source: wpm.wpmdata_inproc.WpmDataInProc
       initparams:
-        host: localhost
-        port: 6379
+        path: /zfs/ilps-plexer/wikipediaminer/nlwiki-20130318
+        language: dutch
+        # translation_languages should be a list of iso 639-2 language
+        # codes
+        translation_languages: []
+    # Redis backend
+    # nl:
+    #   source: wpm.wpmdata_redis.WpmDataRedis
+    #   initparams:
+    #     host: localhost
+    #     port: 6379
   threads: 16
   bdburl: http://zookst13.science.uva.nl:8080/dutchsemcor/article
 
