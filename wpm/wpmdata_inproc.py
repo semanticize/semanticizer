@@ -21,12 +21,12 @@ import codecs
 
 class WpmDataInProc(Data):
 
-    def __init__(self, langcode, language=None, path=None):
+    def __init__(self, langcode, language=None, path=None, translation_languages=None):
         """load data"""
         self.path = check_dump_path(path)
         self.langname = language
         self.langcode = langcode
-        self.translation_langs = ['en', 'nl', 'fr', 'es']
+        self.translation_langs = translation_languages if translation_languages is not None else []
         self.labels = {}
         self.normalized = defaultdict(list)
         self.load_labels(self.path + dump_filenames["labels"])
@@ -78,7 +78,11 @@ class WpmDataInProc(Data):
                 continue
 
     def load_translations(self, filename):
-        print 'Loading translations...'
+        if len(self.translation_langs) == 0:
+            print 'Skipping translations (no translation languages defined)'
+            return
+
+        print 'Loading translations (%s)...' % ", ".join(sorted(self.translation_langs))
         linenr = 0
         for line in codecs.open(filename, "r", "utf-8"):
             linenr += 1

@@ -22,6 +22,18 @@ wpm:
       initparams:
         host: zookst14.science.uva.nl
         port: 6379
+
+    # Use the in-memory backend: this is faster than the Redis backend
+    # but uses a lot more memory, especially if you intent to run
+    # multiple semanticizers.
+    # nl:
+    #   source: wpm.wpmdata_inproc.WpmDataInProc
+    #   initparams:
+    #     path: /zfs/ilps-plexer/wikipediaminer/nlwiki-20111104
+    #     language: dutch
+    #     # translation_languages should be a list of iso 639-2 language
+    #     # codes
+    #     translation_languages: ["en", "fr", "de", "nl"]
     en:
       source: wpm.wpmdata_redis.WpmDataRedis
       initparams:
