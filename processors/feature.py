@@ -149,7 +149,7 @@ class anchorFeatures:
         return SNCL
 
     def feature_NORMALIZATION(self, lnk):
-        edit = Levenshtein.distance(lnk["label"], lnk["text"])
+        edit = Levenshtein.distance(unicode(lnk["label"]), unicode(lnk["text"]))
         return float(edit) / len(lnk["text"])
 
     def compute_anchor_features(self, lnk):
