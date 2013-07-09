@@ -68,7 +68,7 @@ class ContextFeaturesProcessor(LinksProcessor):
 
     def new_context(self, context_label):
         self.context_features[context_label] = {
-            "SP0.2-100": context.contextGraph("SP0.2-100", "sense_probability",
+            "SP0.2-100": context.contextGraph("SP0.2-100", "senseProbability",
                                               0.2, 100)
         }
 

@@ -61,7 +61,7 @@ class contextGraph:
         
     def add_link(self, link):
     	assert link.has_key("title")
-    	assert link.has_key("sense_probability")
+    	assert link.has_key(self.threshold_function)
     	assert link.has_key("label")
 
     	if link[self.threshold_function] < self.threshold: return
