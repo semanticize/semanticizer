@@ -88,6 +88,19 @@ class Server(object):
             abort(Response("No text provided, use: POST or GET with attribute \
                             'text'\n", status=400))
 
+    def _get_settings_from_request(self, settings={}):
+        """
+        Util function to get the settings from the current request
+
+        @param settings: initial dictionary of settings
+        @return: a dictionary of settings
+        """
+        for key, value in request.values.iteritems():
+            assert key not in settings
+            settings[key] = value
+
+        return settings
+
     def setup_route_semanticize(self, pipeline, langcodes):
         """
         Setup the /semanticize/<langcode> namespace.
@@ -161,11 +174,8 @@ class Server(object):
         self.app.logger.debug("Semanticizing: start")
         text = self._get_text_from_request()
         self.app.logger.debug("Semanticizing text: " + text)
-        links = []
-        settings = {"langcode": langcode}
-        for key, value in request.values.iteritems():
-            assert key not in settings
-            settings[key] = value
+
+        settings = self._get_settings_from_request({"langcode": langcode})
 
         sem_result = self._semanticize(langcode, settings, text)
         json = self._json_dumps(sem_result, "pretty" in settings)
