@@ -80,9 +80,9 @@ if __name__ == '__main__':
         feature_conf["wpminer_numthreads"] = conf_get('wpm', 'threads')
         feature_conf["picklepath"] = conf_get('misc', 'tempdir')
         try:
-            feature_conf["remote_scikit_url"] = conf_get('scikit', 'url')
+            feature_conf["model_dir"] = conf_get('learning', 'model_dir')
         except KeyError:
-            pass
+            feature_conf["model_dir"] = feature_conf["picklepath"]
 
     # Start the server
     try:

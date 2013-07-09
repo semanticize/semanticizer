@@ -92,11 +92,6 @@ def _load_features(pipeline, langcodes, feature_config):
     pipeline.append(("ContextFeatures", ContextFeaturesProcessor()))
     logging.getLogger().info("Loading features took %.2f seconds." \
                       % (time.time() - start))
-    if "remote_scikit_url" in feature_config \
-                          and feature_config["remote_scikit_url"]:
-        pipeline.append(("Learning",
-                        LearningProcessor(
-                                feature_config["remote_scikit_url"])))
-    else:
-        pipeline.append(("Learning", LearningProcessor()))
+    pipeline.append(("Learning",
+                    LearningProcessor(feature_config["model_dir"])))
     logging.getLogger().info("Done loading features")
