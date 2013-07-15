@@ -25,6 +25,7 @@ import re
 import wpm.wpmutil as wpmutil
 from flask import Flask, Response, request, abort
 
+from uuid import uuid4
 
 class Server(object):
     """
@@ -176,12 +177,15 @@ class Server(object):
         self.app.logger.debug("Semanticizing text: " + text)
 
         settings = self._get_settings_from_request({"langcode": langcode})
+        settings["request_id"] = uuid4()
 
         sem_result = self._semanticize(langcode, settings, text)
+        sem_result["request_id"] = str(settings["request_id"])
         json = self._json_dumps(sem_result, "pretty" in settings)
 
-        self.app.logger.debug("Semanticizing: Created %d characters of JSON." \
-                              % len(json))
+        self.app.logger.debug("Semanticizing: Created %d characters of JSON "
+                              "for request id %s." \
+                              % (len(json), sem_result["request_id"]))
         return Response(json, mimetype=Server.APPLICATION_JSON)
 
     def _semanticize(self, langcode, settings, text):
