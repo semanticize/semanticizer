@@ -20,13 +20,6 @@ class LearningProcessor(LinksProcessor):
     def __init__(self, model_dir):
         self.modelStore = ModelStore(model_dir)
 
-    def process(self, links, text, settings):
-        if "learning" in settings:
-            links = self.apply_learning(settings,
-                                        links,
-                                        "features" in settings)
-        return (links, text, settings)
-
     def predict(self, classifier, testfeatures):
         print("Start predicting of %d instances with %d features."
               % (len(testfeatures), len(testfeatures[0])))
@@ -35,9 +28,11 @@ class LearningProcessor(LinksProcessor):
 
         return predict    
 
-    def apply_learning(self, settings, links, keep_features):
-        if len(links) == 0:
-            return links
+    def process(self, links, text, settings):
+        if not "learning" in settings or len(links) == 0:
+            return (links, text, settings)
+        
+        keep_features = "features" in settings
             
         modelname = settings["learning"]
         (model, description) = self.modelStore.load_model(modelname)
@@ -86,4 +81,4 @@ class LearningProcessor(LinksProcessor):
             if not keep_features:
                 del link["features"]
 
-        return links
+        return (links, text, settings)
