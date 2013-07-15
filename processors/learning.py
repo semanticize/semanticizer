@@ -28,21 +28,10 @@ class LearningProcessor(LinksProcessor):
 
         return predict    
 
-    def process(self, links, text, settings):
-        if not "learning" in settings or len(links) == 0:
-            return (links, text, settings)
-        
-        keep_features = "features" in settings
-            
-        modelname = settings["learning"]
-        (model, description) = self.modelStore.load_model(modelname)
-        print("Loaded classifier from %s" % description["source"])
-
+    def check_model(self, model, description, features, settings):
         if "language" in description:
             assert settings["langcode"] == description["language"], \
                 "Language of model and data do not match."
-        
-        features = sorted(links[0]["features"].keys())
         
         if "features" in description:
             missing_features = set(description["features"]) - set(features)
@@ -61,9 +50,22 @@ class LearningProcessor(LinksProcessor):
         
         if model.n_features_ != len(features):
             raise ValueError("Number of features of the model must "
-                             " match the input. Model n_features is %s and "
-                             " input n_features is %s "
+                             "match the input. Model n_features is %s and "
+                             "input n_features is %s."
                              % (model.n_features_, len(features)))
+
+        return features
+
+    def process(self, links, text, settings):
+        if not "learning" in settings or len(links) == 0:
+            return (links, text, settings)
+        
+        modelname = settings["learning"]
+        (model, description) = self.modelStore.load_model(modelname)
+        print("Loaded classifier from %s" % description["source"])
+
+        features = sorted(links[0]["features"].keys())        
+        features = self.check_model(model, description, features, settings)
 
         testfeatures = []
         for link in links:
@@ -78,7 +80,7 @@ class LearningProcessor(LinksProcessor):
         scores = self.predict(model, testfeatures)
         for link, score in zip(links, scores):
             link["learning_probability"] = score[1]
-            if not keep_features:
+            if "features" not in settings:
                 del link["features"]
 
         return (links, text, settings)
