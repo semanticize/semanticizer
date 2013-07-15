@@ -12,15 +12,13 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 from core import LinksProcessor
+from util import ModelStore
 
-from sklearn.externals import joblib
-
-import os, yaml, warnings
+import warnings
 
 class LearningProcessor(LinksProcessor):
     def __init__(self, model_dir):
-        self.model_dir = model_dir
-        self.model_cache = {}
+        self.modelStore = ModelStore(model_dir)
 
     def process(self, links, text, settings):
         if "learning" in settings:
@@ -28,24 +26,7 @@ class LearningProcessor(LinksProcessor):
                                         links,
                                         "features" in settings)
         return (links, text, settings)
-        
-    def load_model(self, modelname):
-        if modelname in self.model_cache:
-            return self.model_cache[modelname]
-        
-        modelfile = os.path.join(self.model_dir, modelname)
-        if modelfile.endswith(".pkl"):
-            modelfile = modelfile[:-4]
-            
-        model = joblib.load(modelfile + ".pkl")
 
-        description = {"name": modelname, "source": modelfile + ".pkl"}
-        if os.path.exists(modelfile + ".yaml"):
-            description.update(yaml.load(file(modelfile + ".yaml")))
-            
-        self.model_cache[modelname] = (model, description)
-        return (model, description)
-        
     def predict(self, classifier, testfeatures):
         print("Start predicting of %d instances with %d features."
               % (len(testfeatures), len(testfeatures[0])))
@@ -59,7 +40,7 @@ class LearningProcessor(LinksProcessor):
             return links
             
         modelname = settings["learning"]
-        (model, description) = self.load_model(modelname)
+        (model, description) = self.modelStore.load_model(modelname)
         print("Loaded classifier from %s" % description["source"])
 
         if "language" in description:
@@ -106,23 +87,3 @@ class LearningProcessor(LinksProcessor):
                 del link["features"]
 
         return links
-
-# Old code for using a remote scikit server.
-# 
-#     data = ""
-#     for link in links:
-#         data += "-1 qid:0"
-#         for index, feature in enumerate(features):
-#             data += " %d:%f" % (index, link["features"][feature])
-#         data += "\n"
-# 
-#     import urllib2
-#     url = self.scikit_url + "/predict/" + model
-#     request = urllib2.urlopen(urllib2.Request(url, data, {"Content-Type": "text/plain"}))
-#     scores = request.read().split('\n')
-#     for link, score in zip(links, scores):
-#         if len(score) == 0 or " " not in score:
-#             score = "0 0"
-#         link["learning_probability"] = float(score.split()[1])
-#         if not keep_features:
-#             del link["features"]
