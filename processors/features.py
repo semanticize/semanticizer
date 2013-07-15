@@ -15,7 +15,7 @@ import processors.feature as features
 import processors.context as context
 
 from processors.core import LinksProcessor
-
+from collections import defaultdict
 
 class FeaturesProcessor(LinksProcessor):
     def __init__(self, langcodes):
@@ -59,12 +59,14 @@ class ArticleFeaturesProcessor(LinksProcessor):
         return (links, text, settings)
 
     def inspect(self):
-        return {self.__class__.__name__: self.features.__name__}
+        return {self.__class__.__name__: str(self.features)}
 
 
 class ContextFeaturesProcessor(LinksProcessor):
     def __init__(self):
         self.context_features = {}
+        self.context_text = defaultdict(list)
+        self.context_id_pattern = "%s:%d"
 
     def new_context(self, context_label):
         self.context_features[context_label] = {
@@ -72,38 +74,47 @@ class ContextFeaturesProcessor(LinksProcessor):
                                               0.2, 100)
         }
 
+    def preprocess(self, links, text, settings):
+        if "context" in settings:
+            settings["context_id"] = self.context_id_pattern % \
+                (settings["context"], len(self.context_text[settings["context"]]))
+            self.context_text[settings["context"]].append(text)
+
+        return (links, text, settings)
+
     def process(self, links, text, settings):
-        if not "features" in settings and not "learning" in settings:
+        if not "context" in settings or \
+          (not "features" in settings and not "learning" in settings):
             return (links, text, settings)
 
-        if "context" in settings:
-            if settings["context"] not in self.context_features:
-                self.new_context(settings["context"])
-            for label in self.context_features[settings["context"]]:
-                self.context_features[settings["context"]][label].add_chunk()
-                for link in links:
-                    self.context_features[
-                            settings["context"]
-                         ][label].add_link(link)
-                self.context_features[
-                        settings["context"]
-                     ][label].prepare_features()
+        # Create context_features if it does not exist
+        if settings["context"] not in self.context_features:
+            self.new_context(settings["context"])
 
-        if "context" in settings:
-            for label in self.context_features[settings["context"]]:
-                for link in links:
-                    link["features"].update(self.context_features[settings["context"]][label].compute_features(link["title"]))
+        # For each set of context features
+        for label in self.context_features[settings["context"]]:
+            # Create a new chunk
+            self.context_features[settings["context"]][label].add_chunk()
+            graph = self.context_features[settings["context"]][label]
+            # Add each link to graph and prepare features
+            for link in links:
+                graph.add_link(link)
+                graph.prepare_features()
+
+            # Compute context features for each link
+            for link in links:
+                link["features"].update(graph.compute_features(link["title"]))
 
         return (links, text, settings)
 
     def inspect(self):
-        cntxt = {}
+        context = {}
         for context_label, features in self.context_features.iteritems():
-            cntxt[context_label] = {}
+            context[context_label] = {"text": self.context_text[context_label]}
             for label, context_graph in features.iteritems():
                 graph = {"page_ranked": context_graph.page_ranked,
                          "graph": context_graph.to_dict_of_dicts(),
                          "chunk": context_graph.chunk}
-                cntxt[context_label][label] = graph
+                context[context_label][label] = graph
 
-        return {self.__class__.__name__: cntxt}
+        return {self.__class__.__name__: context}
