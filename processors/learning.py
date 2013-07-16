@@ -16,9 +16,13 @@ from util import ModelStore
 
 import warnings
 
+from collections import defaultdict
+
 class LearningProcessor(LinksProcessor):
     def __init__(self, model_dir):
         self.modelStore = ModelStore(model_dir)
+        self.history = defaultdict(list)
+        self.context_history = defaultdict(list)
 
     def predict(self, classifier, testfeatures):
         print("Start predicting of %d instances with %d features."
@@ -80,7 +84,27 @@ class LearningProcessor(LinksProcessor):
         scores = self.predict(model, testfeatures)
         for link, score in zip(links, scores):
             link["learning_probability"] = score[1]
+
+        return (links, text, settings)
+
+    def postprocess(self, links, text, settings):
+        history = self.history[settings["request_id"]]
+
+        for link in links:
+            if "context" in settings:
+                link["context"] = settings["context"]
+            if "save" in settings:
+                history.append(link if "features" in settings else link.copy())
             if "features" not in settings:
                 del link["features"]
 
+        if "save" in settings and "context" in settings:
+            context_history = self.context_history[settings["context"]]
+            context_history.append(settings["request_id"])
+
         return (links, text, settings)
+
+    def inspect(self):
+        history = {"history": self.history,
+                   "context_history": self.context_history}
+        return {self.__class__.__name__: history}

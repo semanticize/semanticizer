@@ -177,10 +177,10 @@ class Server(object):
         self.app.logger.debug("Semanticizing text: " + text)
 
         settings = self._get_settings_from_request({"langcode": langcode})
-        settings["request_id"] = uuid4()
+        settings["request_id"] = str(uuid4())
 
         sem_result = self._semanticize(langcode, settings, text)
-        sem_result["request_id"] = str(settings["request_id"])
+        sem_result["request_id"] = settings["request_id"]
         json = self._json_dumps(sem_result, "pretty" in settings)
 
         self.app.logger.debug("Semanticizing: Created %d characters of JSON "
