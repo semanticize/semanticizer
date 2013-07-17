@@ -108,3 +108,7 @@ class LearningProcessor(LinksProcessor):
         history = {"history": self.history,
                    "context_history": self.context_history}
         return {self.__class__.__name__: history}
+
+    def feedback(self, request_id, context, feedback):
+        print("Received feedback for request_id %s in context %s: %s." %
+                              (request_id, context, feedback))

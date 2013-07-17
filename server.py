@@ -124,6 +124,18 @@ class Server(object):
         self.app.add_url_rule("/inspect", "_inspect",
                               self._inspect, methods=["GET"])
 
+    def setup_route_feedback(self):
+        """
+        Setup the /feedback namespace.
+
+        @param pipeline: The pipeline of processors to feed back to.
+        """
+        hex = "[a-fA-F0-9]"
+        pattern = "hex{8}-hex{4}-hex{4}-hex{4}-hex{12}".replace("hex", hex)
+        self.request_id_pattern = re.compile(pattern)
+        self.app.add_url_rule("/feedback/<path:context_path>", "_feedback",
+                              self._feedback, methods=["GET", "POST"])
+
     def setup_all_routes(self, pipeline, langcodes):
         """
         Convenience function to start all namespaces at once.
@@ -133,6 +145,7 @@ class Server(object):
         self.pipeline = pipeline
         self.setup_route_semanticize(langcodes)
         self.setup_route_inspect()
+        self.setup_route_feedback()
 
     def start(self, host, port, use_reloader=False):
         """
@@ -219,3 +232,30 @@ class Server(object):
         for _, processor in self.pipeline:
             inspect.update(processor.inspect())
         return self._json_dumps(inspect, pretty=True)
+
+    def _feedback(self, context_path):
+        """
+        Function that handles the /feedback namespace. Will process the 
+        feedback in supported processors in the pipeline.
+        """
+        context_parts = context_path.split("/")
+        if len(context_parts) == 0:
+            raise ValueError("No context for feedback is provided!")
+
+        request_id_match = self.request_id_pattern.match(context_parts[-1])
+        if request_id_match:
+            request_id = request_id_match.string
+            context_parts.pop()
+        else:
+            request_id = None
+        
+        context = "/".join(context_parts) if len(context_parts) else None
+        feedback = self._get_values_from_request()
+        for processor_name, processor in self.pipeline:
+            if "feedback" in processor.__class__.__dict__:
+                self.app.logger.debug("Feeding feedback for request_id %s in "
+                                      "context %s to %s." %
+                                      (request_id, context, processor_name))
+                processor.feedback(request_id, context, feedback)
+
+        return "OK"
