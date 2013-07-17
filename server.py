@@ -89,27 +89,25 @@ class Server(object):
             abort(Response("No text provided, use: POST or GET with attribute \
                             'text'\n", status=400))
 
-    def _get_settings_from_request(self, settings={}):
+    def _get_values_from_request(self, values={}):
         """
-        Util function to get the settings from the current request
+        Util function to get the values from the current request
 
-        @param settings: initial dictionary of settings
-        @return: a dictionary of settings
+        @param values: initial dictionary of values
+        @return: a dictionary of values
         """
         for key, value in request.values.iteritems():
-            assert key not in settings
-            settings[key] = value
+            assert key not in values
+            values[key] = value
 
-        return settings
+        return values
 
-    def setup_route_semanticize(self, pipeline, langcodes):
+    def setup_route_semanticize(self, langcodes):
         """
         Setup the /semanticize/<langcode> namespace.
 
-        @param pipeline: The pipeline that will be used to semanticize the \
-                         given text
+        @param langcodes: The languages supported for semanticizing.
         """
-        self.pipeline = pipeline
         self.langcodes = langcodes
         self.app.add_url_rule("/semanticize/<langcode>", "_semanticize",
                               self._semanticize_handler, methods=["GET", "POST"])
@@ -117,13 +115,12 @@ class Server(object):
                               self._semanticize_usage,
                               methods=["GET", "POST"])
 
-    def setup_route_inspect(self, pipeline):
+    def setup_route_inspect(self):
         """
         Setup the /inspect namespace.
 
         @param pipeline: The pipeline of processors to inspect.
         """
-        self.pipeline = pipeline
         self.app.add_url_rule("/inspect", "_inspect",
                               self._inspect, methods=["GET"])
 
@@ -133,8 +130,9 @@ class Server(object):
 
         @param pipeline: The pipeline of processors
         """
-        self.setup_route_semanticize(pipeline, langcodes)
-        self.setup_route_inspect(pipeline)
+        self.pipeline = pipeline
+        self.setup_route_semanticize(langcodes)
+        self.setup_route_inspect()
 
     def start(self, host, port):
         """
@@ -176,7 +174,7 @@ class Server(object):
         text = self._get_text_from_request()
         self.app.logger.debug("Semanticizing text: " + text)
 
-        settings = self._get_settings_from_request({"langcode": langcode})
+        settings = self._get_values_from_request({"langcode": langcode})
         settings["request_id"] = str(uuid4())
 
         sem_result = self._semanticize(langcode, settings, text)
