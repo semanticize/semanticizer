@@ -134,7 +134,7 @@ class Server(object):
         self.setup_route_semanticize(langcodes)
         self.setup_route_inspect()
 
-    def start(self, host, port):
+    def start(self, host, port, use_reloader=False):
         """
         Wrapper for the Flask run() function. Will start the HTTP server with
         all initialized namespaces.
@@ -143,7 +143,7 @@ class Server(object):
         @param port: The port to bind on
         """
         print "Server started on %s:%d" % (host, port)
-        self.app.run(host, port, self.app.debug, use_reloader=False)
+        self.app.run(host, port, self.app.debug, use_reloader=use_reloader)
 
     def _semanticize_usage(self):
         """

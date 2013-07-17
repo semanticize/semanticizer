@@ -14,6 +14,7 @@
 server:
   port: 5000
   host: 0.0.0.0
+  use_reloader: true
 
 wpm:
   languages:
@@ -39,11 +40,29 @@ wpm:
       initparams:
         host: zookst14.science.uva.nl
         port: 6379
+    es:
+      source: wpm.wpmdata_redis.WpmDataRedis
+      initparams:
+        host: zookst14.science.uva.nl
+        port: 6379
+    fr:
+      source: wpm.wpmdata_redis.WpmDataRedis
+      initparams:
+        host: zookst14.science.uva.nl
+        port: 6379
+    de:
+      source: wpm.wpmdata_redis.WpmDataRedis
+      initparams:
+        host: zookst14.science.uva.nl
+        port: 6379
   threads: 16
   bdburl: http://zookst13.science.uva.nl:8080/dutchsemcor/article
 
 linkprocs:
   includefeatures: true
+
+learning:
+  model_dir: /zfs/ilps-plexer/dodijk/semanticizer.models
 
 logging:
   verbose: true

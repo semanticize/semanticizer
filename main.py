@@ -13,7 +13,7 @@
 
 import logging
 import procpipeline
-from config import conf_get
+from config import conf_get, conf_get_optional
 from server import Server
 from logging.handlers import TimedRotatingFileHandler
 import wpm.wpmutil as wpmutil
@@ -22,6 +22,7 @@ import wpm.wpmutil as wpmutil
 def start_server(langcodes,
                  host,
                  port,
+                 use_reloader,
                  verbose=False,
                  logformat='[%(asctime)-15s][%(levelname)s][%(module)s][%(pathname)s:%(lineno)d]: %(message)s',
                  feature_config=None):
@@ -42,7 +43,7 @@ def start_server(langcodes,
     server.setup_all_routes(pipeline, langcodes)
     logging.getLogger().info("Done setting up server, now starting...")
     # And finally, start the thing
-    server.start(host, port)
+    server.start(host, port, use_reloader)
 
 
 def init_logging(log, verbose, logformat):
@@ -89,6 +90,7 @@ if __name__ == '__main__':
         start_server(conf_get('wpm', 'languages').keys(),
                      conf_get('server', 'host'),
                      conf_get('server', 'port'),
+                     conf_get_optional(('server', 'use_reloader'), False),
                      conf_get('logging', 'verbose'),
                      conf_get('logging', 'format'),
                      feature_conf)

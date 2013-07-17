@@ -40,3 +40,9 @@ def conf_get(*keys):
             raise KeyError('Could not find %s in configuration' % key)
         pntr = pntr[key]
     return pntr
+
+def conf_get_optional(keys, default):
+    try:
+        return conf_get(*keys)
+    except:
+        return default
