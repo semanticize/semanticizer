@@ -89,13 +89,15 @@ class Server(object):
             abort(Response("No text provided, use: POST or GET with attribute \
                             'text'\n", status=400))
 
-    def _get_values_from_request(self, values={}):
+    def _get_values_from_request(self, values=None):
         """
         Util function to get the values from the current request
 
         @param values: initial dictionary of values
         @return: a dictionary of values
         """
+        if not values:
+            values = {}
         for key, value in request.values.iteritems():
             assert key not in values
             values[key] = value
@@ -250,7 +252,7 @@ class Server(object):
             request_id = None
         
         context = "/".join(context_parts) if len(context_parts) else None
-        feedback = self._get_values_from_request()
+        feedback = request.values
         for processor_name, processor in self.pipeline:
             if "feedback" in processor.__class__.__dict__:
                 self.app.logger.debug("Feeding feedback for request_id %s in "
