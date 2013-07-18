@@ -97,3 +97,4 @@ if __name__ == '__main__':
     except ValueError as e:
         logging.getLogger().fatal("Error running Semanticizer server: %s" \
                                   % e.message)
+        raise
