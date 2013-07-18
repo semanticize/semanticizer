@@ -88,14 +88,15 @@ class LearningProcessor(LinksProcessor):
         return (links, text, settings)
 
     def postprocess(self, links, text, settings):
-        history = self.history[settings["request_id"]]
+        if "save" in settings:
+            history = self.history[settings["request_id"]]
 
         for link in links:
             if "context" in settings:
                 link["context"] = settings["context"]
             if "save" in settings:
                 history.append(link if "features" in settings else link.copy())
-            if "features" not in settings:
+            if "learning" in settings and "features" not in settings:
                 del link["features"]
 
         if "save" in settings and "context" in settings:
