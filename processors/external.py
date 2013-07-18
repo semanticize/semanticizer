@@ -195,12 +195,16 @@ class ArticlesProcessor(LinksProcessor):
                 # Strange bug in some articles, mentioned to Edgar
                 print "Strange bug, requesting shorter definition"
 
-                request = urllib2.urlopen(url.replace("&definitionLength=LONG",
-                                                      ""))
-                encoding = request.headers['content-type'] \
-                                  .split('charset=')[-1]
-                #resultDoc = unicode(request.read(), encoding)
-                resultDoc = request.read()
+                try:
+                    request = urllib2.urlopen(url.replace("&definitionLength=LONG",
+                                                          ""))
+                    encoding = request.headers['content-type'] \
+                                      .split('charset=')[-1]
+                    #resultDoc = unicode(request.read(), encoding)
+                    resultDoc = request.read()
+                except urllib2.HTTPError as e:
+                    print e
+                    return ElementTree.Element('Response')
 
             self.article_cache[langcode][article] = resultDoc
 
