@@ -38,11 +38,11 @@ except ImportError:
 from flask import Flask, Response, request
 
 import procpipeline
-from config import conf_get
+from config import config_get
 import wpm.wpmutil as wpmutil
 
 
-wpm_languages = conf_get('wpm', 'languages')
+wpm_languages = config_get(('wpm', 'languages'))
 wpmutil.init_datasource(wpm_languages)
 PIPELINE = procpipeline.build(wpm_languages, feature_config=None)
 

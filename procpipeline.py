@@ -23,8 +23,9 @@ from processors.external import ArticlesProcessor, StatisticsProcessor
 from processors.learning import LearningProcessor
 from processors.image import AddImageProcessor
 
+from config import config_get
 
-def build(langcodes, feature_config=None):
+def build(langcodes, use_features=False):
     """
     Initialize the pipeline.
 
@@ -34,18 +35,23 @@ def build(langcodes, feature_config=None):
     """
     logging.getLogger().info("Initializing pipeline")
     pipeline = []
-    semanticize_processor = _load_semanticize_processor(langcodes)
+    if 'max_ngram_length' in config_get('semanticize', {}):
+        max_ngram_length = config_get(('semanticize', 'max_ngram_length'))
+    else:
+        max_ngram_length = None
+    semanticize_processor = _load_semanticize_processor(langcodes,
+                                                        max_ngram_length)
     pipeline.append(("Settings", SettingsProcessor()))
     pipeline.append(("Semanticize", semanticize_processor))
     pipeline.append(("Filter", FilterProcessor()))
-    if not feature_config is None:
-        _load_features(pipeline, langcodes, feature_config)
+    if use_features:
+        _load_features(pipeline, langcodes)
     pipeline.append(("AddImage", AddImageProcessor()))
     logging.getLogger().info("Done initializing pipeline")
     return pipeline
 
 
-def _load_semanticize_processor(langcodes):
+def _load_semanticize_processor(langcodes, max_ngram_length=None):
     """
     Load the Semanticizer.
 
@@ -58,21 +64,20 @@ def _load_semanticize_processor(langcodes):
     start = time.time()
     logging.getLogger().info("Loading semanticizers for langcode(s) "
                      + ", ".join(langcodes))
-    semanticize_processor.load_languages(langcodes)
+    semanticize_processor.load_languages(langcodes, max_ngram_length)
     logging.getLogger().info("Loading semanticizers took %.2f seconds." \
                      % (time.time() - start))
     logging.getLogger().info("Done loading semanticizer")
     return semanticize_processor
 
 
-def _load_features(pipeline, langcodes, feature_config):
+def _load_features(pipeline, langcodes):
     """
     Load all features into the pipeline
 
     @param pipeline: A reference to the pipeline
     @param semanticize_processor: A reference to the semanticize processor
     @param wikipedia_ids: Wikipedia ids & data
-    @param feature_config: Configuration of the features
     """
     logging.getLogger().info("Loading features")
     start = time.time()
@@ -80,18 +85,19 @@ def _load_features(pipeline, langcodes, feature_config):
                      FeaturesProcessor(langcodes)))
     pipeline.append(("Articles",
                      ArticlesProcessor(langcodes,
-                                       feature_config["wpminer_url"],
-                                       feature_config["wpminer_numthreads"],
-                                       feature_config["picklepath"])))
+                                       config_get(('wpm', 'bdburl')),
+                                       config_get(('wpm', 'threads'), 1),
+                                       config_get(('misc', 'tempdir')))))
     pipeline.append(("Statistics",
                      StatisticsProcessor(langcodes,
-                                         feature_config["wpminer_numthreads"],
-                                         feature_config["picklepath"])))
+                                         config_get(('wpm', 'threads'), 1),
+                                         config_get(('misc', 'tempdir')))))
     pipeline.append(("ArticleFeatures", ArticleFeaturesProcessor()))
     pipeline.append(("MultipleFeatures", MultipleEntityFeaturesProcessor()))
     pipeline.append(("ContextFeatures", ContextFeaturesProcessor()))
     logging.getLogger().info("Loading features took %.2f seconds." \
                       % (time.time() - start))
-    pipeline.append(("Learning",
-                    LearningProcessor(feature_config["model_dir"])))
+    model_dir = config_get(('learning', 'model_dir'), \
+                           config_get(('misc', 'tempdir')))
+    pipeline.append(("Learning", LearningProcessor(model_dir)))
     logging.getLogger().info("Done loading features")

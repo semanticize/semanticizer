@@ -129,18 +129,18 @@ class Test(unittest.TestCase):
                 configuration += [str(value)]
         config.set_data(configuration)
         # check we can read back the data we set
-        self.assertEqual(config.conf_get("port"),
+        self.assertEqual(config.config_get(("server","port")),
                          6000,
                          "can't find argument values set by set_data")
-        self.assertEqual(config.conf_get("verbose"),
+        self.assertEqual(config.config_get(("logging", "verbose")),
                          True,
                          "can't find argument values set by set_data")
         # check that the system exits when we give unrecognized arguments
         config.set_data("--some values --that --dont --exist".split())
         self.assertRaises(SystemExit, config._set_conf)
 
-    def test_conf_get(self):
-        """Test the most important function of the config module: conf_get"""
+    def test_config_get(self):
+        """Test the most important function of the config module: config_get"""
         # generate and set data
         configuration = []
         for key, value in self.testconfig.iteritems():
@@ -149,16 +149,13 @@ class Test(unittest.TestCase):
                 configuration += [str(value)]
         config.set_data(configuration)
         # check we can read back the data we set
-        config.conf_get("port")
-        self.assertEqual(config.conf_get("port"),
+        config.config_get(('server', 'port'))
+        self.assertEqual(config.config_get(('server', 'port')),
                          6000,
                          "can't find argument values set by set_data")
-        self.assertEqual(config.conf_get("lmpath"),
-                         self.tmpfilename,
-                         "can't find argument values set by set_data")
-        self.assertEqual(config.conf_get("nonexisting"),
+        self.assertEqual(config.config_get("nonexisting", None),
                          None,
-                         "conf_get doesn't return None on a nonexisting param")
+                         "config_get doesn't return None on a nonexisting param")
 
 
 if __name__ == "__main__":

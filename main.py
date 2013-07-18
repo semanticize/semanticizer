@@ -13,7 +13,7 @@
 
 import logging
 import procpipeline
-from config import conf_get, conf_get_optional
+from config import config_get
 from server import Server
 from logging.handlers import TimedRotatingFileHandler
 import wpm.wpmutil as wpmutil
@@ -25,7 +25,7 @@ def start_server(langcodes,
                  use_reloader,
                  verbose=False,
                  logformat='[%(asctime)-15s][%(levelname)s][%(module)s][%(pathname)s:%(lineno)d]: %(message)s',
-                 feature_config=None):
+                 use_features=False):
     """
     Start a SemanticizerFlaskServer with all processors loaded into the
     pipeline.
@@ -34,7 +34,7 @@ def start_server(langcodes,
     @param logformat: The logformat used by the Flask server
     """
     # Initialize the pipeline
-    pipeline = procpipeline.build(langcodes, feature_config)
+    pipeline = procpipeline.build(langcodes, use_features)
     # Create the FlaskServer
     logging.getLogger().info("Setting up server")
     server = Server()
@@ -44,7 +44,6 @@ def start_server(langcodes,
     logging.getLogger().info("Done setting up server, now starting...")
     # And finally, start the thing
     server.start(host, port, use_reloader)
-
 
 def init_logging(log, verbose, logformat):
     """
@@ -65,35 +64,23 @@ def init_logging(log, verbose, logformat):
 
 if __name__ == '__main__':
     # Init the logger
-    init_logging(conf_get('logging', 'path'),
-                 conf_get('logging', 'verbose'),
-                 conf_get('logging', 'format'))
+    init_logging(config_get(('logging', 'path'), 'log.txt'),
+                 config_get(('logging', 'verbose'), False),
+                 config_get(('logging', 'format'), None))
 
     # Set the datasource and init it
-    wpmlangs = conf_get('wpm', 'languages')
+    wpmlangs = config_get(('wpm', 'languages'))
     wpmutil.init_datasource(wpmlangs)
-
-    # If we use learning features, configure them
-    feature_conf = None
-    if conf_get('linkprocs', 'includefeatures') == True:
-        feature_conf = {}
-        feature_conf["wpminer_url"] = conf_get('wpm', 'bdburl')
-        feature_conf["wpminer_numthreads"] = conf_get('wpm', 'threads')
-        feature_conf["picklepath"] = conf_get('misc', 'tempdir')
-        try:
-            feature_conf["model_dir"] = conf_get('learning', 'model_dir')
-        except KeyError:
-            feature_conf["model_dir"] = feature_conf["picklepath"]
 
     # Start the server
     try:
-        start_server(conf_get('wpm', 'languages').keys(),
-                     conf_get('server', 'host'),
-                     conf_get('server', 'port'),
-                     conf_get_optional(('server', 'use_reloader'), False),
-                     conf_get('logging', 'verbose'),
-                     conf_get('logging', 'format'),
-                     feature_conf)
+        start_server(config_get(('wpm', 'languages')).keys(),
+                     config_get(('server', 'host'), '0.0.0.0'),
+                     config_get(('server', 'port'), 5000),
+                     config_get(('server', 'use_reloader'), False),
+                     config_get(('logging', 'verbose'), False),
+                     config_get(('logging', 'format'), None),
+                     config_get(('linkprocs', 'includefeatures'), False))
     except ValueError as e:
         logging.getLogger().fatal("Error running Semanticizer server: %s" \
                                   % e.message)

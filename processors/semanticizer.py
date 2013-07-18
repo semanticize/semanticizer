@@ -28,11 +28,11 @@ class SemanticizeProcessor(LinksProcessor):
         self.langcodes = []
         self.semanticizers = {}
 
-    def load_languages(self, langcodes):
+    def load_languages(self, langcodes, max_ngram_length=None):
         """Save the languages and load the semanticizer"""
         self.langcodes = langcodes
         for langcode in langcodes:
-            self.semanticizers[langcode] = Semanticizer(langcode, None)
+            self.semanticizers[langcode] = Semanticizer(langcode, None, max_ngram_length)
 
     def preprocess(self, links, text, settings):
         """

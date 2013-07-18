@@ -18,31 +18,31 @@ file, then overwriting these values to whatever's been passed as argument.
 """
 import yaml
 
-path = 'conf/semanticizer.yml'
+def load_config(path='conf/semanticizer.yml'):
+    print "get config"
+    return yaml.load(file(path))
 
-
-def conf_get(*keys):
+def config_get(keys=(), default=None, config=load_config()):
     """
     Allows user to access configuration variables and arguments. The function
     takes the variable name as its input, and returns the value or None is it
     isn't set.
 
-    @param name: The name of the configuration parameter to fetch. (Optional)
+    @param keys: The name of the configuration parameter to fetch. (Optional)
+    @param default: The default value to return if the key is not found.
+    @param config: dictionary to represent config
     @return: The value for the given parameter if name was set and valid, \
-             None if name was invalid, or the full list of configuration \
-             params if name==None
+             the default value if invalid or None if no default value was set.
     """
-    if 'data' not in conf_get.__dict__:
-        conf_get.data = yaml.load(file(path))
-    pntr = conf_get.data
+    if type(keys) == str:
+        keys = [keys]
+    
+    pointer = config
     for key in keys:
-        if not key in pntr:
-            raise KeyError('Could not find %s in configuration' % key)
-        pntr = pntr[key]
-    return pntr
-
-def conf_get_optional(keys, default):
-    try:
-        return conf_get(*keys)
-    except:
-        return default
+        if not key in pointer:
+            if default != None:
+                return default
+            else:
+                raise KeyError('Could not find %s in configuration' % key)
+        pointer = pointer[key]
+    return pointer

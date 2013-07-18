@@ -15,27 +15,21 @@ import wpm.wpmutil as wpmutil
 from nltk import regexp_tokenize
 from nltk.util import ngrams as nltk_ngrams
 import urllib
-from config import conf_get
-
 
 def tokenize(text):
     return regexp_tokenize(text, r'\w+([.,\']\w+)*|[^\w\s]+')
 
-
 class Semanticizer:
 
-    def __init__(self, language_code, sense_probability_threshold):
+    def __init__(self, language_code, sense_probability_threshold, 
+                 max_ngram_length=None):
         """constructor"""
         self.language_code = language_code
         self.sense_probability_threshold = sense_probability_threshold
         self.wikipedia_url_template = 'http://%s.wikipedia.org/wiki/%s'
         self.wpm = wpmutil.wpm_dumps[language_code]
         self.title_page = {} # This needs to be removed
-
-        try:
-            self.max_ngram_length = conf_get('semanticize', 'max_ngram_length')
-        except KeyError:
-            self.max_ngram_length = None
+        self.max_ngram_length = max_ngram_length
 
     def semanticize(self, sentence, normalize_dash=True,
                     normalize_accents=True, normalize_lower=False,
