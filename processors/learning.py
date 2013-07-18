@@ -111,5 +111,33 @@ class LearningProcessor(LinksProcessor):
         return {self.__class__.__name__: history}
 
     def feedback(self, request_id, context, feedback):
+        if request_id != None:
+            request_ids = [request_id]
+            if context and request_id not in self.context_history[context]:
+                raise ValueError("Request id %s not found in context %s." %
+                                 (request_id, context))
+        else:
+            request_ids = self.context_history[context]
+            if len(request_ids) == 0:
+                raise ValueError("No requests found for context %s." % context)
+        
         print("Received feedback for request_id %s in context %s: %s." %
                               (request_id, context, feedback))
+                              
+        def process_feedback(link, feedback):
+            link["feedback"] = feedback
+            print feedback, link["title"]
+
+        for feedback_request_id in request_ids:
+            if feedback_request_id not in self.history:
+                raise ValueError("Request id %s not found in history." %
+                                 request_id)
+            for link in self.history[feedback_request_id]:
+                for feedback_type in feedback.keys():
+                    if feedback_type == "default": continue
+                    if link["title"] in feedback.getlist(feedback_type):
+                        process_feedback(link, feedback_type)
+                        break
+                else:
+                    if "default" in feedback:
+                        process_feedback(link, feedback["default"])
