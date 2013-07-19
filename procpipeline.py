@@ -41,7 +41,8 @@ def build(langcodes, use_features=False):
         max_ngram_length = None
     semanticize_processor = _load_semanticize_processor(langcodes,
                                                         max_ngram_length)
-    pipeline.append(("Settings", SettingsProcessor()))
+    settings = config_get("settings", {})
+    pipeline.append(("Settings", SettingsProcessor(settings)))
     pipeline.append(("Semanticize", semanticize_processor))
     pipeline.append(("Filter", FilterProcessor()))
     if use_features:

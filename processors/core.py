@@ -29,13 +29,9 @@ class LinksProcessor:
         return {}
 
 class SettingsProcessor(LinksProcessor):
-    def __init__(self):
-        self.settings = {
-            "vara": {
-                "pre_filter": "unique,sense_probability>0.01",
-                "learning": "coling-SP0.2-100.RandomForestClassifier-10-auto.pkl",
-                "filter": "unique,learning_probability>=0.5"
-            }}
+    def __init__(self, settings):
+        self.settings = settings
+        
     def preprocess(self, links, text, settings):
         if "settings" in settings and settings["settings"] in self.settings:
             for k, v in self.settings[settings["settings"]].iteritems():
