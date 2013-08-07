@@ -137,6 +137,8 @@ class Server(object):
         self.request_id_pattern = re.compile(pattern)
         self.app.add_url_rule("/feedback/<path:context_path>", "_feedback",
                               self._feedback, methods=["GET", "POST"])
+        self.app.add_url_rule("/learn/<name>", "_learn",
+                              self._learn, methods=["GET", "POST"])
 
     def setup_all_routes(self, pipeline, langcodes):
         """
@@ -259,5 +261,19 @@ class Server(object):
                                       "context %s to %s." %
                                       (request_id, context, processor_name))
                 processor.feedback(request_id, context, feedback)
+
+        return "OK"
+        
+    #
+    def _learn(self, name):
+        """
+        Function that handles the /learn namespace. Will learn based on the 
+        feedback in supported processors in the pipeline.
+        """        
+        for processor_name, processor in self.pipeline:
+            if "learn" in processor.__class__.__dict__:
+                self.app.logger.debug("Learning %s in %s." %
+                                      (name, processor_name))
+                processor.learn(name, request.values)
 
         return "OK"

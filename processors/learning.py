@@ -141,3 +141,54 @@ class LearningProcessor(LinksProcessor):
                 else:
                     if "default" in feedback:
                         process_feedback(link, feedback["default"])
+                        
+    def learn(self, name, settings):
+        # Create metadata
+        metadata = dict(settings)
+        metadata.update({"requests": 0, "links": 0, 
+                         "feedback": defaultdict(int)})
+        # Set defaults
+        if "target" not in metadata: metadata["target"] = "positive"
+
+        # Find request ids
+        if "context" in settings:
+            request_ids = []
+            for context in self.context_history.keys():
+                if context.startswith(settings["context"]):
+                    request_ids.extend(self.context_history[context])
+        else:
+            request_ids = self.history.keys()
+    
+        print "Learning a classifier named %s" % name,
+        if "context" in settings: print "in context", settings["context"],
+        print "based on %d request." % len(request_ids)
+
+        data, targets = [], []
+
+        for request_id in request_ids:
+            assert request_id in self.history
+            metadata["requests"] += 1
+            for link in self.history[request_id]:
+                assert "features" in link
+                metadata["links"] += 1
+        
+                if not "features" in metadata:
+                    metadata["features"] = sorted(link["features"].keys())
+                assert metadata["features"] == sorted(link["features"].keys())
+            
+                # print request_id, len(link["features"]), 
+                # print link["feedback"] if "feedback" in link else ""
+                if "feedback" in link:
+                    metadata["feedback"][link["feedback"]] += 1
+                    targets.append(link["feedback"] == metadata["target"])
+                else:
+                    targets.append(None)
+                data.append([])
+                for feature in sorted(link["features"].keys()):
+                    data[-1].append(link["features"][feature])
+
+        assert len(data) == metadata["links"]
+        assert len(targets) == metadata["links"]
+        if len(data): assert len(data[0]) == len(metadata["features"])
+        
+        print metadata
