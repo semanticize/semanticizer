@@ -170,13 +170,18 @@ class LearningProcessor(LinksProcessor):
                     request_ids.extend(self.context_history[context])
         else:
             request_ids = self.history.keys()
-    
+        
         print "Learning a classifier named %s" % name,
         if "context" in settings: print "in context", settings["context"],
-        print "based on %d request." % len(request_ids)
+        print "based on %d requests." % len(request_ids)
+        
+        # Create learner
+        skip_settings = ["target", "context"]
+        model = self.modelStore.create_model(settings, skip_settings)
+        metadata["model"] = {model.__class__.__name__: model.get_params(deep=True)}
 
+        # Create training data and labels
         data, targets = [], []
-
         for request_id in request_ids:
             assert request_id in self.history
             metadata["requests"] += 1
@@ -203,4 +208,12 @@ class LearningProcessor(LinksProcessor):
         assert len(targets) == metadata["links"]
         if len(data): assert len(data[0]) == len(metadata["features"])
         
+        # Do learning
         print metadata
+        
+        if len(data): 
+            model.fit(data, targets)
+            print model.coef_, model.intercept_
+            
+        self.modelStore.save_model(model, name, metadata)
+        
