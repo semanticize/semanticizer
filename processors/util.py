@@ -45,4 +45,40 @@ class ModelStore():
         model = joblib.dump(model, modelfile + ".pkl")
 
         if description != None:
-            yaml.save(file(modelfile + ".yaml"))
+            with open(modelfile + ".yaml", 'w') as out:
+                out.write(yaml.dump(description, Dumper=yaml.CDumper))
+            
+    def _convert_dict(self, data, skip=[]):
+        """Helper function that convert the values of dictionary to int/float. 
+           Optionally you can skip a list of values."""
+        converted_data = {}
+        for k,v in data.iteritems():
+            if k in skip: continue
+            try:
+                converted_data[k] = int("".join(v))
+            except ValueError:
+                try:
+                    converted_data[k] = float("".join(v))
+                except ValueError:
+                    converted_data[k] = v
+        return converted_data    
+
+    def create_model(self, settings, skip_settings=[]):
+        if not "classifier" in settings:
+            raise ValueError("Expecting a classifier in settings.")
+        if not "." in settings["classifier"]:
+            raise ValueError("Expecting a package in settings.")
+
+        classifier = settings["classifier"].split(".")[-1]
+        package = ".".join(settings["classifier"].split(".")[:-1])
+    
+        # Import package module
+        classifier_module = __import__(package, globals(), locals(), \
+                                       [str(classifier)], -1)
+        # Classifier instance
+        Classifier = getattr(classifier_module, classifier)
+        
+        skip_settings.extend(["classifier"])
+        model = Classifier(**self._convert_dict(settings, skip_settings))
+        
+        return model
