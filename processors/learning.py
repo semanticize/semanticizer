@@ -27,7 +27,12 @@ class LearningProcessor(LinksProcessor):
     def predict(self, classifier, testfeatures):
         print("Start predicting of %d instances with %d features."
               % (len(testfeatures), len(testfeatures[0])))
-        predict = classifier.predict_proba(testfeatures)
+
+        if "predict_proba" in classifier.__dict__:
+            predict = classifier.predict_proba(testfeatures)
+        else:
+            predictions = classifier.predict(testfeatures)
+            predict = [[0,1] if p else [1,0] for p in predictions]
         print("Done predicting of %d instances." % len(predict))
 
         return predict    
@@ -52,7 +57,14 @@ class LearningProcessor(LinksProcessor):
 
             features = sorted(description["features"])
         
-        if model.n_features_ != len(features):
+        if "n_features_" in model.__dict__:
+            model_features = model.n_features
+        elif "coef_" in model.__dict__:
+            model_features = model.coef_.shape[1]
+        else:
+            model_features = None
+            
+        if model_features and model_features != len(features):
             raise ValueError("Number of features of the model must "
                              "match the input. Model n_features is %s and "
                              "input n_features is %s."
