@@ -12,8 +12,29 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 from sklearn.externals import joblib
-
 import os, yaml
+import sklearn.metrics
+
+def compute_metrics(labels, scores, predictions):
+    metrics = {}
+    # Sort according to score
+    scores, labels, predictions = zip(*sorted(zip(scores, labels, predictions)))
+    # Classification metrics
+    metrics["precision"], metrics["recall"], metrics["f1"], support = \
+        sklearn.metrics.precision_recall_fscore_support(labels, predictions, \
+                                                        average="weighted")
+    metrics["accuracy"] = sklearn.metrics.accuracy_score(labels, predictions)
+    metrics["zeroOneLoss"] = sklearn.metrics.zero_one_loss(labels, predictions)
+    # Rank-based metrics
+    metrics["averagePrecision"] = \
+        sklearn.metrics.average_precision_score(labels, scores)
+    metrics["ROC AUC"] = sklearn.metrics.roc_auc_score(labels, scores)
+    # R-precision
+    r_labels = labels[-support:]
+    r_predictions = [True for label in r_labels]
+    metrics["rPrecision"] = sklearn.metrics.precision_score(r_labels, \
+                                                            r_predictions)
+    return metrics
 
 class ModelStore():
     def __init__(self, model_dir):

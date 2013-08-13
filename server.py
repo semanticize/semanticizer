@@ -137,6 +137,10 @@ class Server(object):
         self.request_id_pattern = re.compile(pattern)
         self.app.add_url_rule("/feedback/<path:context_path>", "_feedback",
                               self._feedback, methods=["GET", "POST"])
+        self.app.add_url_rule("/evaluate/<path:context_path>", "_evaluate",
+                              self._evaluate, methods=["GET", "POST"])
+        self.app.add_url_rule("/evaluate", "_evaluate",
+                            self._evaluate, methods=["GET", "POST"])
         self.app.add_url_rule("/learn/<name>", "_learn",
                               self._learn, methods=["GET", "POST"])
 
@@ -235,7 +239,8 @@ class Server(object):
         inspect = {}
         for _, processor in self.pipeline:
             inspect.update(processor.inspect())
-        return self._json_dumps(inspect, pretty=True)
+        return Response(self._json_dumps(inspect, pretty=True),
+                        mimetype=Server.APPLICATION_JSON)
 
     def _feedback(self, context_path):
         """
@@ -263,8 +268,23 @@ class Server(object):
                 processor.feedback(request_id, context, feedback)
 
         return "OK"
-        
-    #
+
+    def _evaluate(self, context_path=""):
+        """
+        Function that handles the /evaluate namespace. Will evaluate a metric based 
+        on the feedback in supported processors in the pipeline.
+        """
+        evaluation = {} 
+        for processor_name, processor in self.pipeline:
+            if "evaluate" in processor.__class__.__dict__:
+                self.app.logger.debug("Evaluating %s in %s." %
+                                      (context_path, processor_name))
+                evaluation.update(processor.evaluate(context_path, 
+                                                     request.values))
+
+        return Response(self._json_dumps(evaluation, pretty=True),
+                        mimetype=Server.APPLICATION_JSON)
+
     def _learn(self, name):
         """
         Function that handles the /learn namespace. Will learn based on the 

@@ -12,7 +12,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 from core import LinksProcessor
-from util import ModelStore
+from util import ModelStore, compute_metrics
 
 import warnings
 
@@ -153,6 +153,71 @@ class LearningProcessor(LinksProcessor):
                 else:
                     if "default" in feedback:
                         process_feedback(link, feedback["default"])
+
+    def evaluate(self, context_path, settings):
+        settings = dict(settings.iteritems())
+        if not "target" in settings: settings["target"] = "positive"
+        if not "heuristic" in settings: 
+            settings["heuristic"] = "senseProbability"
+        if "threshold" in settings:
+            settings["threshold"] = float(settings["threshold"])
+        else:
+            settings["threshold"] = 0.5
+            
+        print "Evaluating context %s with threshold %s >= %f" % \
+                (context_path, settings["heuristic"], settings["threshold"])
+        
+        evaluation = defaultdict(int)
+        evaluation["contexts"] = {}
+        evaluation["feedback"] = defaultdict(int)
+        for context in self.context_history.keys():
+            if context.startswith(context_path):
+                evaluation["contexts"][context] = defaultdict(int)
+                evaluation["contexts"][context]["feedback"] = defaultdict(int)
+    
+        all_labels, all_scores, all_predictions = [], [], []
+        for context, context_evaluation in evaluation["contexts"].iteritems():
+            labels, scores, predictions = [], [], []
+            for request_id in self.context_history[context]:
+                assert request_id in self.history
+                evaluation["request"] += 1
+                context_evaluation["requests"] += 1
+                for link in self.history[request_id]:
+                    evaluation["links"] += 1
+                    context_evaluation["links"] += 1
+                    if "feedback" in link:
+                        evaluation["feedback"][link["feedback"]] += 1
+                        context_evaluation["feedback"][link["feedback"]] += 1
+                        labels.append(link["feedback"] == settings["target"])
+                        score = link[settings["heuristic"]]
+                        scores.append(score)
+                        predictions.append(score >= settings["threshold"])
+                    else:
+                        evaluation["feedback"]["missing"] += 1
+                        context_evaluation["feedback"]["missing"] += 1
+
+            if len(labels):
+                context_evaluation["metrics"] = \
+                    compute_metrics(labels, scores, predictions)
+                all_labels.extend(labels)
+                all_scores.extend(scores)
+                all_predictions.extend(predictions)
+
+        if len(all_labels):
+            evaluation["micro_metrics"] = \
+                compute_metrics(all_labels, all_scores, all_predictions)
+            evaluation["macro_metrics"] = defaultdict(float)            
+            for context, context_evaluation in evaluation["contexts"].iteritems():
+                if not "metrics" in context_evaluation: continue
+                evaluation["macro_metrics"]["count"] += 1
+                for metric, value in context_evaluation["metrics"].iteritems():
+                    evaluation["macro_metrics"][metric] += value
+            for metric, value in evaluation["macro_metrics"].iteritems():
+                if metric == "count": continue
+                evaluation["macro_metrics"][metric] /= \
+                    evaluation["macro_metrics"]["count"]
+    
+        return evaluation
                         
     def learn(self, name, settings):
         # Create metadata
