@@ -58,7 +58,7 @@ class LearningProcessor(LinksProcessor):
             features = sorted(description["features"])
         
         if "n_features_" in model.__dict__:
-            model_features = model.n_features
+            model_features = model.n_features_
         elif "coef_" in model.__dict__:
             model_features = model.coef_.shape[1]
         else:
@@ -278,7 +278,8 @@ class LearningProcessor(LinksProcessor):
         
         if len(data): 
             model.fit(data, targets)
-            print model.coef_, model.intercept_
+            print "Fitted %s model to %d training samples." % \
+                  (model.__class__.__name__, len(data))
             
         self.modelStore.save_model(model, name, metadata)
         
