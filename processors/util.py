@@ -15,10 +15,11 @@ from sklearn.externals import joblib
 import os, yaml
 import sklearn.metrics
 
-def compute_metrics(labels, scores, predictions):
+def compute_metrics(labels, scores, threshold=0.5):
     metrics = {}
     # Sort according to score
-    scores, labels, predictions = zip(*sorted(zip(scores, labels, predictions)))
+    scores, labels = zip(*sorted(zip(scores, labels)))
+    predictions = [score >= threshold for score in scores]    
     # Classification metrics
     metrics["precision"], metrics["recall"], metrics["f1"], support = \
         sklearn.metrics.precision_recall_fscore_support(labels, predictions, \
@@ -32,8 +33,8 @@ def compute_metrics(labels, scores, predictions):
     # R-precision
     r_labels = labels[-support:]
     r_predictions = [True for label in r_labels]
-    metrics["rPrecision"] = sklearn.metrics.precision_score(r_labels, \
-                                                            r_predictions)
+    metrics["rPrecision"] = \
+        sklearn.metrics.precision_score(r_labels, r_predictions)
     return metrics
 
 class ModelStore():

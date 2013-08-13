@@ -157,16 +157,21 @@ class LearningProcessor(LinksProcessor):
     def evaluate(self, context_path, settings):
         settings = dict(settings.iteritems())
         if not "target" in settings: settings["target"] = "positive"
-        if not "heuristic" in settings: 
+        if not "heuristic" in settings and not "model" in settings:
             settings["heuristic"] = "senseProbability"
         if "threshold" in settings:
             settings["threshold"] = float(settings["threshold"])
         else:
             settings["threshold"] = 0.5
             
-        print "Evaluating context %s with threshold %s >= %f" % \
-                (context_path, settings["heuristic"], settings["threshold"])
-        
+        if "model" in settings:
+            (model, description) = self.modelStore.load_model(settings["model"])
+            print "Evaluating classifier %s in context %s with threshold %f" %\
+                  (description["source"], context_path, settings["threshold"])
+        else:
+            print "Evaluating context %s with threshold %s >= %f" % \
+                   (context_path, settings["heuristic"], settings["threshold"])
+
         evaluation = defaultdict(int)
         evaluation["contexts"] = {}
         evaluation["feedback"] = defaultdict(int)
@@ -177,7 +182,7 @@ class LearningProcessor(LinksProcessor):
     
         all_labels, all_scores, all_predictions = [], [], []
         for context, context_evaluation in evaluation["contexts"].iteritems():
-            labels, scores, predictions = [], [], []
+            labels, scores, testfeatures = [], [], []
             for request_id in self.context_history[context]:
                 assert request_id in self.history
                 evaluation["request"] += 1
@@ -189,23 +194,31 @@ class LearningProcessor(LinksProcessor):
                         evaluation["feedback"][link["feedback"]] += 1
                         context_evaluation["feedback"][link["feedback"]] += 1
                         labels.append(link["feedback"] == settings["target"])
-                        score = link[settings["heuristic"]]
-                        scores.append(score)
-                        predictions.append(score >= settings["threshold"])
+                        if "model" in settings:
+                            assert "features" in link
+                            features = sorted(link["features"].keys())
+                            features = self.check_model(model, description, \
+                                                        features, settings)
+                            testfeatures.append([link["features"][feature] \
+                                                 for feature in features])
+                        else:
+                            scores.append(link[settings["heuristic"]])
                     else:
                         evaluation["feedback"]["missing"] += 1
                         context_evaluation["feedback"]["missing"] += 1
 
             if len(labels):
+                if "model" in settings:
+                    scores = [score[1] for score in \
+                              self.predict(model, testfeatures)]
                 context_evaluation["metrics"] = \
-                    compute_metrics(labels, scores, predictions)
+                    compute_metrics(labels, scores, settings["threshold"])
                 all_labels.extend(labels)
                 all_scores.extend(scores)
-                all_predictions.extend(predictions)
 
         if len(all_labels):
             evaluation["micro_metrics"] = \
-                compute_metrics(all_labels, all_scores, all_predictions)
+                compute_metrics(all_labels, all_scores, settings["threshold"])
             evaluation["macro_metrics"] = defaultdict(float)            
             for context, context_evaluation in evaluation["contexts"].iteritems():
                 if not "metrics" in context_evaluation: continue
