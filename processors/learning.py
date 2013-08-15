@@ -253,10 +253,14 @@ class LearningProcessor(LinksProcessor):
         if "context" in settings: print "in context", settings["context"],
         print "based on %d requests." % len(request_ids)
         
-        # Create learner
-        skip_settings = ["target", "context"]
-        model = self.modelStore.create_model(settings, skip_settings)
-        metadata["model"] = {model.__class__.__name__: model.get_params(deep=True)}
+        if not "classifier" in settings:
+            (model, metadata) = self.modelStore.load_model(name)
+            assert "partial_fit" in dir(model)
+        else:
+            # Create learner
+            skip_settings = ["target", "context"]
+            model = self.modelStore.create_model(settings, skip_settings)
+            metadata["model"] = {model.__class__.__name__: model.get_params(deep=True)}
 
         # Create training data and labels
         data, targets = [], []
@@ -282,17 +286,21 @@ class LearningProcessor(LinksProcessor):
                 for feature in sorted(link["features"].keys()):
                     data[-1].append(link["features"][feature])
 
-        assert len(data) == metadata["links"]
-        assert len(targets) == metadata["links"]
+        if "classifier" in settings:
+            assert len(data) == metadata["links"]
+            assert len(targets) == metadata["links"]
         if len(data): assert len(data[0]) == len(metadata["features"])
         
         # Do learning
         print metadata
         
-        if len(data): 
-            model.fit(data, targets)
+        if len(data):
+            if not "classifier" in settings:
+                model.partial_fit(data, targets, (True, False))
+                print "Partially",
+            else:
+                model.fit(data, targets)
             print "Fitted %s model to %d training samples." % \
                   (model.__class__.__name__, len(data))
             
         self.modelStore.save_model(model, name, metadata)
-        
