@@ -28,7 +28,7 @@ class LearningProcessor(LinksProcessor):
         print("Start predicting of %d instances with %d features."
               % (len(testfeatures), len(testfeatures[0])))
 
-        if "predict_proba" in classifier.__dict__:
+        if "predict_proba" in dir(classifier):
             predict = classifier.predict_proba(testfeatures)
         else:
             predictions = classifier.predict(testfeatures)
@@ -57,9 +57,9 @@ class LearningProcessor(LinksProcessor):
 
             features = sorted(description["features"])
         
-        if "n_features_" in model.__dict__:
+        if "n_features_" in dir(model):
             model_features = model.n_features_
-        elif "coef_" in model.__dict__:
+        elif "coef_" in dir(model):
             model_features = model.coef_.shape[1]
         else:
             model_features = None

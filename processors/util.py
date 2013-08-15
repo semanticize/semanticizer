@@ -64,11 +64,16 @@ class ModelStore():
             modelname = modelname[:-4]
 
         modelfile = os.path.join(self.model_dir, modelname)
-        model = joblib.dump(model, modelfile + ".pkl")
+        joblib.dump(model, modelfile + ".pkl")
 
         if description != None:
             with open(modelfile + ".yaml", 'w') as out:
                 out.write(yaml.dump(description, Dumper=yaml.CDumper))
+        else:
+            description = {}
+        
+        description.update({"name": modelname, "source": modelfile + ".pkl"})
+        self.model_cache[modelname] = (model, description)
             
     def _convert_dict(self, data, skip=[]):
         """Helper function that convert the values of dictionary to int/float. 
