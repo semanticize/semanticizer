@@ -28,11 +28,18 @@ class LearningProcessor(LinksProcessor):
         print("Start predicting of %d instances with %d features."
               % (len(testfeatures), len(testfeatures[0])))
 
+        predict = None
         if "predict_proba" in dir(classifier):
-            predict = classifier.predict_proba(testfeatures)
-        else:
+            try:
+                predict = classifier.predict_proba(testfeatures)
+            except NotImplementedError:
+                predictions = classifier.decision_function(testfeatures)
+                predict = [[1-p,p] for p in predictions]
+
+        if predict == None:
             predictions = classifier.predict(testfeatures)
             predict = [[0,1] if p else [1,0] for p in predictions]
+
         print("Done predicting of %d instances." % len(predict))
 
         return predict    
