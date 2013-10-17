@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Copyright 2012-2013, University of Amsterdam. This program is free software:
 # you can redistribute it and/or modify it under the terms of the GNU Lesser 
 # General Public License as published by the Free Software Foundation, either 
@@ -36,13 +38,13 @@ except ImportError:
 
 from flask import Flask, Response, request
 
-import procpipeline
-from config import config_get
-import wpm.wpmutil as wpmutil
+from semanticizer import procpipeline
+from semanticizer.config import config_get
+import semanticizer.wpm import init_datasource
 
 
 wpm_languages = config_get(('wpm', 'languages'))
-wpmutil.init_datasource(wpm_languages)
+init_datasource(wpm_languages)
 PIPELINE = procpipeline.build(wpm_languages, feature_config=None)
 
 # WSGI application!

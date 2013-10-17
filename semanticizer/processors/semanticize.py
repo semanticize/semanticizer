@@ -11,10 +11,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import wpm.wpmutil as wpmutil
 from nltk import regexp_tokenize
 from nltk.util import ngrams as nltk_ngrams
 import urllib
+
+from ..wpm import wpmutil
 
 def tokenize(text):
     return regexp_tokenize(text, r'\w+([.,\']\w+)*|[^\w\s]+')

@@ -19,7 +19,7 @@ wpm:
   languages:
     # memory backend
     nl:
-      source: wpm.wpmdata_inproc.WpmDataInProc
+      source: WpmDataInProc
       initparams:
         path: /zfs/ilps-plexer/wikipediaminer/nlwiki-20130318
         language: dutch
@@ -28,7 +28,7 @@ wpm:
         translation_languages: []
     # Redis backend
     # nl:
-    #   source: wpm.wpmdata_redis.WpmDataRedis
+    #   source: wpmdata_redis.WpmDataRedis
     #   initparams:
     #     host: localhost
     #     port: 6379

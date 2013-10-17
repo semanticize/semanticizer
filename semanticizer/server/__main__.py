@@ -12,11 +12,12 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-import procpipeline
-from config import config_get
-from server import Server
 from logging.handlers import TimedRotatingFileHandler
-import wpm.wpmutil as wpmutil
+
+from .. import procpipeline
+from ..config import config_get
+from ..server import Server
+from ..wpm import init_datasource
 
 
 def start_server(langcodes,
@@ -70,7 +71,7 @@ if __name__ == '__main__':
 
     # Set the datasource and init it
     wpmlangs = config_get(('wpm', 'languages'))
-    wpmutil.init_datasource(wpmlangs)
+    init_datasource(wpmlangs)
 
     # Start the server
     try:

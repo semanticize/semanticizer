@@ -19,7 +19,7 @@ server:
 wpm:
   languages:
     nl:
-      source: wpm.wpmdata_redis.WpmDataRedis
+      source: WpmDataRedis
       initparams:
         host: zookst14.science.uva.nl
         port: 6379
@@ -28,7 +28,7 @@ wpm:
     # but uses a lot more memory, especially if you intent to run
     # multiple semanticizers.
     # nl:
-    #   source: wpm.wpmdata_inproc.WpmDataInProc
+    #   source: WpmDataInProc
     #   initparams:
     #     path: /zfs/ilps-plexer/wikipediaminer/nlwiki-20111104
     #     language: dutch
@@ -36,22 +36,22 @@ wpm:
     #     # codes
     #     translation_languages: ["en", "fr", "de", "nl"]
     en:
-      source: wpm.wpmdata_redis.WpmDataRedis
+      source: WpmDataRedis
       initparams:
         host: zookst14.science.uva.nl
         port: 6379
     es:
-      source: wpm.wpmdata_redis.WpmDataRedis
+      source: WpmDataRedis
       initparams:
         host: zookst14.science.uva.nl
         port: 6379
     fr:
-      source: wpm.wpmdata_redis.WpmDataRedis
+      source: WpmDataRedis
       initparams:
         host: zookst14.science.uva.nl
         port: 6379
     de:
-      source: wpm.wpmdata_redis.WpmDataRedis
+      source: WpmDataRedis
       initparams:
         host: zookst14.science.uva.nl
         port: 6379

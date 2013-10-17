@@ -39,7 +39,7 @@ The [code](https://github.com/semanticize/semanticizer/) is released
 under LGPL license (see below). If you have any questions, contact
 [Daan](http://staff.science.uva.nl/~dodijk/).
 
-If you want to dive into the code, start at `main.py`.
+If you want to dive into the code, start at `semanticizer/server/__main__.py`.
 
 
 ## Requirements
@@ -73,10 +73,10 @@ If you want to dive into the code, start at `main.py`.
 
 	2. Redis server needs to be set up and running.
 
-	3. Load data into redis: `python util/redisinsert english en enwiki-20110722`.
+	3. Load data into redis: `python -m semanticizer.redisinsert english en enwiki-20110722`.
 	    --langloc dutch nl nlwiki-20111104
 
-4. Run the server using `python main.py`.
+4. Run the server using `python -m semantizicer.server`.
 
 5. In order to work with the features you need to install the
    scikit-learn and scipy packages. Before installing scipy you need

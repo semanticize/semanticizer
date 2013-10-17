@@ -14,10 +14,10 @@
 """
 The Processor wrapping Semanticizer
 """
-from processors.core import LinksProcessor
-from processors.semanticize import Semanticizer
-
 from nltk.tokenize.punkt import PunktSentenceTokenizer
+
+from .core import LinksProcessor
+from .semanticize import Semanticizer
 
 
 class SemanticizeProcessor(LinksProcessor):

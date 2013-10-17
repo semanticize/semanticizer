@@ -11,16 +11,17 @@
 # You should have received a copy of the GNU Lesser General Public License 
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import cPickle as pickle
-
-from math import log
-import wpm.wpmutil as wpmutil
-import re
 import collections
-import processors.stringUtils as stringUtils
+from math import log
+import cPickle as pickle
 import os
+import re
 
 import Levenshtein
+
+from . import stringUtils
+from ..wpm import wpm_dumps
+
 
 
 class anchorFeatures:
@@ -29,7 +30,7 @@ class anchorFeatures:
 
         if not os.path.exists(pickle_root):
             os.makedirs(pickle_root)'''
-        self.wpm = wpmutil.wpm_dumps[langcode]
+        self.wpm = wpm_dumps[langcode]
         #   From Wikipedia miner CSV file:
         self.wikipediaArticleCount = 970139
         self.wikipediaCategoryCount = 63108

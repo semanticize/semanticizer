@@ -19,7 +19,7 @@ server:
 wpm:
   languages:
     en:
-      source: wpm.wpmdata_redis.WpmDataRedis
+      source: WpmDataRedis
       initparams:
         host: localhost
         port: 6379

@@ -3,6 +3,7 @@
 *.pyc
 **/*.pyc
 **/._*
+build/
 logs/*
 /log.txt*
 /.project
