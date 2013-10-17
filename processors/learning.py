@@ -29,7 +29,7 @@ class LearningProcessor(LinksProcessor):
               % (len(testfeatures), len(testfeatures[0])))
 
         predict = None
-        if "predict_proba" in dir(classifier):
+        if hasattr(classifier, "predict_proba"):
             try:
                 predict = classifier.predict_proba(testfeatures)
             except NotImplementedError:
@@ -63,10 +63,10 @@ class LearningProcessor(LinksProcessor):
                     raise warn
 
             features = sorted(description["features"])
-        
-        if "n_features_" in dir(model):
+
+        if hasattr(model, "n_features_"):
             model_features = model.n_features_
-        elif "coef_" in dir(model):
+        elif hasattr(model, "coef_"):
             model_features = model.coef_.shape[1]
         else:
             model_features = None
@@ -262,7 +262,7 @@ class LearningProcessor(LinksProcessor):
         
         if not "classifier" in settings:
             (model, metadata) = self.modelStore.load_model(name)
-            assert "partial_fit" in dir(model)
+            assert hasattr(model, "partial_fit")
         else:
             # Create learner
             skip_settings = ["target", "context"]
