@@ -22,7 +22,7 @@ def load_config(path='conf/semanticizer.yml'):
     print "get config"
     return yaml.load(file(path))
 
-def config_get(keys=(), default=None, config=load_config()):
+def config_get(keys=(), default=None, config=None):
     """
     Allows user to access configuration variables and arguments. The function
     takes the variable name as its input, and returns the value or None is it
@@ -30,10 +30,14 @@ def config_get(keys=(), default=None, config=load_config()):
 
     @param keys: The name of the configuration parameter to fetch. (Optional)
     @param default: The default value to return if the key is not found.
-    @param config: dictionary to represent config
+    @param config: dictionary to represent config. If None, load_config is
+                   called.
     @return: The value for the given parameter if name was set and valid, \
              the default value if invalid or None if no default value was set.
     """
+    if config is None:
+        config = load_config()
+
     if isinstance(keys, basestring):
         keys = [keys]
     
