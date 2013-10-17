@@ -22,7 +22,6 @@ or
 
 """
 
-import sys
 import re
 
 # Can do without ujson and simplejson, but speeds up considerably.

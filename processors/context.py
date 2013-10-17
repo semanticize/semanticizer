@@ -125,10 +125,10 @@ class contextGraph:
     	from time import time
     	try:
     		start = time()
-    # 		page_ranked = pagerank(graph, max_iter=1000) # 1.7s for #nodes = 2500
-    		page_ranked = pagerank(self.graph, max_iter=1000, nstart=self.page_ranked) # 0.2-1.5s for #node = 2500
-    # 		page_ranked = pagerank_scipy(graph) # 1.0s for #nodes = 2500
-    # 		page_ranked = pagerank_numpy(graph) # > 30s if #nodes > 1000
+    # 		pagerank(graph, max_iter=1000) # 1.7s for #nodes = 2500
+    		pagerank(self.graph, max_iter=1000, nstart=self.page_ranked) # 0.2-1.5s for #node = 2500
+    # 		pagerank_scipy(graph) # 1.0s for #nodes = 2500
+    # 		pagerank_numpy(graph) # > 30s if #nodes > 1000
     		print "Pagerank took: %f seconds" % (time()-start)
     	except ZeroDivisionError:
     		print "ZeroDivisionError in pagerank"

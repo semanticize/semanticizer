@@ -11,7 +11,7 @@
 # You should have received a copy of the GNU Lesser General Public License 
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import sys, os, re, argparse, urllib, urllib2, json
+import os, re, argparse, urllib, urllib2, json
 from collections import defaultdict
 from timer import Timer
 from random import choice, shuffle
