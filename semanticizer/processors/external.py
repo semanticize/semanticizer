@@ -11,9 +11,6 @@
 # You should have received a copy of the GNU Lesser General Public License 
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from core import LinksProcessor
-import wpm.wpmutil as wpmutil
-
 from Queue import Queue, Empty
 from threading import Thread
 
@@ -25,6 +22,9 @@ import datetime
 import shelve
 import os
 from copy import deepcopy
+
+from .core import LinksProcessor
+from ..wpm import wpm_dumps
 
 
 class ArticlesProcessor(LinksProcessor):
@@ -168,7 +168,7 @@ class ArticlesProcessor(LinksProcessor):
         if article in self.article_cache[langcode]:
             resultDoc = self.article_cache[langcode][article]
         else:
-            wpm = wpmutil.wpm_dumps[langcode]
+            wpm = wpm_dumps[langcode]
             wikipedia_name = wpm.get_wikipedia_name()
             url = self.article_url + "?"
             url += urllib.urlencode({"wikipedia": wikipedia_name,

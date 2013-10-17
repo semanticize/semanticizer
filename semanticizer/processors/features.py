@@ -11,11 +11,12 @@
 # You should have received a copy of the GNU Lesser General Public License 
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import processors.feature as features
-import processors.context as context
-
-from processors.core import LinksProcessor
 from collections import defaultdict
+
+from . import feature as features
+from . import context
+
+from .core import LinksProcessor
 
 class FeaturesProcessor(LinksProcessor):
     def __init__(self, langcodes):

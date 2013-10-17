@@ -11,12 +11,13 @@
 # You should have received a copy of the GNU Lesser General Public License 
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from core import LinksProcessor
-from util import ModelStore, compute_metrics
-
 import warnings
 
 from collections import defaultdict
+
+from .core import LinksProcessor
+from .util import ModelStore, compute_metrics
+
 
 class LearningProcessor(LinksProcessor):
     def __init__(self, model_dir):

@@ -14,16 +14,17 @@
 import time
 import logging
 
-from processors.core import SettingsProcessor, FilterProcessor
-from processors.semanticizer import SemanticizeProcessor
-from processors.features import FeaturesProcessor, ArticleFeaturesProcessor, \
-                                ContextFeaturesProcessor
-from processors.multiple import MultipleEntityFeaturesProcessor
-from processors.external import ArticlesProcessor, StatisticsProcessor
-from processors.learning import LearningProcessor
-from processors.image import AddImageProcessor
+from .processors.core import SettingsProcessor, FilterProcessor
+from .processors.semanticizer import SemanticizeProcessor
+from .processors.features import FeaturesProcessor, ArticleFeaturesProcessor, \
+                                 ContextFeaturesProcessor
+from .processors.multiple import MultipleEntityFeaturesProcessor
+from .processors.external import ArticlesProcessor, StatisticsProcessor
+from .processors.learning import LearningProcessor
+from .processors.image import AddImageProcessor
 
-from config import config_get
+from .config import config_get
+
 
 def build(langcodes, use_features=False):
     """

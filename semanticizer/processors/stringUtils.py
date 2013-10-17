@@ -19,7 +19,7 @@ import re
 #                        (?=(\s|\'|"|\.|\,|:|;|!|\?|\'s|\Z)
 # reNonWordChars = re.compile('(?u)\W+', re.UNICODE)
 
-# We took the reg exp from SciKit Learn:
+# We took the reg exp from scikit-learn:
 # https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/feature_extraction/text.py
 reTokenPattern = re.compile(r"(?u)\b\w\w+\b", re.UNICODE)
 

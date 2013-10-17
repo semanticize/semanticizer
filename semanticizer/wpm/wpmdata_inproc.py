@@ -11,10 +11,11 @@
 # You should have received a copy of the GNU Lesser General Public License 
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from wpm.base import Data
-from collections import defaultdict
-from wpm.wpmutil import check_dump_path, dump_filenames, normalize
 import codecs
+from collections import defaultdict
+
+from .base import Data
+from .wpmutil import check_dump_path, dump_filenames, normalize
 
 
 class WpmDataInProc(Data):

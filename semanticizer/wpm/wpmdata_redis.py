@@ -11,12 +11,13 @@
 # You should have received a copy of the GNU Lesser General Public License 
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import redis
 import codecs
-from wpm.base import Data
-from wpm.wpmutil import normalize
-from wpm.wpmutil import check_dump_path
-from wpm.wpmutil import dump_filenames
+import redis
+
+from .base import Data
+from .wpmutil import normalize
+from .wpmutil import check_dump_path
+from .wpmutil import dump_filenames
 
 
 class WpmDataRedis(Data):

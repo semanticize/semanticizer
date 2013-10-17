@@ -12,26 +12,12 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import unicodedata
-# from unidecode import unidecode
 
-wpm_dumps = {}
 dump_filenames = {
     'translations': 'translations.csv',
     'labels': 'label.csv',
     'pages': 'page.csv'
 }
-
-
-def init_datasource(wpm_languages):
-    """Set the datasource and init it"""
-    for langcode, langconfig in wpm_languages.iteritems():
-        load_wpm_dump(langconfig['source'], langcode, **langconfig['initparams'])
-
-def load_wpm_dump(datasource, langcode, **kwargs):
-    importdata = datasource.rsplit('.', 1)
-    mod = __import__(importdata[0], fromlist=[importdata[1]])
-    class_ = getattr(mod, importdata[1])
-    wpm_dumps[langcode] = class_(langcode, **kwargs)
 
 
 def normalize(raw, dash=True, accents=True, lower=True):
@@ -61,8 +47,6 @@ def remove_accents(input_str):
         input_unicode = input_str
     nkfd_form = unicodedata.normalize('NFKD', input_unicode)
     return u"".join([c for c in nkfd_form if not unicodedata.combining(c)])
-
-    # return unidecode(input_str)
 
 
 def check_dump_path(path):

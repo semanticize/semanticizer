@@ -12,8 +12,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import sys
-sys.path.append(".")
-from wpm.wpmdata_redis import WpmLoader
+from ..wpm.wpmdata_redis import WpmLoader
 
 if __name__ == '__main__':
     if len(sys.argv) < 4:
