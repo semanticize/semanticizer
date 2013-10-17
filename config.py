@@ -34,13 +34,13 @@ def config_get(keys=(), default=None, config=load_config()):
     @return: The value for the given parameter if name was set and valid, \
              the default value if invalid or None if no default value was set.
     """
-    if type(keys) == str:
+    if isinstance(keys, basestring):
         keys = [keys]
     
     pointer = config
     for key in keys:
         if not key in pointer:
-            if default != None:
+            if default is not None:
                 return default
             else:
                 raise KeyError('Could not find %s in configuration' % key)

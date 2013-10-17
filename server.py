@@ -22,7 +22,6 @@ except ImportError:
     import json
 
 import re
-import wpm.wpmutil as wpmutil
 from flask import Flask, Response, request, abort
 
 from uuid import uuid4

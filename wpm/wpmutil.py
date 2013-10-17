@@ -55,8 +55,8 @@ def normalize(raw, dash=True, accents=True, lower=True):
 def remove_accents(input_str):
     """Replaces accented characters in the input with their
     non-accented counterpart."""
-    if type(input_str) is str:
-        input_unicode = unicode(input_str, errors="ignore")
+    if isinstance(input_str, str):
+        input_unicode = input_str.decode(errors="ignore")
     else:
         input_unicode = input_str
     nkfd_form = unicodedata.normalize('NFKD', input_unicode)
