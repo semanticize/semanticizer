@@ -90,6 +90,7 @@ def store_dataset(args):
                 feedback_filename = re.sub(pattern, replacement, filename)
                 if not os.path.exists(feedback_filename):
                     print feedback_filename, "does not exist"
+                    continue
                 with open(feedback_filename) as file:
                     lines = file.readlines()
                     print "Read %d lines of %s feedback from %s." % \
