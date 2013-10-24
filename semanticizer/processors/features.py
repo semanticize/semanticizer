@@ -84,7 +84,7 @@ class ContextFeaturesProcessor(LinksProcessor):
         return (links, text, settings)
 
     def process(self, links, text, settings):
-        if not "context" in settings or \
+        if not "context" in settings or "skip_context_features" in settings or \
           (not "features" in settings and not "learning" in settings):
             return (links, text, settings)
 
