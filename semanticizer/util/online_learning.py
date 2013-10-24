@@ -63,7 +63,7 @@ def online_learning(args):
     results = defaultdict(list)
     
     shuffle(args.datafiles)
-    for filename in args.datafiles:
+    for filenr, filename in enumerate(args.datafiles):
         assert os.path.exists(filename)
         context = args.context_prefix + re.sub(args.context_pattern[0], \
                                                args.context_pattern[1], \
@@ -78,6 +78,7 @@ def online_learning(args):
 
         train_files = [f for f in args.datafiles if f != filename]
         for i in range(args.iterations):
+            print "%02d/%02d" % (filenr+1, len(args.datafiles)),
             print "%03d/%03d" % (i+1, args.iterations),
             train_filename = choice(train_files)
             #with Timer("Learning for %s" % train_filename, 'timer'):
@@ -86,7 +87,7 @@ def online_learning(args):
                                    args.context_pattern[1], train_filename)
 
             url_data = urllib.urlencode({"context": train_context})
-            print "Training model", modelname, "on", train_context,
+            print "Training", modelname, "on", train_context,
             print urllib2.urlopen(learn_url, url_data).read()
 
             evaluate_url = args.url + 'evaluate/' + context
