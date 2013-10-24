@@ -42,6 +42,19 @@ def add_image_url(links, langcode):
 IMG_DIMENSION_PATTERN = '<img .*?width="(\d+)" height="(\d+)".*?>'
 IMG_URL_PATTERN = '<img .*?src="(.+?)".*?>'
 
+BLACKLISTED_IMAGE_URLS = ('http://upload.wikimedia.org/wikipedia/en/f/f4/Ambox_content.png',
+      'http://upload.wikimedia.org/wikipedia/en/thumb/9/99/Question_book-new.svg/50px-Question_book-new.svg.png',
+      'http://upload.wikimedia.org/wikipedia/en/thumb/f/f2/Edit-clear.svg/40px-Edit-clear.svg.png',
+      'http://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Wiktionary-logo-en.svg/37px-Wiktionary-logo-en.svg.png',
+      'http://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Text_document_with_red_question_mark.svg/40px-Text_document_with_red_question_mark.svg.png')
+
+def convert_image_url(image):
+    if image.startswith("//"): 
+        image = "http:" + image
+    elif image.startswith("/"):
+        image = "http://" + url.split("/")[2] + image
+    return image
+
 def get_image_urls(urls, num_of_threads=8, min_dimension=36):
     def worker():
         while True:
@@ -64,16 +77,12 @@ def get_image_urls(urls, num_of_threads=8, min_dimension=36):
                     if dimension >= min_dimension: # Do not use fallback: or image == None:
                         match = re.match(IMG_URL_PATTERN, img)
                         if match != None and len(match.groups()) > 0:
-                            image = match.groups()[0]
+                            image_url = convert_image_url(match.groups()[0])
+                            if image_url in BLACKLISTED_IMAGE_URLS: continue
+                            image = image_url
                             if dimension >= min_dimension:
                                 break
 
-                if image != None:
-                    if image.startswith("//"): 
-                        image = "http:" + image
-                    elif image.startswith("/"):
-                        image = "http://" + url.split("/")[2] + image
-                        
                     image_url_cache[url] = image
                 
                 queue.task_done()
