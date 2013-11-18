@@ -103,7 +103,7 @@ class LearningProcessor(LinksProcessor):
 
         scores = self.predict(model, testfeatures)
         for link, score in zip(links, scores):
-            link["learning_probability"] = score[1]
+            link["learningProbability"] = score[1]
 
         return (links, text, settings)
 

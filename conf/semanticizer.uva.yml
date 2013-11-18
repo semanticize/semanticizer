@@ -74,6 +74,6 @@ misc:
 
 settings:
   vara:
-    pre_filter: unique,sense_probability>0.01
+    pre_filter: unique,senseProbability>0.01
     learning: coling-SP0.2-100.RandomForestClassifier-10-auto.pkl
-    filter: unique,learning_probability>=0.5
+    filter: unique,learningProbability>=0.5
