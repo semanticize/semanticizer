@@ -17,10 +17,16 @@ their defaults, overwriting the defaults by reading values from a given config
 file, then overwriting these values to whatever's been passed as argument.
 """
 import yaml
+import sys
+import argparse
+
 
 def load_config(path='conf/semanticizer.yml'):
     print "get config"
     return yaml.load(file(path))
+    
+def str2bool(v):
+  return v.lower() in ("yes", "true", "t", "1")
 
 def config_get(keys=(), default=None, config=None):
     """
@@ -49,4 +55,27 @@ def config_get(keys=(), default=None, config=None):
             else:
                 raise KeyError('Could not find %s in configuration' % key)
         pointer = pointer[key]
+        
+    index = 0
+    
+    
+    #add command line args
+    parser = argparse.ArgumentParser(description="""
+            Run sematicizer.""")
+    parser.add_argument("-p", "--port", help="Port number ")
+    parser.add_argument("-v", "--verbose", help="Verbose ")
+    parser.add_argument("-s", "--host", help="Host ip address ")
+    
+    args = parser.parse_args()
+    
+    
+    if args.port != None:
+        config["server"]["port"] = args.port
+        
+    if args.verbose != None:
+        config["logging"]["verbose"] = str2bool(args.verbose)
+    
+    if args.host != None:
+        config["server"]["host"] = args.host
+                
     return pointer
