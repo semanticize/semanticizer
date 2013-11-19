@@ -15,8 +15,11 @@ import unicodedata
 
 dump_filenames = {
     'translations': 'translations.csv',
+    'stats': 'stats.csv',
     'labels': 'label.csv',
-    'pages': 'page.csv'
+    'pages': 'page.csv',
+    'inlinks': 'pageLinkIn.csv',
+    'outlinks': 'pageLinkOut.csv'
 }
 
 
