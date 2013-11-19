@@ -171,11 +171,11 @@ class WpmLoader:
         rds.set(langcode + ":name", langname)
         rds.set(langcode + ":path", path)
         self.load_stats(path + dump_filenames["stats"])
-        #self.load_links(path + dump_filenames["inlinks"])
-        #self.load_links(path + dump_filenames["outlinks"], inlinks = False)
-        #self.load_labels(path + dump_filenames["labels"])
-        #self.load_translations(path + dump_filenames["translations"])
-        #self.load_page_titles(path + dump_filenames["pages"])
+        self.load_labels(path + dump_filenames["labels"])
+        self.load_translations(path + dump_filenames["translations"])
+        self.load_page_titles(path + dump_filenames["pages"])
+        self.load_links(path + dump_filenames["inlinks"])
+        self.load_links(path + dump_filenames["outlinks"], inlinks = False)
 
     def load_links(self, filename, inlinks = True):
         if inlinks:
