@@ -19,11 +19,36 @@ file, then overwriting these values to whatever's been passed as argument.
 import yaml
 import sys
 import argparse
-
+import traceback
 
 def load_config(path='conf/semanticizer.yml'):
-    print "get config"
-    return yaml.load(file(path))
+    
+    #add command line args
+    parser = argparse.ArgumentParser(description="""
+            Run sematicizer.""")
+       
+    parser.add_argument("-p", "--port", help="Port number ")
+    parser.add_argument("-v", "--verbose", help="Verbose ")
+    parser.add_argument("-s", "--host", help="Host ip address ")
+    parser.add_argument("-c", "--config", help="Config file ")
+     
+    args = parser.parse_args()
+    
+    if args.config != None:
+        path = args.config
+    
+    configYaml = yaml.load(file(path))
+    
+    if args.port != None:
+        configYaml["server"]["port"] = int(args.port)
+        
+    if args.verbose != None:
+        configYaml["logging"]["verbose"] = str2bool(args.verbose)
+    
+    if args.host != None:
+        configYaml["server"]["host"] = args.host
+    
+    return configYaml
     
 def str2bool(v):
   return v.lower() in ("yes", "true", "t", "1")
@@ -57,25 +82,4 @@ def config_get(keys=(), default=None, config=None):
         pointer = pointer[key]
         
     index = 0
-    
-    
-    #add command line args
-    parser = argparse.ArgumentParser(description="""
-            Run sematicizer.""")
-    parser.add_argument("-p", "--port", help="Port number ")
-    parser.add_argument("-v", "--verbose", help="Verbose ")
-    parser.add_argument("-s", "--host", help="Host ip address ")
-    
-    args = parser.parse_args()
-    
-    
-    if args.port != None:
-        config["server"]["port"] = args.port
-        
-    if args.verbose != None:
-        config["logging"]["verbose"] = str2bool(args.verbose)
-    
-    if args.host != None:
-        config["server"]["host"] = args.host
-                
     return pointer
