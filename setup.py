@@ -18,11 +18,12 @@ setup(
     ],
     install_requires=[
         "flask",
-        "joblib",
         "mock",
         "lxml",
         "networkx",
+        "numpy",
         "python-Levenshtein",
+        "redis>=2.8.0",
         "scikit-learn",
         "simplejson",
     ],
