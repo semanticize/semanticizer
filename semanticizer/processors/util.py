@@ -98,14 +98,19 @@ class ModelStore():
 
         classifier = settings["classifier"].split(".")[-1]
         package = ".".join(settings["classifier"].split(".")[:-1])
-    
-        # Import package module
-        classifier_module = __import__(package, globals(), locals(), \
-                                       [str(classifier)], -1)
-        # Classifier instance
-        Classifier = getattr(classifier_module, classifier)
-        
+
         skip_settings.extend(["classifier"])
-        model = Classifier(**self._convert_dict(settings, skip_settings))
+        arguments = self._convert_dict(settings, skip_settings)
         
-        return model
+        return self.create_instance(package, classifier, *arguments)
+         
+    def create_instance(self, package, classname, *args, **kwargs):    
+        # Import package module
+        package_module = __import__(package, globals(), locals(), \
+                                       [str(classname)], -1)
+        # Class instance
+        package_class = getattr(package_module, classname, kwargs)
+        
+        instance = package_class(*args, **kwargs)
+        
+        return instance
