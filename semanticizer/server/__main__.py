@@ -63,7 +63,7 @@ def init_logging(log, verbose, logformat):
     logging.getLogger().addHandler(stream_handler)
 
 
-if __name__ == '__main__':
+def main():
     # Init the logger
     init_logging(config_get(('logging', 'path'), 'log.txt'),
                  config_get(('logging', 'verbose'), False),
@@ -86,3 +86,7 @@ if __name__ == '__main__':
         logging.getLogger().fatal("Error running Semanticizer server: %s" \
                                   % e.message)
         raise
+
+
+if __name__ == '__main__':
+    main()
