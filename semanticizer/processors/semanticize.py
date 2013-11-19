@@ -11,14 +11,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from nltk import regexp_tokenize
 from nltk.util import ngrams as nltk_ngrams
+import re
 import urllib
 
 from ..wpm import wpmutil, wpm_dumps
 
-def tokenize(text):
-    return regexp_tokenize(text, r'\w+([.,\']\w+)*|[^\w\s]+')
+
+tokenize = re.compile(text, r'\w+([.,\']\w+)*|[^\w\s]+').findall
+
 
 class Semanticizer:
     def __init__(self, language_code, sense_probability_threshold, 
