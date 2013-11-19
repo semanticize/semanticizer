@@ -26,7 +26,8 @@ def start_server(langcodes,
                  use_reloader,
                  verbose=False,
                  logformat='[%(asctime)-15s][%(levelname)s][%(module)s][%(pathname)s:%(lineno)d]: %(message)s',
-                 use_features=False):
+                 use_features=False,
+                 debug=False):
     """
     Start a SemanticizerFlaskServer with all processors loaded into the
     pipeline.
@@ -35,7 +36,7 @@ def start_server(langcodes,
     @param logformat: The logformat used by the Flask server
     """
     # Initialize the pipeline
-    pipeline = procpipeline.build(langcodes, use_features)
+    pipeline = procpipeline.build(langcodes, use_features, debug=debug)
     # Create the FlaskServer
     logging.getLogger().info("Setting up server")
     server = Server()
@@ -81,7 +82,8 @@ def main():
                      config_get(('server', 'use_reloader'), False),
                      config_get(('logging', 'verbose'), False),
                      config_get(('logging', 'format'), None),
-                     config_get(('linkprocs', 'includefeatures'), False))
+                     config_get(('linkprocs', 'includefeatures'), False),
+                     config_get(('server', 'debug'), False))
     except ValueError as e:
         logging.getLogger().fatal("Error running Semanticizer server: %s" \
                                   % e.message)

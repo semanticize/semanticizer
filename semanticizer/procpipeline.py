@@ -26,7 +26,7 @@ from .processors.image import AddImageProcessor
 from .config import config_get
 
 
-def build(langcodes, use_features=False):
+def build(langcodes, use_features=False, debug=False):
     """
     Initialize the pipeline.
 
@@ -41,7 +41,8 @@ def build(langcodes, use_features=False):
     else:
         max_ngram_length = None
     semanticize_processor = _load_semanticize_processor(langcodes,
-                                                        max_ngram_length)
+                                                        max_ngram_length,
+                                                        debug=debug)
     settings = config_get("settings", {})
     pipeline.append(("Settings", SettingsProcessor(settings)))
     pipeline.append(("Semanticize", semanticize_processor))
@@ -53,7 +54,7 @@ def build(langcodes, use_features=False):
     return pipeline
 
 
-def _load_semanticize_processor(langcodes, max_ngram_length=None):
+def _load_semanticize_processor(langcodes, max_ngram_length=None, debug=False):
     """
     Load the Semanticizer.
 
@@ -62,7 +63,7 @@ def _load_semanticize_processor(langcodes, max_ngram_length=None):
     @see: processors.SemanticizeProcessor
     """
     logging.getLogger().info("Loading semanticizer")
-    semanticize_processor = SemanticizeProcessor()
+    semanticize_processor = SemanticizeProcessor(debug=debug)
     start = time.time()
     logging.getLogger().info("Loading semanticizers for langcode(s) "
                      + ", ".join(langcodes))

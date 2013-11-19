@@ -21,9 +21,8 @@ def tokenize(text):
     return regexp_tokenize(text, r'\w+([.,\']\w+)*|[^\w\s]+')
 
 class Semanticizer:
-
     def __init__(self, language_code, sense_probability_threshold, 
-                 max_ngram_length=None):
+                 max_ngram_length=None, debug=False):
         """constructor"""
         self.language_code = language_code
         self.sense_probability_threshold = sense_probability_threshold
@@ -31,6 +30,7 @@ class Semanticizer:
         self.wpm = wpm_dumps[language_code]
         self.title_page = {} # This needs to be removed
         self.max_ngram_length = max_ngram_length
+        self.debug = debug
 
     def semanticize(self, sentence, normalize_dash=True,
                     normalize_accents=True, normalize_lower=False,
@@ -70,7 +70,7 @@ class Semanticizer:
                                                           normalize_accents,
                                                           normalize_lower)
                     if normalized_ngram == normalized_anchor:
-                        if not self.wpm.entity_exists(anchor):
+                        if self.debug and not self.wpm.entity_exists(anchor):
                             raise LookupError("Data corrupted, cannot "
                                               + "find %s in the database" \
                                               % anchor)
