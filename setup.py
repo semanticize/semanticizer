@@ -23,6 +23,7 @@ setup(
         "networkx",
         "numpy",
         "python-Levenshtein",
+        "redis>=2.8.0",
         "scikit-learn",
         "simplejson",
     ],
