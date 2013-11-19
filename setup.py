@@ -22,6 +22,7 @@ setup(
         "mock",
         "lxml",
         "networkx",
+        "numpy",
         "python-Levenshtein",
         "scikit-learn",
         "simplejson",
