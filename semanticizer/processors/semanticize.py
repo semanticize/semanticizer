@@ -18,7 +18,8 @@ import urllib
 from ..wpm import wpmutil, wpm_dumps
 
 
-tokenize = re.compile(text, r'\w+([.,\']\w+)*|[^\w\s]+').findall
+tokenize = re.compile(r'\w+(?:[.,\']\w+)*|[^\w\s]+',
+                      re.UNICODE | re.MULTILINE | re.DOTALL).findall
 
 
 class Semanticizer:
