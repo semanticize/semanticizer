@@ -22,7 +22,7 @@ class Data(object):
         return
 
     @abc.abstractmethod
-    def normalized_entity_exists(self, normalized_entity):
+    def normalized_entities_exist(self, normalized_entities):
         return
 
     @abc.abstractmethod

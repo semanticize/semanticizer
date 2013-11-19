@@ -74,8 +74,11 @@ class WpmDataRedis(Data):
     def entity_exists(self, entity):
         return self.conn.exists(self.ns_txt_txt(entity))
 
-    def normalized_entity_exists(self, normalized_entity):
-        return self.conn.exists(self.ns_norm_ntxt(normalized_entity))
+    def normalized_entities_exist(self, entities):
+        with self.conn.pipeline() as pipe:
+            for e in entities:
+                pipe.exists(self.ns_norm_ntxt(e))
+            return pipe.execute()
 
     def get_all_entities(self, normalized_entity):
         return self.conn.smembers(self.ns_norm_ntxt(normalized_entity))

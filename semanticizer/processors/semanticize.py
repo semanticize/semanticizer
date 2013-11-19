@@ -56,9 +56,11 @@ class Semanticizer:
                 for ngram in nltk_ngrams(token_list, n):
                     ngrams.add(' '.join(ngram))
 
-        for ngram in ngrams:
-            normal_ngram = wpmutil.normalize(ngram)
-            if self.wpm.normalized_entity_exists(normal_ngram):
+        normal_ngrams = map(wpmutil.normalize, ngrams)
+        exist = self.wpm.normalized_entities_exist(normal_ngrams)
+
+        for i, (ngram, normal_ngram) in enumerate(zip(ngrams, normal_ngrams)):
+            if exist[i]:
                 normalized_ngram = wpmutil.normalize(ngram, normalize_dash,
                                                      normalize_accents,
                                                      normalize_lower)
