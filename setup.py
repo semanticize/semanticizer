@@ -18,7 +18,6 @@ setup(
     ],
     install_requires=[
         "flask",
-        "joblib",
         "mock",
         "lxml",
         "networkx",

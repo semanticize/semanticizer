@@ -11,9 +11,9 @@
 # You should have received a copy of the GNU Lesser General Public License 
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import joblib
 import os, yaml
 import sklearn.metrics
+import sklearn.externals.joblib
 
 def compute_metrics(labels, scores, threshold=0.5):
     metrics = {}
@@ -50,7 +50,7 @@ class ModelStore():
             return self.model_cache[modelname]
 
         modelfile = os.path.join(self.model_dir, modelname)
-        model = joblib.load(modelfile + ".pkl")
+        model = sklearn.externals.joblib.load(modelfile + ".pkl")
 
         description = {"name": modelname, "source": modelfile + ".pkl"}
         if os.path.exists(modelfile + ".yaml"):
@@ -64,7 +64,7 @@ class ModelStore():
             modelname = modelname[:-4]
 
         modelfile = os.path.join(self.model_dir, modelname)
-        joblib.dump(model, modelfile + ".pkl")
+        sklearn.externals.joblib.dump(model, modelfile + ".pkl")
 
         if description != None:
             with open(modelfile + ".yaml", 'w') as out:
