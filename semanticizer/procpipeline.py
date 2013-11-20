@@ -49,6 +49,8 @@ def build(langcodes, use_features=False, debug=False):
     pipeline.append(("Filter", FilterProcessor()))
     if use_features:
         _load_features(pipeline, langcodes)
+    else:
+        _load_articles(pipeline, langcodes)
     pipeline.append(("AddImage", AddImageProcessor()))
     logging.getLogger().info("Done initializing pipeline")
     return pipeline
@@ -86,11 +88,7 @@ def _load_features(pipeline, langcodes):
     start = time.time()
     pipeline.append(("Features",
                      FeaturesProcessor(langcodes)))
-    pipeline.append(("Articles",
-                     ArticlesProcessor(langcodes,
-                                       config_get(('wpm', 'bdburl')),
-                                       config_get(('wpm', 'threads'), 1),
-                                       config_get(('misc', 'tempdir')))))
+    _load_articles(pipeline, langcodes)
     pipeline.append(("Statistics",
                      StatisticsProcessor(langcodes,
                                          config_get(('wpm', 'threads'), 1),
@@ -104,3 +102,10 @@ def _load_features(pipeline, langcodes):
                            config_get(('misc', 'tempdir')))
     pipeline.append(("Learning", LearningProcessor(model_dir)))
     logging.getLogger().info("Done loading features")
+
+def _load_articles(pipeline, langcodes):
+    pipeline.append(("Articles",
+                     ArticlesProcessor(langcodes,
+                                       config_get(('wpm', 'bdburl')),
+                                       config_get(('wpm', 'threads'), 1),
+                                       config_get(('misc', 'tempdir')))))
