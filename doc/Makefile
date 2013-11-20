@@ -1,6 +1,7 @@
 doc: 
 	docco -l linear Semanticizer.js
 	docco -l linear advanced.js
+	docco -l linear learning.js
 
 all: doc
 

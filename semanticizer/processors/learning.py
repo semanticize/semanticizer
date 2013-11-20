@@ -85,7 +85,8 @@ class LearningProcessor(LinksProcessor):
             return (links, text, settings)
         
         modelname = settings["learning"]
-        (model, description) = self.modelStore.load_model(modelname)
+        (model, description, preprocessor) \
+            = self.modelStore.load_model(modelname)
         print("Loaded classifier from %s" % description["source"])
 
         features = sorted(links[0]["features"].keys())        
@@ -100,6 +101,9 @@ class LearningProcessor(LinksProcessor):
                 else:
                     linkfeatures.append(None)
             testfeatures.append(linkfeatures)
+
+        if preprocessor:
+            testfeatures = preprocessor.transform(testfeatures)
 
         scores = self.predict(model, testfeatures)
         for link, score in zip(links, scores):
@@ -267,8 +271,10 @@ class LearningProcessor(LinksProcessor):
         else:
             # Create learner
             skip_settings = ["target", "context"]
-            model = self.modelStore.create_model(settings, skip_settings)
+            model, preprocessor = self.modelStore.create_model(settings, skip_settings)
             metadata["model"] = {model.__class__.__name__: model.get_params(deep=True)}
+            if preprocessor:
+                metadata["preprocessor"] = {preprocessor.__class__.__name__: preprocessor.get_params(deep=True)}
 
         # Create training data and labels
         data, targets = [], []
@@ -302,6 +308,10 @@ class LearningProcessor(LinksProcessor):
         # Do learning
         print metadata
         
+        # Preprocess data
+        if preprocessor:
+            data = preprocessor.fit_transform(data)
+        
         if len(data):
             if not "classifier" in settings:
                 model.partial_fit(data, targets, (True, False))
@@ -311,4 +321,4 @@ class LearningProcessor(LinksProcessor):
             print "Fitted %s model to %d training samples." % \
                   (model.__class__.__name__, len(data))
             
-        self.modelStore.save_model(model, name, metadata)
+        self.modelStore.save_model(model, name, metadata, preprocessor)

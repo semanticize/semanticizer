@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>Advanced Features</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" media="all" href="public/stylesheets/normalize.css" />
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="page">
+
+      <div class="header">
+        
+          
+          <h1>Advanced Features</h1>
+<hr>
+<h3>Features</h3>
+<blockquote>
+<p><a href="http://semanticize.uva.nl/api/nl?text=UvA&amp;pretty&amp;features">http://semanticize.uva.nl/api/nl?text=UvA&amp;pretty&amp;features</a></p>
+</blockquote>
+
+          
+            <div class='highlight'><pre>{
+    <span class="string">"text"</span>: <span class="string">"UvA"</span>, 
+    <span class="string">"links"</span>: [
+        {
+            <span class="string">"linkOccCount"</span>: <span class="number">71.0</span>, 
+            <span class="string">"features"</span>: {
+                <span class="string">"LINKPROB"</span>: <span class="number">0.29460579690432376</span>, 
+                <span class="string">"IDF_anchor"</span>: <span class="number">9.467706392312687</span>, 
+                <span class="string">"INLINKS"</span>: <span class="number">250</span>, 
+                <span class="string">"TF_title"</span>: <span class="number">0.0</span>, 
+                <span class="string">"IDF_content"</span>: <span class="number">7.9982972271407675</span>, 
+                <span class="string">"SNIL"</span>: <span class="number">0</span>, 
+                <span class="string">"SUBSTRING_MATCH_1"</span>: <span class="number">0</span>, 
+                <span class="string">"KEYPHRASENESS"</span>: <span class="number">0.23006134263615516</span>, 
+                <span class="string">"POS_first_in_paragraph"</span>: <span class="number">30.0</span>, 
+                <span class="string">"WORD_MISS"</span>: <span class="number">4</span>, 
+                <span class="string">"priorProbability"</span>: <span class="number">1.0</span>, 
+                <span class="string">"REDIRECT"</span>: <span class="number">0</span>, 
+                <span class="string">"TEN"</span>: <span class="number">0</span>, 
+                <span class="string">"TF_paragraph"</span>: <span class="number">1.0</span>, 
+                <span class="string">"NCT"</span>: <span class="number">0</span>, 
+                <span class="string">"IDF_title"</span>: <span class="number">13.785184639232321</span>, 
+                <span class="string">"LEN"</span>: <span class="number">1</span>, 
+                <span class="string">"TCN"</span>: <span class="number">0</span>, 
+                <span class="string">"WORD_MATCH"</span>: <span class="number">0</span>, 
+                <span class="string">"TF_sentence"</span>: <span class="number">1.0</span>, 
+                <span class="string">"EDIT_DISTANCE"</span>: <span class="number">23</span>, 
+                <span class="string">"SNCL"</span>: <span class="number">0</span>, 
+                <span class="string">"SUBSTRING_MATCH_2"</span>: <span class="number">0</span>, 
+                <span class="string">"NORMALIZATION"</span>: <span class="number">0.0</span>, 
+                <span class="string">"OUTLINKS"</span>: <span class="number">56</span>
+            }, 
+            <span class="string">"text"</span>: <span class="string">"UvA"</span>, 
+            <span class="string">"linkProbability"</span>: <span class="number">0.23006134969325154</span>, 
+            <span class="string">"occCount"</span>: <span class="number">241</span>, 
+            <span class="string">"id"</span>: <span class="number">14815</span>, 
+            <span class="string">"priorProbability"</span>: <span class="number">1.0</span>, 
+            <span class="string">"linkDocCount"</span>: <span class="number">75.0</span>, 
+            <span class="string">"title"</span>: <span class="string">"Universiteit van Amsterdam"</span>, 
+            <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/Universiteit%20van%20Amsterdam"</span>, 
+            <span class="string">"label"</span>: <span class="string">"UvA"</span>, 
+            <span class="string">"senseProbability"</span>: <span class="number">0.23006134969325154</span>, 
+            <span class="string">"docCount"</span>: <span class="number">326</span>
+        }
+    ]
+}</pre></div>
+          
+        
+
+        
+      </div>
+
+      
+        
+        <hr>
+<h3>Machine Learning Models</h3>
+<h4>Save dataset and features</h4>
+<blockquote>
+<p><a href="http://semanticize.uva.nl/api/nl?text=VU&amp;pretty&amp;features&amp;save">http://semanticize.uva.nl/api/nl?text=VU&amp;pretty&amp;features&amp;save</a></p>
+</blockquote>
+
+        
+          <div class='highlight'><pre>{
+    <span class="string">"text"</span>: <span class="string">"VU"</span>, 
+    <span class="string">"links"</span>: [
+        {
+            <span class="string">"features"</span>: {
+                <span class="string">"LINKPROB"</span>: <span class="number">0.1960326698245896</span>, 
+                <span class="string">"IDF_anchor"</span>: <span class="number">8.909997239645294</span>, 
+                <span class="string">"INLINKS"</span>: <span class="number">250</span>, 
+                <span class="string">"TF_title"</span>: <span class="number">0.0</span>, 
+                <span class="string">"IDF_content"</span>: <span class="number">7.658325433234075</span>, 
+                <span class="string">"SNIL"</span>: <span class="number">0</span>, 
+                <span class="string">"SUBSTRING_MATCH_1"</span>: <span class="number">0</span>, 
+                <span class="string">"KEYPHRASENESS"</span>: <span class="number">0.286026194628249</span>, 
+                <span class="string">"POS_first_in_paragraph"</span>: <span class="number">46.0</span>, 
+                <span class="string">"WORD_MISS"</span>: <span class="number">4</span>, 
+                <span class="string">"COMMONNESS"</span>: <span class="number">0.5059523809523809</span>, 
+                <span class="string">"REDIRECT"</span>: <span class="number">1</span>, 
+                <span class="string">"TEN"</span>: <span class="number">0</span>, 
+                <span class="string">"TF_paragraph"</span>: <span class="number">5.0</span>, 
+                <span class="string">"NCT"</span>: <span class="number">0</span>, 
+                <span class="string">"IDF_title"</span>: <span class="number">11.8392830615566</span>, 
+                <span class="string">"LEN"</span>: <span class="number">1</span>, 
+                <span class="string">"TCN"</span>: <span class="number">0</span>, 
+                <span class="string">"WORD_MATCH"</span>: <span class="number">0</span>, 
+                <span class="string">"TF_sentence"</span>: <span class="number">2.0</span>, 
+                <span class="string">"EDIT_DISTANCE"</span>: <span class="number">26</span>, 
+                <span class="string">"SNCL"</span>: <span class="number">0</span>, 
+                <span class="string">"SUBSTRING_MATCH_2"</span>: <span class="number">0</span>, 
+                <span class="string">"NORMALIZATION"</span>: <span class="number">0.0</span>, 
+                <span class="string">"OUTLINKS"</span>: <span class="number">54</span>
+            }, 
+            <span class="string">"text"</span>: <span class="string">"VU"</span>, 
+            <span class="string">"linkProbability"</span>: <span class="number">0.28602620087336245</span>, 
+            <span class="string">"id"</span>: <span class="string">"22003"</span>, 
+            <span class="string">"senseProbability"</span>: <span class="number">0.1615720524017467</span>, 
+            <span class="string">"title"</span>: <span class="string">"Vrije Universiteit Amsterdam"</span>, 
+            <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/Vrije%20Universiteit%20Amsterdam"</span>, 
+            <span class="string">"label"</span>: <span class="string">"VU"</span>, 
+            <span class="string">"priorProbability"</span>: <span class="number">0.5059523809523809</span>
+        }, 
+        {
+            <span class="string">"features"</span>: {
+                <span class="string">"LINKPROB"</span>: <span class="number">0.1960326698245896</span>, 
+                <span class="string">"IDF_anchor"</span>: <span class="number">8.909997239645294</span>, 
+                <span class="string">"INLINKS"</span>: <span class="number">250</span>, 
+                <span class="string">"TF_title"</span>: <span class="number">0.0</span>, 
+                <span class="string">"IDF_content"</span>: <span class="number">7.658325433234075</span>, 
+                <span class="string">"SNIL"</span>: <span class="number">0</span>, 
+                <span class="string">"SUBSTRING_MATCH_1"</span>: <span class="number">0</span>, 
+                <span class="string">"KEYPHRASENESS"</span>: <span class="number">0.286026194628249</span>, 
+                <span class="string">"POS_first_in_paragraph"</span>: <span class="number">1</span>, 
+                <span class="string">"WORD_MISS"</span>: <span class="number">2</span>, 
+                <span class="string">"COMMONNESS"</span>: <span class="number">0.4583333333333333</span>, 
+                <span class="string">"REDIRECT"</span>: <span class="number">1</span>, 
+                <span class="string">"TEN"</span>: <span class="number">0</span>, 
+                <span class="string">"TF_paragraph"</span>: <span class="number">0.0</span>, 
+                <span class="string">"NCT"</span>: <span class="number">0</span>, 
+                <span class="string">"IDF_title"</span>: <span class="number">11.8392830615566</span>, 
+                <span class="string">"LEN"</span>: <span class="number">1</span>, 
+                <span class="string">"TCN"</span>: <span class="number">0</span>, 
+                <span class="string">"WORD_MATCH"</span>: <span class="number">0</span>, 
+                <span class="string">"TF_sentence"</span>: <span class="number">0.0</span>, 
+                <span class="string">"EDIT_DISTANCE"</span>: <span class="number">8</span>, 
+                <span class="string">"SNCL"</span>: <span class="number">0</span>, 
+                <span class="string">"SUBSTRING_MATCH_2"</span>: <span class="number">0</span>, 
+                <span class="string">"NORMALIZATION"</span>: <span class="number">0.0</span>, 
+                <span class="string">"OUTLINKS"</span>: <span class="number">171</span>
+            }, 
+            <span class="string">"text"</span>: <span class="string">"VU"</span>, 
+            <span class="string">"linkProbability"</span>: <span class="number">0.28602620087336245</span>, 
+            <span class="string">"id"</span>: <span class="string">"1846"</span>, 
+            <span class="string">"senseProbability"</span>: <span class="number">0.11353711790393013</span>, 
+            <span class="string">"title"</span>: <span class="string">"Volksunie"</span>, 
+            <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/Volksunie"</span>, 
+            <span class="string">"label"</span>: <span class="string">"VU"</span>, 
+            <span class="string">"priorProbability"</span>: <span class="number">0.4583333333333333</span>
+        }, 
+        {
+            <span class="string">"features"</span>: {
+                <span class="string">"LINKPROB"</span>: <span class="number">0.1960326698245896</span>, 
+                <span class="string">"IDF_anchor"</span>: <span class="number">8.909997239645294</span>, 
+                <span class="string">"INLINKS"</span>: <span class="number">2</span>, 
+                <span class="string">"TF_title"</span>: <span class="number">1.0</span>, 
+                <span class="string">"IDF_content"</span>: <span class="number">7.658325433234075</span>, 
+                <span class="string">"SNIL"</span>: <span class="number">0</span>, 
+                <span class="string">"SUBSTRING_MATCH_1"</span>: <span class="number">1</span>, 
+                <span class="string">"KEYPHRASENESS"</span>: <span class="number">0.286026194628249</span>, 
+                <span class="string">"POS_first_in_paragraph"</span>: <span class="number">1</span>, 
+                <span class="string">"WORD_MISS"</span>: <span class="number">0</span>, 
+                <span class="string">"COMMONNESS"</span>: <span class="number">0.017857142857142856</span>, 
+                <span class="string">"REDIRECT"</span>: <span class="number">1</span>, 
+                <span class="string">"TEN"</span>: <span class="number">1</span>, 
+                <span class="string">"TF_paragraph"</span>: <span class="number">0.0</span>, 
+                <span class="string">"NCT"</span>: <span class="number">1</span>, 
+                <span class="string">"IDF_title"</span>: <span class="number">11.8392830615566</span>, 
+                <span class="string">"LEN"</span>: <span class="number">1</span>, 
+                <span class="string">"TCN"</span>: <span class="number">1</span>, 
+                <span class="string">"WORD_MATCH"</span>: <span class="number">1</span>, 
+                <span class="string">"TF_sentence"</span>: <span class="number">0.0</span>, 
+                <span class="string">"EDIT_DISTANCE"</span>: <span class="number">0</span>, 
+                <span class="string">"SNCL"</span>: <span class="number">0</span>, 
+                <span class="string">"SUBSTRING_MATCH_2"</span>: <span class="number">1</span>, 
+                <span class="string">"NORMALIZATION"</span>: <span class="number">0.0</span>, 
+                <span class="string">"OUTLINKS"</span>: <span class="number">16</span>
+            }, 
+            <span class="string">"text"</span>: <span class="string">"VU"</span>, 
+            <span class="string">"linkProbability"</span>: <span class="number">0.28602620087336245</span>, 
+            <span class="string">"id"</span>: <span class="string">"14818"</span>, 
+            <span class="string">"senseProbability"</span>: <span class="number">0.004366812227074236</span>, 
+            <span class="string">"title"</span>: <span class="string">"VU"</span>, 
+            <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/VU"</span>, 
+            <span class="string">"label"</span>: <span class="string">"VU"</span>, 
+            <span class="string">"priorProbability"</span>: <span class="number">0.017857142857142856</span>
+        }, 
+        {
+            <span class="string">"features"</span>: {
+                <span class="string">"LINKPROB"</span>: <span class="number">0.1960326698245896</span>, 
+                <span class="string">"IDF_anchor"</span>: <span class="number">8.909997239645294</span>, 
+                <span class="string">"INLINKS"</span>: <span class="number">58</span>, 
+                <span class="string">"TF_title"</span>: <span class="number">1.0</span>, 
+                <span class="string">"IDF_content"</span>: <span class="number">7.658325433234075</span>, 
+                <span class="string">"SNIL"</span>: <span class="number">0</span>, 
+                <span class="string">"SUBSTRING_MATCH_1"</span>: <span class="number">1</span>, 
+                <span class="string">"KEYPHRASENESS"</span>: <span class="number">0.286026194628249</span>, 
+                <span class="string">"POS_first_in_paragraph"</span>: <span class="number">3.0</span>, 
+                <span class="string">"WORD_MISS"</span>: <span class="number">2</span>, 
+                <span class="string">"COMMONNESS"</span>: <span class="number">0.005952380952380952</span>, 
+                <span class="string">"REDIRECT"</span>: <span class="number">1</span>, 
+                <span class="string">"TEN"</span>: <span class="number">0</span>, 
+                <span class="string">"TF_paragraph"</span>: <span class="number">1.0</span>, 
+                <span class="string">"NCT"</span>: <span class="number">0</span>, 
+                <span class="string">"IDF_title"</span>: <span class="number">11.8392830615566</span>, 
+                <span class="string">"LEN"</span>: <span class="number">1</span>, 
+                <span class="string">"TCN"</span>: <span class="number">1</span>, 
+                <span class="string">"WORD_MATCH"</span>: <span class="number">1</span>, 
+                <span class="string">"TF_sentence"</span>: <span class="number">1.0</span>, 
+                <span class="string">"EDIT_DISTANCE"</span>: <span class="number">16</span>, 
+                <span class="string">"SNCL"</span>: <span class="number">0</span>, 
+                <span class="string">"SUBSTRING_MATCH_2"</span>: <span class="number">0</span>, 
+                <span class="string">"NORMALIZATION"</span>: <span class="number">0.0</span>, 
+                <span class="string">"OUTLINKS"</span>: <span class="number">32</span>
+            }, 
+            <span class="string">"text"</span>: <span class="string">"VU"</span>, 
+            <span class="string">"linkProbability"</span>: <span class="number">0.28602620087336245</span>, 
+            <span class="string">"id"</span>: <span class="string">"195409"</span>, 
+            <span class="string">"senseProbability"</span>: <span class="number">0.002183406113537118</span>, 
+            <span class="string">"title"</span>: <span class="string">"VU medisch centrum"</span>, 
+            <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/VU%20medisch%20centrum"</span>, 
+            <span class="string">"label"</span>: <span class="string">"VU"</span>, 
+            <span class="string">"priorProbability"</span>: <span class="number">0.005952380952380952</span>
+        }, 
+        {
+            <span class="string">"features"</span>: {
+                <span class="string">"LINKPROB"</span>: <span class="number">0.1960326698245896</span>, 
+                <span class="string">"IDF_anchor"</span>: <span class="number">8.909997239645294</span>, 
+                <span class="string">"INLINKS"</span>: <span class="number">5</span>, 
+                <span class="string">"TF_title"</span>: <span class="number">0.0</span>, 
+                <span class="string">"IDF_content"</span>: <span class="number">7.658325433234075</span>, 
+                <span class="string">"SNIL"</span>: <span class="number">0</span>, 
+                <span class="string">"SUBSTRING_MATCH_1"</span>: <span class="number">0</span>, 
+                <span class="string">"KEYPHRASENESS"</span>: <span class="number">0.286026194628249</span>, 
+                <span class="string">"POS_first_in_paragraph"</span>: <span class="number">24.0</span>, 
+                <span class="string">"WORD_MISS"</span>: <span class="number">3</span>, 
+                <span class="string">"COMMONNESS"</span>: <span class="number">0.005952380952380952</span>, 
+                <span class="string">"REDIRECT"</span>: <span class="number">1</span>, 
+                <span class="string">"TEN"</span>: <span class="number">0</span>, 
+                <span class="string">"TF_paragraph"</span>: <span class="number">1.0</span>, 
+                <span class="string">"NCT"</span>: <span class="number">0</span>, 
+                <span class="string">"IDF_title"</span>: <span class="number">11.8392830615566</span>, 
+                <span class="string">"LEN"</span>: <span class="number">1</span>, 
+                <span class="string">"TCN"</span>: <span class="number">0</span>, 
+                <span class="string">"WORD_MATCH"</span>: <span class="number">0</span>, 
+                <span class="string">"TF_sentence"</span>: <span class="number">1.0</span>, 
+                <span class="string">"EDIT_DISTANCE"</span>: <span class="number">18</span>, 
+                <span class="string">"SNCL"</span>: <span class="number">0</span>, 
+                <span class="string">"SUBSTRING_MATCH_2"</span>: <span class="number">0</span>, 
+                <span class="string">"NORMALIZATION"</span>: <span class="number">0.0</span>, 
+                <span class="string">"OUTLINKS"</span>: <span class="number">5</span>
+            }, 
+            <span class="string">"text"</span>: <span class="string">"VU"</span>, 
+            <span class="string">"linkProbability"</span>: <span class="number">0.28602620087336245</span>, 
+            <span class="string">"id"</span>: <span class="string">"836852"</span>, 
+            <span class="string">"senseProbability"</span>: <span class="number">0.002183406113537118</span>, 
+            <span class="string">"title"</span>: <span class="string">"Vaterl\u00e4ndische Union"</span>, 
+            <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/Vaterl%C3%A4ndische%20Union"</span>, 
+            <span class="string">"label"</span>: <span class="string">"VU"</span>, 
+            <span class="string">"priorProbability"</span>: <span class="number">0.005952380952380952</span>
+        }, 
+        {
+            <span class="string">"features"</span>: {
+                <span class="string">"LINKPROB"</span>: <span class="number">0.1960326698245896</span>, 
+                <span class="string">"IDF_anchor"</span>: <span class="number">8.909997239645294</span>, 
+                <span class="string">"INLINKS"</span>: <span class="number">2</span>, 
+                <span class="string">"TF_title"</span>: <span class="number">1.0</span>, 
+                <span class="string">"IDF_content"</span>: <span class="number">7.658325433234075</span>, 
+                <span class="string">"SNIL"</span>: <span class="number">0</span>, 
+                <span class="string">"SUBSTRING_MATCH_1"</span>: <span class="number">0</span>, 
+                <span class="string">"KEYPHRASENESS"</span>: <span class="number">0.286026194628249</span>, 
+                <span class="string">"POS_first_in_paragraph"</span>: <span class="number">9.0</span>, 
+                <span class="string">"WORD_MISS"</span>: <span class="number">1</span>, 
+                <span class="string">"COMMONNESS"</span>: <span class="number">0.005952380952380952</span>, 
+                <span class="string">"REDIRECT"</span>: <span class="number">1</span>, 
+                <span class="string">"TEN"</span>: <span class="number">0</span>, 
+                <span class="string">"TF_paragraph"</span>: <span class="number">1.0</span>, 
+                <span class="string">"NCT"</span>: <span class="number">0</span>, 
+                <span class="string">"IDF_title"</span>: <span class="number">11.8392830615566</span>, 
+                <span class="string">"LEN"</span>: <span class="number">1</span>, 
+                <span class="string">"TCN"</span>: <span class="number">1</span>, 
+                <span class="string">"WORD_MATCH"</span>: <span class="number">1</span>, 
+                <span class="string">"TF_sentence"</span>: <span class="number">1.0</span>, 
+                <span class="string">"EDIT_DISTANCE"</span>: <span class="number">7</span>, 
+                <span class="string">"SNCL"</span>: <span class="number">0</span>, 
+                <span class="string">"SUBSTRING_MATCH_2"</span>: <span class="number">1</span>, 
+                <span class="string">"NORMALIZATION"</span>: <span class="number">0.0</span>, 
+                <span class="string">"OUTLINKS"</span>: <span class="number">12</span>
+            }, 
+            <span class="string">"text"</span>: <span class="string">"VU"</span>, 
+            <span class="string">"linkProbability"</span>: <span class="number">0.28602620087336245</span>, 
+            <span class="string">"id"</span>: <span class="string">"858778"</span>, 
+            <span class="string">"senseProbability"</span>: <span class="number">0.002183406113537118</span>, 
+            <span class="string">"title"</span>: <span class="string">"Holden VU"</span>, 
+            <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/Holden%20VU"</span>, 
+            <span class="string">"label"</span>: <span class="string">"VU"</span>, 
+            <span class="string">"priorProbability"</span>: <span class="number">0.005952380952380952</span>
+        }
+    ], 
+    <span class="string">"request_id"</span>: <span class="string">"236dce6c-ed01-41de-8799-f54ec74b14c7"</span>
+}</pre></div>
+        
+      
+        
+        <h4>Provide feedback</h4>
+<blockquote>
+<p><a href="http://localhost:5000/feedback/236dce6c-ed01-41de-8799-f54ec74b14c7?positive=Vrije%20Universiteit%20Amsterdam&amp;default=negative">http://localhost:5000/feedback/236dce6c-ed01-41de-8799-f54ec74b14c7?positive=Vrije%20Universiteit%20Amsterdam&amp;default=negative</a></p>
+</blockquote>
+<h4>Inspect feedback and saved links</h4>
+<blockquote>
+<p><a href="http://localhost:5000/inspect">http://localhost:5000/inspect</a></p>
+</blockquote>
+
+        
+          <div class='highlight'><pre>{
+    <span class="string">"ContextFeaturesProcessor"</span>: {}, 
+    <span class="string">"FeaturesProcessor"</span>: [
+        <span class="string">"fr"</span>, 
+        <span class="string">"de"</span>, 
+        <span class="string">"nl"</span>, 
+        <span class="string">"es"</span>, 
+        <span class="string">"en"</span>
+    ], 
+    <span class="string">"SettingsProcessor"</span>: {}, 
+    <span class="string">"SemanticizeProcessor"</span>: [
+        <span class="string">"nl"</span>, 
+        <span class="string">"fr"</span>, 
+        <span class="string">"de"</span>, 
+        <span class="string">"en"</span>, 
+        <span class="string">"es"</span>
+    ], 
+    <span class="string">"LearningProcessor"</span>: {
+        <span class="string">"context_history"</span>: {}, 
+        <span class="string">"history"</span>: {
+            <span class="string">"236dce6c-ed01-41de-8799-f54ec74b14c7"</span>: [
+                {
+                    <span class="string">"features"</span>: {
+                        <span class="string">"LINKPROB"</span>: <span class="number">0.1960326698245896</span>, 
+                        <span class="string">"IDF_anchor"</span>: <span class="number">8.909997239645294</span>, 
+                        <span class="string">"INLINKS"</span>: <span class="number">250</span>, 
+                        <span class="string">"TF_title"</span>: <span class="number">0.0</span>, 
+                        <span class="string">"IDF_content"</span>: <span class="number">7.658325433234075</span>, 
+                        <span class="string">"SNIL"</span>: <span class="number">0</span>, 
+                        <span class="string">"SUBSTRING_MATCH_1"</span>: <span class="number">0</span>, 
+                        <span class="string">"KEYPHRASENESS"</span>: <span class="number">0.286026194628249</span>, 
+                        <span class="string">"POS_first_in_paragraph"</span>: <span class="number">46.0</span>, 
+                        <span class="string">"WORD_MISS"</span>: <span class="number">4</span>, 
+                        <span class="string">"COMMONNESS"</span>: <span class="number">0.5059523809523809</span>, 
+                        <span class="string">"REDIRECT"</span>: <span class="number">1</span>, 
+                        <span class="string">"TEN"</span>: <span class="number">0</span>, 
+                        <span class="string">"TF_paragraph"</span>: <span class="number">5.0</span>, 
+                        <span class="string">"NCT"</span>: <span class="number">0</span>, 
+                        <span class="string">"IDF_title"</span>: <span class="number">11.8392830615566</span>, 
+                        <span class="string">"LEN"</span>: <span class="number">1</span>, 
+                        <span class="string">"TCN"</span>: <span class="number">0</span>, 
+                        <span class="string">"WORD_MATCH"</span>: <span class="number">0</span>, 
+                        <span class="string">"TF_sentence"</span>: <span class="number">2.0</span>, 
+                        <span class="string">"EDIT_DISTANCE"</span>: <span class="number">26</span>, 
+                        <span class="string">"SNCL"</span>: <span class="number">0</span>, 
+                        <span class="string">"SUBSTRING_MATCH_2"</span>: <span class="number">0</span>, 
+                        <span class="string">"NORMALIZATION"</span>: <span class="number">0.0</span>, 
+                        <span class="string">"OUTLINKS"</span>: <span class="number">54</span>
+                    }, 
+                    <span class="string">"text"</span>: <span class="string">"VU"</span>, 
+                    <span class="string">"linkProbability"</span>: <span class="number">0.28602620087336245</span>, 
+                    <span class="string">"id"</span>: <span class="string">"22003"</span>, 
+                    <span class="string">"feedback"</span>: <span class="string">"positive"</span>, 
+                    <span class="string">"senseProbability"</span>: <span class="number">0.1615720524017467</span>, 
+                    <span class="string">"title"</span>: <span class="string">"Vrije Universiteit Amsterdam"</span>, 
+                    <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/Vrije%20Universiteit%20Amsterdam"</span>, 
+                    <span class="string">"label"</span>: <span class="string">"VU"</span>, 
+                    <span class="string">"priorProbability"</span>: <span class="number">0.5059523809523809</span>
+                }, 
+                {
+                    <span class="string">"features"</span>: {
+                        <span class="string">"LINKPROB"</span>: <span class="number">0.1960326698245896</span>, 
+                        <span class="string">"IDF_anchor"</span>: <span class="number">8.909997239645294</span>, 
+                        <span class="string">"INLINKS"</span>: <span class="number">250</span>, 
+                        <span class="string">"TF_title"</span>: <span class="number">0.0</span>, 
+                        <span class="string">"IDF_content"</span>: <span class="number">7.658325433234075</span>, 
+                        <span class="string">"SNIL"</span>: <span class="number">0</span>, 
+                        <span class="string">"SUBSTRING_MATCH_1"</span>: <span class="number">0</span>, 
+                        <span class="string">"KEYPHRASENESS"</span>: <span class="number">0.286026194628249</span>, 
+                        <span class="string">"POS_first_in_paragraph"</span>: <span class="number">1</span>, 
+                        <span class="string">"WORD_MISS"</span>: <span class="number">2</span>, 
+                        <span class="string">"COMMONNESS"</span>: <span class="number">0.4583333333333333</span>, 
+                        <span class="string">"REDIRECT"</span>: <span class="number">1</span>, 
+                        <span class="string">"TEN"</span>: <span class="number">0</span>, 
+                        <span class="string">"TF_paragraph"</span>: <span class="number">0.0</span>, 
+                        <span class="string">"NCT"</span>: <span class="number">0</span>, 
+                        <span class="string">"IDF_title"</span>: <span class="number">11.8392830615566</span>, 
+                        <span class="string">"LEN"</span>: <span class="number">1</span>, 
+                        <span class="string">"TCN"</span>: <span class="number">0</span>, 
+                        <span class="string">"WORD_MATCH"</span>: <span class="number">0</span>, 
+                        <span class="string">"TF_sentence"</span>: <span class="number">0.0</span>, 
+                        <span class="string">"EDIT_DISTANCE"</span>: <span class="number">8</span>, 
+                        <span class="string">"SNCL"</span>: <span class="number">0</span>, 
+                        <span class="string">"SUBSTRING_MATCH_2"</span>: <span class="number">0</span>, 
+                        <span class="string">"NORMALIZATION"</span>: <span class="number">0.0</span>, 
+                        <span class="string">"OUTLINKS"</span>: <span class="number">171</span>
+                    }, 
+                    <span class="string">"text"</span>: <span class="string">"VU"</span>, 
+                    <span class="string">"linkProbability"</span>: <span class="number">0.28602620087336245</span>, 
+                    <span class="string">"id"</span>: <span class="string">"1846"</span>, 
+                    <span class="string">"feedback"</span>: <span class="string">"negative"</span>, 
+                    <span class="string">"senseProbability"</span>: <span class="number">0.11353711790393013</span>, 
+                    <span class="string">"title"</span>: <span class="string">"Volksunie"</span>, 
+                    <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/Volksunie"</span>, 
+                    <span class="string">"label"</span>: <span class="string">"VU"</span>, 
+                    <span class="string">"priorProbability"</span>: <span class="number">0.4583333333333333</span>
+                }, 
+                {
+                    <span class="string">"features"</span>: {
+                        <span class="string">"LINKPROB"</span>: <span class="number">0.1960326698245896</span>, 
+                        <span class="string">"IDF_anchor"</span>: <span class="number">8.909997239645294</span>, 
+                        <span class="string">"INLINKS"</span>: <span class="number">2</span>, 
+                        <span class="string">"TF_title"</span>: <span class="number">1.0</span>, 
+                        <span class="string">"IDF_content"</span>: <span class="number">7.658325433234075</span>, 
+                        <span class="string">"SNIL"</span>: <span class="number">0</span>, 
+                        <span class="string">"SUBSTRING_MATCH_1"</span>: <span class="number">1</span>, 
+                        <span class="string">"KEYPHRASENESS"</span>: <span class="number">0.286026194628249</span>, 
+                        <span class="string">"POS_first_in_paragraph"</span>: <span class="number">1</span>, 
+                        <span class="string">"WORD_MISS"</span>: <span class="number">0</span>, 
+                        <span class="string">"COMMONNESS"</span>: <span class="number">0.017857142857142856</span>, 
+                        <span class="string">"REDIRECT"</span>: <span class="number">1</span>, 
+                        <span class="string">"TEN"</span>: <span class="number">1</span>, 
+                        <span class="string">"TF_paragraph"</span>: <span class="number">0.0</span>, 
+                        <span class="string">"NCT"</span>: <span class="number">1</span>, 
+                        <span class="string">"IDF_title"</span>: <span class="number">11.8392830615566</span>, 
+                        <span class="string">"LEN"</span>: <span class="number">1</span>, 
+                        <span class="string">"TCN"</span>: <span class="number">1</span>, 
+                        <span class="string">"WORD_MATCH"</span>: <span class="number">1</span>, 
+                        <span class="string">"TF_sentence"</span>: <span class="number">0.0</span>, 
+                        <span class="string">"EDIT_DISTANCE"</span>: <span class="number">0</span>, 
+                        <span class="string">"SNCL"</span>: <span class="number">0</span>, 
+                        <span class="string">"SUBSTRING_MATCH_2"</span>: <span class="number">1</span>, 
+                        <span class="string">"NORMALIZATION"</span>: <span class="number">0.0</span>, 
+                        <span class="string">"OUTLINKS"</span>: <span class="number">16</span>
+                    }, 
+                    <span class="string">"text"</span>: <span class="string">"VU"</span>, 
+                    <span class="string">"linkProbability"</span>: <span class="number">0.28602620087336245</span>, 
+                    <span class="string">"id"</span>: <span class="string">"14818"</span>, 
+                    <span class="string">"feedback"</span>: <span class="string">"negative"</span>, 
+                    <span class="string">"senseProbability"</span>: <span class="number">0.004366812227074236</span>, 
+                    <span class="string">"title"</span>: <span class="string">"VU"</span>, 
+                    <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/VU"</span>, 
+                    <span class="string">"label"</span>: <span class="string">"VU"</span>, 
+                    <span class="string">"priorProbability"</span>: <span class="number">0.017857142857142856</span>
+                }, 
+                {
+                    <span class="string">"features"</span>: {
+                        <span class="string">"LINKPROB"</span>: <span class="number">0.1960326698245896</span>, 
+                        <span class="string">"IDF_anchor"</span>: <span class="number">8.909997239645294</span>, 
+                        <span class="string">"INLINKS"</span>: <span class="number">58</span>, 
+                        <span class="string">"TF_title"</span>: <span class="number">1.0</span>, 
+                        <span class="string">"IDF_content"</span>: <span class="number">7.658325433234075</span>, 
+                        <span class="string">"SNIL"</span>: <span class="number">0</span>, 
+                        <span class="string">"SUBSTRING_MATCH_1"</span>: <span class="number">1</span>, 
+                        <span class="string">"KEYPHRASENESS"</span>: <span class="number">0.286026194628249</span>, 
+                        <span class="string">"POS_first_in_paragraph"</span>: <span class="number">3.0</span>, 
+                        <span class="string">"WORD_MISS"</span>: <span class="number">2</span>, 
+                        <span class="string">"COMMONNESS"</span>: <span class="number">0.005952380952380952</span>, 
+                        <span class="string">"REDIRECT"</span>: <span class="number">1</span>, 
+                        <span class="string">"TEN"</span>: <span class="number">0</span>, 
+                        <span class="string">"TF_paragraph"</span>: <span class="number">1.0</span>, 
+                        <span class="string">"NCT"</span>: <span class="number">0</span>, 
+                        <span class="string">"IDF_title"</span>: <span class="number">11.8392830615566</span>, 
+                        <span class="string">"LEN"</span>: <span class="number">1</span>, 
+                        <span class="string">"TCN"</span>: <span class="number">1</span>, 
+                        <span class="string">"WORD_MATCH"</span>: <span class="number">1</span>, 
+                        <span class="string">"TF_sentence"</span>: <span class="number">1.0</span>, 
+                        <span class="string">"EDIT_DISTANCE"</span>: <span class="number">16</span>, 
+                        <span class="string">"SNCL"</span>: <span class="number">0</span>, 
+                        <span class="string">"SUBSTRING_MATCH_2"</span>: <span class="number">0</span>, 
+                        <span class="string">"NORMALIZATION"</span>: <span class="number">0.0</span>, 
+                        <span class="string">"OUTLINKS"</span>: <span class="number">32</span>
+                    }, 
+                    <span class="string">"text"</span>: <span class="string">"VU"</span>, 
+                    <span class="string">"linkProbability"</span>: <span class="number">0.28602620087336245</span>, 
+                    <span class="string">"id"</span>: <span class="string">"195409"</span>, 
+                    <span class="string">"feedback"</span>: <span class="string">"negative"</span>, 
+                    <span class="string">"senseProbability"</span>: <span class="number">0.002183406113537118</span>, 
+                    <span class="string">"title"</span>: <span class="string">"VU medisch centrum"</span>, 
+                    <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/VU%20medisch%20centrum"</span>, 
+                    <span class="string">"label"</span>: <span class="string">"VU"</span>, 
+                    <span class="string">"priorProbability"</span>: <span class="number">0.005952380952380952</span>
+                }, 
+                {
+                    <span class="string">"features"</span>: {
+                        <span class="string">"LINKPROB"</span>: <span class="number">0.1960326698245896</span>, 
+                        <span class="string">"IDF_anchor"</span>: <span class="number">8.909997239645294</span>, 
+                        <span class="string">"INLINKS"</span>: <span class="number">5</span>, 
+                        <span class="string">"TF_title"</span>: <span class="number">0.0</span>, 
+                        <span class="string">"IDF_content"</span>: <span class="number">7.658325433234075</span>, 
+                        <span class="string">"SNIL"</span>: <span class="number">0</span>, 
+                        <span class="string">"SUBSTRING_MATCH_1"</span>: <span class="number">0</span>, 
+                        <span class="string">"KEYPHRASENESS"</span>: <span class="number">0.286026194628249</span>, 
+                        <span class="string">"POS_first_in_paragraph"</span>: <span class="number">24.0</span>, 
+                        <span class="string">"WORD_MISS"</span>: <span class="number">3</span>, 
+                        <span class="string">"COMMONNESS"</span>: <span class="number">0.005952380952380952</span>, 
+                        <span class="string">"REDIRECT"</span>: <span class="number">1</span>, 
+                        <span class="string">"TEN"</span>: <span class="number">0</span>, 
+                        <span class="string">"TF_paragraph"</span>: <span class="number">1.0</span>, 
+                        <span class="string">"NCT"</span>: <span class="number">0</span>, 
+                        <span class="string">"IDF_title"</span>: <span class="number">11.8392830615566</span>, 
+                        <span class="string">"LEN"</span>: <span class="number">1</span>, 
+                        <span class="string">"TCN"</span>: <span class="number">0</span>, 
+                        <span class="string">"WORD_MATCH"</span>: <span class="number">0</span>, 
+                        <span class="string">"TF_sentence"</span>: <span class="number">1.0</span>, 
+                        <span class="string">"EDIT_DISTANCE"</span>: <span class="number">18</span>, 
+                        <span class="string">"SNCL"</span>: <span class="number">0</span>, 
+                        <span class="string">"SUBSTRING_MATCH_2"</span>: <span class="number">0</span>, 
+                        <span class="string">"NORMALIZATION"</span>: <span class="number">0.0</span>, 
+                        <span class="string">"OUTLINKS"</span>: <span class="number">5</span>
+                    }, 
+                    <span class="string">"text"</span>: <span class="string">"VU"</span>, 
+                    <span class="string">"linkProbability"</span>: <span class="number">0.28602620087336245</span>, 
+                    <span class="string">"id"</span>: <span class="string">"836852"</span>, 
+                    <span class="string">"feedback"</span>: <span class="string">"negative"</span>, 
+                    <span class="string">"senseProbability"</span>: <span class="number">0.002183406113537118</span>, 
+                    <span class="string">"title"</span>: <span class="string">"Vaterl\u00e4ndische Union"</span>, 
+                    <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/Vaterl%C3%A4ndische%20Union"</span>, 
+                    <span class="string">"label"</span>: <span class="string">"VU"</span>, 
+                    <span class="string">"priorProbability"</span>: <span class="number">0.005952380952380952</span>
+                }, 
+                {
+                    <span class="string">"features"</span>: {
+                        <span class="string">"LINKPROB"</span>: <span class="number">0.1960326698245896</span>, 
+                        <span class="string">"IDF_anchor"</span>: <span class="number">8.909997239645294</span>, 
+                        <span class="string">"INLINKS"</span>: <span class="number">2</span>, 
+                        <span class="string">"TF_title"</span>: <span class="number">1.0</span>, 
+                        <span class="string">"IDF_content"</span>: <span class="number">7.658325433234075</span>, 
+                        <span class="string">"SNIL"</span>: <span class="number">0</span>, 
+                        <span class="string">"SUBSTRING_MATCH_1"</span>: <span class="number">0</span>, 
+                        <span class="string">"KEYPHRASENESS"</span>: <span class="number">0.286026194628249</span>, 
+                        <span class="string">"POS_first_in_paragraph"</span>: <span class="number">9.0</span>, 
+                        <span class="string">"WORD_MISS"</span>: <span class="number">1</span>, 
+                        <span class="string">"COMMONNESS"</span>: <span class="number">0.005952380952380952</span>, 
+                        <span class="string">"REDIRECT"</span>: <span class="number">1</span>, 
+                        <span class="string">"TEN"</span>: <span class="number">0</span>, 
+                        <span class="string">"TF_paragraph"</span>: <span class="number">1.0</span>, 
+                        <span class="string">"NCT"</span>: <span class="number">0</span>, 
+                        <span class="string">"IDF_title"</span>: <span class="number">11.8392830615566</span>, 
+                        <span class="string">"LEN"</span>: <span class="number">1</span>, 
+                        <span class="string">"TCN"</span>: <span class="number">1</span>, 
+                        <span class="string">"WORD_MATCH"</span>: <span class="number">1</span>, 
+                        <span class="string">"TF_sentence"</span>: <span class="number">1.0</span>, 
+                        <span class="string">"EDIT_DISTANCE"</span>: <span class="number">7</span>, 
+                        <span class="string">"SNCL"</span>: <span class="number">0</span>, 
+                        <span class="string">"SUBSTRING_MATCH_2"</span>: <span class="number">1</span>, 
+                        <span class="string">"NORMALIZATION"</span>: <span class="number">0.0</span>, 
+                        <span class="string">"OUTLINKS"</span>: <span class="number">12</span>
+                    }, 
+                    <span class="string">"text"</span>: <span class="string">"VU"</span>, 
+                    <span class="string">"linkProbability"</span>: <span class="number">0.28602620087336245</span>, 
+                    <span class="string">"id"</span>: <span class="string">"858778"</span>, 
+                    <span class="string">"feedback"</span>: <span class="string">"negative"</span>, 
+                    <span class="string">"senseProbability"</span>: <span class="number">0.002183406113537118</span>, 
+                    <span class="string">"title"</span>: <span class="string">"Holden VU"</span>, 
+                    <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/Holden%20VU"</span>, 
+                    <span class="string">"label"</span>: <span class="string">"VU"</span>, 
+                    <span class="string">"priorProbability"</span>: <span class="number">0.005952380952380952</span>
+                }
+            ]
+        }
+    }, 
+    <span class="string">"StatisticsProcessor"</span>: {
+        <span class="string">"fr"</span>: <span class="string">"http://stats.grok.se/json/fr/%d%02d/%s"</span>, 
+        <span class="string">"de"</span>: <span class="string">"http://stats.grok.se/json/de/%d%02d/%s"</span>, 
+        <span class="string">"nl"</span>: <span class="string">"http://stats.grok.se/json/nl/%d%02d/%s"</span>, 
+        <span class="string">"es"</span>: <span class="string">"http://stats.grok.se/json/es/%d%02d/%s"</span>, 
+        <span class="string">"en"</span>: <span class="string">"http://stats.grok.se/json/en/%d%02d/%s"</span>
+    }, 
+    <span class="string">"FilterProcessor"</span>: {}, 
+    <span class="string">"ArticleFeaturesProcessor"</span>: <span class="string">"&lt;semanticizer.processors.feature.articleFeatures instance at 0x10d4eff80&gt;"</span>
+}</pre></div>
+        
+      
+        
+        <h4>Train a model</h4>
+<blockquote>
+<p><a href="http://localhost:5000/learn/Test.nSGDC?classifier=sklearn.linear_model.SGDClassifier&amp;preprocessor=sklearn.preprocessing.StandardScaler">http://localhost:5000/learn/Test.nSGDC?classifier=sklearn.linear_model.SGDClassifier&amp;preprocessor=sklearn.preprocessing.StandardScaler</a></p>
+</blockquote>
+<h4>Apply a model</h4>
+<blockquote>
+<p><a href="http://semanticize.uva.nl/api/nl?text=VU&amp;pretty&amp;learning=Test.nSGDC">http://semanticize.uva.nl/api/nl?text=VU&amp;pretty&amp;learning=Test.nSGDC</a></p>
+</blockquote>
+
+        
+          <div class='highlight'><pre>{
+    <span class="string">"text"</span>: <span class="string">"VU"</span>, 
+    <span class="string">"links"</span>: [
+        {
+            <span class="string">"text"</span>: <span class="string">"VU"</span>, 
+            <span class="string">"linkProbability"</span>: <span class="number">0.28602620087336245</span>, 
+            <span class="string">"id"</span>: <span class="string">"22003"</span>, 
+            <span class="string">"senseProbability"</span>: <span class="number">0.1615720524017467</span>, 
+            <span class="string">"title"</span>: <span class="string">"Vrije Universiteit Amsterdam"</span>, 
+            <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/Vrije%20Universiteit%20Amsterdam"</span>, 
+            <span class="string">"label"</span>: <span class="string">"VU"</span>, 
+            <span class="string">"priorProbability"</span>: <span class="number">0.5059523809523809</span>, 
+            <span class="string">"learningProbability"</span>: <span class="number">124.39889722765957</span>
+        }, 
+        {
+            <span class="string">"text"</span>: <span class="string">"VU"</span>, 
+            <span class="string">"linkProbability"</span>: <span class="number">0.28602620087336245</span>, 
+            <span class="string">"id"</span>: <span class="string">"1846"</span>, 
+            <span class="string">"senseProbability"</span>: <span class="number">0.11353711790393013</span>, 
+            <span class="string">"title"</span>: <span class="string">"Volksunie"</span>, 
+            <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/Volksunie"</span>, 
+            <span class="string">"label"</span>: <span class="string">"VU"</span>, 
+            <span class="string">"priorProbability"</span>: <span class="number">0.4583333333333333</span>, 
+            <span class="string">"learningProbability"</span>: -<span class="number">7.7490096666117392</span>
+        }, 
+        {
+            <span class="string">"text"</span>: <span class="string">"VU"</span>, 
+            <span class="string">"linkProbability"</span>: <span class="number">0.28602620087336245</span>, 
+            <span class="string">"id"</span>: <span class="string">"14818"</span>, 
+            <span class="string">"senseProbability"</span>: <span class="number">0.004366812227074236</span>, 
+            <span class="string">"title"</span>: <span class="string">"VU"</span>, 
+            <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/VU"</span>, 
+            <span class="string">"label"</span>: <span class="string">"VU"</span>, 
+            <span class="string">"priorProbability"</span>: <span class="number">0.017857142857142856</span>, 
+            <span class="string">"learningProbability"</span>: -<span class="number">87.62587770289997</span>
+        }, 
+        {
+            <span class="string">"text"</span>: <span class="string">"VU"</span>, 
+            <span class="string">"linkProbability"</span>: <span class="number">0.28602620087336245</span>, 
+            <span class="string">"id"</span>: <span class="string">"195409"</span>, 
+            <span class="string">"senseProbability"</span>: <span class="number">0.002183406113537118</span>, 
+            <span class="string">"title"</span>: <span class="string">"VU medisch centrum"</span>, 
+            <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/VU%20medisch%20centrum"</span>, 
+            <span class="string">"label"</span>: <span class="string">"VU"</span>, 
+            <span class="string">"priorProbability"</span>: <span class="number">0.005952380952380952</span>, 
+            <span class="string">"learningProbability"</span>: -<span class="number">26.772093364989566</span>
+        }, 
+        {
+            <span class="string">"text"</span>: <span class="string">"VU"</span>, 
+            <span class="string">"linkProbability"</span>: <span class="number">0.28602620087336245</span>, 
+            <span class="string">"id"</span>: <span class="string">"836852"</span>, 
+            <span class="string">"senseProbability"</span>: <span class="number">0.002183406113537118</span>, 
+            <span class="string">"title"</span>: <span class="string">"Vaterl\u00e4ndische Union"</span>, 
+            <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/Vaterl%C3%A4ndische%20Union"</span>, 
+            <span class="string">"label"</span>: <span class="string">"VU"</span>, 
+            <span class="string">"priorProbability"</span>: <span class="number">0.005952380952380952</span>, 
+            <span class="string">"learningProbability"</span>: -<span class="number">18.758807731936763</span>
+        }, 
+        {
+            <span class="string">"text"</span>: <span class="string">"VU"</span>, 
+            <span class="string">"linkProbability"</span>: <span class="number">0.28602620087336245</span>, 
+            <span class="string">"id"</span>: <span class="string">"858778"</span>, 
+            <span class="string">"senseProbability"</span>: <span class="number">0.002183406113537118</span>, 
+            <span class="string">"title"</span>: <span class="string">"Holden VU"</span>, 
+            <span class="string">"url"</span>: <span class="string">"http://nl.wikipedia.org/wiki/Holden%20VU"</span>, 
+            <span class="string">"label"</span>: <span class="string">"VU"</span>, 
+            <span class="string">"priorProbability"</span>: <span class="number">0.005952380952380952</span>, 
+            <span class="string">"learningProbability"</span>: -<span class="number">44.031793978198195</span>
+        }
+    ], 
+    <span class="string">"request_id"</span>: <span class="string">"1e1081c7-8777-43f0-919e-962462fd710b"</span>
+}</pre></div>
+        
+      
+      <div class="fleur">h</div>
+    </div>
+  </div>
+</body>
+</html>
