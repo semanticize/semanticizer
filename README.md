@@ -81,7 +81,7 @@ If you want to dive into the code, start at `semanticizer/server/__main__.py`.
 5. In order to work with the features you need to install the
    scikit-learn and scipy packages. Before installing scipy you need
    to have [swig](http://www.swig.org/download.html) installed. See
-   it's INSTALL for instructions. (configure, make, make
+   its INSTALL for instructions. (configure, make, make
    install). Note that working with features is still under active
    development and therefore not fully documented and tested.
 
