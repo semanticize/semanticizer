@@ -80,10 +80,10 @@ def get_image_urls(urls, num_of_threads=8, min_dimension=36):
                             image_url = convert_image_url(match.groups()[0])
                             if image_url in BLACKLISTED_IMAGE_URLS: continue
                             image = image_url
-                            if dimension >= min_dimension:
-                                break
+#                            if dimension >= min_dimension:
+                            break
 
-                    image_url_cache[url] = image
+                image_url_cache[url] = image
                 
                 queue.task_done()
             except Empty:
