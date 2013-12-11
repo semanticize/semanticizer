@@ -26,7 +26,7 @@ from .processors.image import AddImageProcessor
 from .config import config_get
 
 
-def build(langcodes, use_features=False):
+def build(langcodes, use_features=False, debug=False):
     """
     Initialize the pipeline.
 
@@ -41,19 +41,22 @@ def build(langcodes, use_features=False):
     else:
         max_ngram_length = None
     semanticize_processor = _load_semanticize_processor(langcodes,
-                                                        max_ngram_length)
+                                                        max_ngram_length,
+                                                        debug=debug)
     settings = config_get("settings", {})
     pipeline.append(("Settings", SettingsProcessor(settings)))
     pipeline.append(("Semanticize", semanticize_processor))
     pipeline.append(("Filter", FilterProcessor()))
     if use_features:
         _load_features(pipeline, langcodes)
+    else:
+        _load_articles(pipeline, langcodes)
     pipeline.append(("AddImage", AddImageProcessor()))
     logging.getLogger().info("Done initializing pipeline")
     return pipeline
 
 
-def _load_semanticize_processor(langcodes, max_ngram_length=None):
+def _load_semanticize_processor(langcodes, max_ngram_length=None, debug=False):
     """
     Load the Semanticizer.
 
@@ -62,7 +65,7 @@ def _load_semanticize_processor(langcodes, max_ngram_length=None):
     @see: processors.SemanticizeProcessor
     """
     logging.getLogger().info("Loading semanticizer")
-    semanticize_processor = SemanticizeProcessor()
+    semanticize_processor = SemanticizeProcessor(debug=debug)
     start = time.time()
     logging.getLogger().info("Loading semanticizers for langcode(s) "
                      + ", ".join(langcodes))
@@ -85,11 +88,7 @@ def _load_features(pipeline, langcodes):
     start = time.time()
     pipeline.append(("Features",
                      FeaturesProcessor(langcodes)))
-    pipeline.append(("Articles",
-                     ArticlesProcessor(langcodes,
-                                       config_get(('wpm', 'bdburl')),
-                                       config_get(('wpm', 'threads'), 1),
-                                       config_get(('misc', 'tempdir')))))
+    _load_articles(pipeline, langcodes)
     pipeline.append(("Statistics",
                      StatisticsProcessor(langcodes,
                                          config_get(('wpm', 'threads'), 1),
@@ -103,3 +102,10 @@ def _load_features(pipeline, langcodes):
                            config_get(('misc', 'tempdir')))
     pipeline.append(("Learning", LearningProcessor(model_dir)))
     logging.getLogger().info("Done loading features")
+
+def _load_articles(pipeline, langcodes):
+    pipeline.append(("Articles",
+                     ArticlesProcessor(langcodes,
+                                       config_get(('wpm', 'bdburl')),
+                                       config_get(('wpm', 'threads'), 1),
+                                       config_get(('misc', 'tempdir')))))

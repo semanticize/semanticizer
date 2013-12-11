@@ -127,15 +127,15 @@ class ArticlesProcessor(LinksProcessor):
     def postprocess(self, links, text, settings):
         if "article" in settings and len(settings["article"]) == 0:
             return (links, text, settings)
-        remove = self.article_template.keys()
-        remove.extend(["fromTitle", "fromRedirect"])
+        remove = [key.lower() for key in self.article_template.keys()]
+        remove.extend(["fromtitle", "fromredirect"])
         if "article" in settings:
             for label in settings["article"].replace(";", ",").split(","):
-                if label in remove:
+                if label.lower() in remove:
                     remove.remove(label)
         for link in links:
-            for label in remove:
-                if label in link:
+            for label in link.keys():
+                if label.lower() in remove:
                     del link[label]
 
         return (links, text, settings)

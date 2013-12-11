@@ -34,6 +34,8 @@ class WpmDataRedis(Data):
         <langcode>:titles:<pageid> = title
         <langcode>:ids:<pagetitle> = id
         <langcode>:<n>grms = zset([words{score}, [...]])
+        <langcode>:inlinks:<pageid> = list([pageid, ...])
+        <langcode>:outlinks:<pageid> = list([pageid, ...])
         """
         self.conn = redis.StrictRedis(host=host, port=port,
                                       db=0, decode_responses=True)
@@ -46,6 +48,9 @@ class WpmDataRedis(Data):
         self.ns_titles = '%s%stitles' % (langcode, self.separator)
         self.ns_ids = '%s%sids' % (langcode, self.separator)
         self.ns_ngrms = '%s%s' % (langcode, self.separator) + '%sgrms'
+        self.ns_inlinks = '%s%sinlinks' % (langcode, self.separator)
+        self.ns_outlinks = '%s%soutlinks' % (langcode, self.separator)
+        self.ns_stats = '%s%sstats' % (langcode, self.separator)
 
     def ns_txt_txt(self, txt):
         return self.ns_txt + self.separator + txt
@@ -71,11 +76,23 @@ class WpmDataRedis(Data):
     def ns_ids_title(self, title):
         return self.ns_ids + self.separator + title
 
+    def ns_inlinks_pid(self, pid):
+        return self.ns_inlinks + self.separator + pid
+
+    def ns_outlinks_pid(self, pid):
+        return self.ns_outlinks + self.separator + pid
+
+    def ns_stats_value(self, statName):
+        return self.ns_stats + self.separator + statName
+
     def entity_exists(self, entity):
         return self.conn.exists(self.ns_txt_txt(entity))
 
-    def normalized_entity_exists(self, normalized_entity):
-        return self.conn.exists(self.ns_norm_ntxt(normalized_entity))
+    def normalized_entities_exist(self, entities):
+        with self.conn.pipeline() as pipe:
+            for e in entities:
+                pipe.exists(self.ns_norm_ntxt(e))
+            return pipe.execute()
 
     def get_all_entities(self, normalized_entity):
         return self.conn.smembers(self.ns_norm_ntxt(normalized_entity))
@@ -156,12 +173,47 @@ class WpmLoader:
         rds = self.wpm.conn
         rds.set(langcode + ":name", langname)
         rds.set(langcode + ":path", path)
+        self.load_stats(path + dump_filenames["stats"])
         self.load_labels(path + dump_filenames["labels"])
         self.load_translations(path + dump_filenames["translations"])
         self.load_page_titles(path + dump_filenames["pages"])
+        self.load_links(path + dump_filenames["inlinks"])
+        self.load_links(path + dump_filenames["outlinks"], inlinks = False)
+
+    def load_links(self, filename, inlinks = True):
+        if inlinks:
+            print 'Loading inlinks into redis...'
+        else:
+            print "Loading outlinks into redis..."
+
+        rds = self.wpm.conn
+        pipe = rds.pipeline()
+        linenr = 0
+        links_file = codecs.open(filename, "r", "utf-8")
+
+        if inlinks:
+            ns_function = self.wpm.ns_inlinks_pid
+        else:
+            ns_function = self.wpm.ns_outlinks_pid
+
+        for line in links_file:
+            linenr += 1
+            try:
+                page_id, links = line.split(',v{s{')
+                page_id_key = ns_function(page_id)
+                for link in links.split('s{'):
+                    id = link.split(',')[0]
+                    pipe.rpush(page_id_key, id)
+                pipe.execute()
+            except:
+                print "Error loading on line " + str(linenr)# + ": " + line
+                continue
+        print 'Done loading inlinks'
+        links_file.close()
 
     def load_labels(self, filename):
         print 'Loading labels into redis...'
+        print "From:", filename
         rds = self.wpm.conn
         pipe = rds.pipeline()
         linenr = 0
@@ -239,9 +291,29 @@ class WpmLoader:
         titles_file.close()
         print 'Done loading pages (%d pages loaded)' % linenr
 
+    def load_stats(self, filename):
+        print 'Loading Wiki stats...'
+        rds = self.wpm.conn
+        pipe = rds.pipeline()
+        linenr = 0
+        stats_file = codecs.open(filename, "r", "utf-8")
+        for line in stats_file:
+            linenr += 1
+            try:
+                statName, statValue = line.split(',')
+                statName = statName[1:]
+                pipe.set(self.wpm.ns_stats_value(statName), statValue)
+                pipe.execute()
+            except:
+                print "Error loading on line " + str(linenr) + ": " + line
+                continue
+        stats_file.close()
+        print 'Done loading Wiki stats (%d stats loaded)' % linenr
+
     def store_title_as_ngram(self, title, pipeline):
         words = title.split()
         for n in range(1, len(words) + 1):
             for i in range(0, len(words) - n):
                 ngram = " ".join(words[i:i + n])
                 pipeline.zincrby(self.wpm.ns_ngrms_n(str(n - i)), ngram, 1)
+

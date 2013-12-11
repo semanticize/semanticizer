@@ -23,16 +23,19 @@ from .semanticize import Semanticizer
 class SemanticizeProcessor(LinksProcessor):
     """Processor handling the semanticizing"""
 
-    def __init__(self):
+    def __init__(self, debug=False):
         """Set the class variables"""
         self.langcodes = []
         self.semanticizers = {}
+        self.debug = debug
 
     def load_languages(self, langcodes, max_ngram_length=None):
         """Save the languages and load the semanticizer"""
         self.langcodes = langcodes
         for langcode in langcodes:
-            self.semanticizers[langcode] = Semanticizer(langcode, None, max_ngram_length)
+            self.semanticizers[langcode] = Semanticizer(langcode, None,
+                                                        max_ngram_length,
+                                                        self.debug)
 
     def preprocess(self, links, text, settings):
         """

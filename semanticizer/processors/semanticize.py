@@ -11,19 +11,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from nltk import regexp_tokenize
 from nltk.util import ngrams as nltk_ngrams
+import re
 import urllib
 
 from ..wpm import wpmutil, wpm_dumps
 
-def tokenize(text):
-    return regexp_tokenize(text, r'\w+([.,\']\w+)*|[^\w\s]+')
+
+tokenize = re.compile(r'\w+(?:[.,\']\w+)*|[^\w\s]+',
+                      re.UNICODE | re.MULTILINE | re.DOTALL).findall
+
 
 class Semanticizer:
-
     def __init__(self, language_code, sense_probability_threshold, 
-                 max_ngram_length=None):
+                 max_ngram_length=None, debug=False):
         """constructor"""
         self.language_code = language_code
         self.sense_probability_threshold = sense_probability_threshold
@@ -31,6 +32,7 @@ class Semanticizer:
         self.wpm = wpm_dumps[language_code]
         self.title_page = {} # This needs to be removed
         self.max_ngram_length = max_ngram_length
+        self.debug = debug
 
     def semanticize(self, sentence, normalize_dash=True,
                     normalize_accents=True, normalize_lower=False,
@@ -56,9 +58,11 @@ class Semanticizer:
                 for ngram in nltk_ngrams(token_list, n):
                     ngrams.add(' '.join(ngram))
 
-        for ngram in ngrams:
-            normal_ngram = wpmutil.normalize(ngram)
-            if self.wpm.normalized_entity_exists(normal_ngram):
+        normal_ngrams = map(wpmutil.normalize, ngrams)
+        exist = self.wpm.normalized_entities_exist(normal_ngrams)
+
+        for i, (ngram, normal_ngram) in enumerate(zip(ngrams, normal_ngrams)):
+            if exist[i]:
                 normalized_ngram = wpmutil.normalize(ngram, normalize_dash,
                                                      normalize_accents,
                                                      normalize_lower)
@@ -68,7 +72,7 @@ class Semanticizer:
                                                           normalize_accents,
                                                           normalize_lower)
                     if normalized_ngram == normalized_anchor:
-                        if not self.wpm.entity_exists(anchor):
+                        if self.debug and not self.wpm.entity_exists(anchor):
                             raise LookupError("Data corrupted, cannot "
                                               + "find %s in the database" \
                                               % anchor)

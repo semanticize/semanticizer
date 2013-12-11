@@ -129,8 +129,8 @@ class WpmDataInProc(Data):
     def entity_exists(self, entity):
         return entity in self.labels
 
-    def normalized_entity_exists(self, normalized_entity):
-        return normalized_entity in self.normalized
+    def normalized_entities_exist(self, normalized_entities):
+        return [e in self.normalized for e in normalized_entities]
 
     def get_all_entities(self, normalized_entity):
         return self.normalized[normalized_entity]

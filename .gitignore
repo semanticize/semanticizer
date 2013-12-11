@@ -1,12 +1,41 @@
+# Editor cruft
+*.sw[op]
 *~
 ._*
+
 *.pyc
-**/*.pyc
-**/._*
-build/
-logs/*
-/log.txt*
-/.project
-/.coverage
-/.pydevproject
-**/#*
+
+logs
+/log.txt
+
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+lib64
+__pycache__
+
+# Installer logs
+pip-log.txt
+
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
+
+# Translations
+*.mo
+
+# Mr Developer
+.mr.developer.cfg
+.project
+.pydevproject
