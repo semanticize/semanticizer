@@ -17,7 +17,7 @@ from logging.handlers import TimedRotatingFileHandler
 from .. import procpipeline
 from ..config import config_get
 from ..server import Server
-from ..wpm import init_datasource
+from ..wpm.data import init_datasource
 
 
 def start_server(langcodes,

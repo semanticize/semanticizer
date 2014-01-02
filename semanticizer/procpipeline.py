@@ -105,7 +105,4 @@ def _load_features(pipeline, langcodes):
 
 def _load_articles(pipeline, langcodes):
     pipeline.append(("Articles",
-                     ArticlesProcessor(langcodes,
-                                       config_get(('wpm', 'bdburl')),
-                                       config_get(('wpm', 'threads'), 1),
-                                       config_get(('misc', 'tempdir')))))
+                     ArticlesProcessor(langcodes, config_get(('misc', 'tempdir')))))
