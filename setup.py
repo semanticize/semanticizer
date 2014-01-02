@@ -19,7 +19,6 @@ setup(
     install_requires=[
         "flask",
         "mock",
-        "lxml",
         "networkx",
         "numpy",
         "python-Levenshtein",
