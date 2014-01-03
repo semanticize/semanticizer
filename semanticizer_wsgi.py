@@ -40,7 +40,7 @@ from flask import Flask, Response, request
 
 from semanticizer import procpipeline
 from semanticizer.config import config_get
-import semanticizer.wpm import init_datasource
+from semanticizer.wpm import init_datasource
 
 
 wpm_languages = config_get(('wpm', 'languages'))
