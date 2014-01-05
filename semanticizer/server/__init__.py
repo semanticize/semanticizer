@@ -73,7 +73,7 @@ class Server(object):
 
         @return: the value of "text"
         """
-        content_type = request.headers['Content-Type']
+        content_type = request.headers['Content-Type'] if 'Content-Type' in request.headers else "text/plain" 
         if request.method == "POST":
             if content_type == 'application/x-www-form-urlencoded':
                 return request.form['text']
