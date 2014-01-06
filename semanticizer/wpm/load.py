@@ -13,7 +13,6 @@
 
 import codecs
 import json
-import uuid
 import glob
 
 from .namespace import WpmNS
@@ -29,8 +28,11 @@ class WpmLoader:
         #ammount of requests before sending pipe to server
         self.pipechunk = 250
         
-        #generate unique version, so that existing db can exist while new one is imported
-        self.version = str(uuid.uuid4())
+        #generate unique version, so that existing db can exist while new one is imported, use simpel integer to prevent long key (reduce memory)
+        try:
+            self.version = str(int(self.db.get(self.ns.db_version())) + 1)
+        except:
+            self.version = "0"
                 
         #which translation languages to include in results 
         self.translation_langs = translation_languages if translation_languages is not None else []
