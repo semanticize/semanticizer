@@ -12,181 +12,76 @@
 # 
 # You should have received a copy of the GNU Lesser General Public License 
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-
-""" Semanticizer (WSGI version)
-
-A stripped down, WSGI compatible, version of the semanticizer.
-
-Usage:
-  gunicorn --bind 0.0.0.0:5001 --workers 4 semanticizer_wsgi:application
-or
-  uwsgi --http :5001 --master --processes 4 --wsgi-file semanticizer_wsgi.py
-
-"""
-
-import re
-
-# Can do without ujson and simplejson, but speeds up considerably.
-try:
-    import ujson
-except ImportError:
-    pass
-try:
-    import simplejson as json
-except ImportError:
-    import json
-
-from flask import Flask, Response, request
+import logging
+from logging.handlers import TimedRotatingFileHandler
+import sys
 
 from semanticizer import procpipeline
 from semanticizer.config import config_get
-from semanticizer.wpm import init_datasource
+from semanticizer.server import Server
+from semanticizer.wpm.data import init_datasource
 
-
-wpm_languages = config_get(('wpm', 'languages'))
-init_datasource(wpm_languages)
-PIPELINE = procpipeline.build(wpm_languages, feature_config=None)
-
-# WSGI application!
-application = Flask(__name__)
-application.debug = True
-
-
-APPLICATION_JSON = "application/json"
-
-# RegExens for CleanTweet
-CLEAN_TWEET = \
-    {'user': re.compile(r"(@\w+)"),
-     'url': re.compile(r"(http://[a-zA-Z0-9_=\-\.\?&/#]+)"),
-     'punctuation': re.compile(r"[-!\"#\$%&'\(\)\*\+,\.\/:;<=>\?@\[\\\]\^_`\{\|\}~]+"),
-     'retweet': re.compile(r"(\bRT\b)")
-     }
-
-
-@application.route('/')
-def hello_world():
-    """Hello World!"""
-    return 'Hello World!\n'
-
-
-@application.route('/semanticize/<langcode>', methods=['GET', 'POST'])
-def _semanticize_handler(langcode):
+def init_wsgi_server(langcodes,
+                 verbose=False,
+                 logformat='[%(asctime)-15s][%(levelname)s][%(module)s][%(pathname)s:%(lineno)d]: %(message)s',
+                 use_features=False,
+                 debug=False):
     """
-    The function handling the /semanticize/<langcode> namespace. It uses
-    the chain-of-command pattern to run all processors, using the
-    corresponding preprocess, process, and postprocess steps.
+    Start a SemanticizerFlaskServer with all processors loaded into the
+    pipeline.
 
-    @param langcode: The language to use in the semanticizing
-    @return: The body of the response, in this case a json formatted list \
-             of links and their relevance
+    @param verbose: Set whether the Flask server should be verbose
+    @param logformat: The logformat used by the Flask server
     """
-    # self.application.logger.debug("Semanticizing: start")
-    text = _get_text_from_request()
+    # Initialize the pipeline
+    pipeline = procpipeline.build(langcodes, use_features, debug=debug)
+    # Create the FlaskServer
+    logging.getLogger().info("Setting up server")
+    server = Server()
+    server.set_debug(verbose, logformat)
+    # Setup all available routes / namespaces for the HTTP server
+    server.setup_all_routes(pipeline, langcodes)
+    logging.getLogger().info("Done setting up server, now starting...")
+    # And finally, start the thing
+    return server.app
 
-    # self.application.logger.debug("Semanticizing text: " + text)
-    settings = {"langcode": langcode}
-    for key, value in request.values.iteritems():
-        assert key not in settings
-        settings[key] = value
-
-    sem_result = _semanticize(langcode, settings, text)
-    json = _json_dumps(sem_result, "pretty" in settings)
-
-    # self.application.logger.debug("Semanticizing: Created %d characters of JSON." \
-    #                       % len(json))
-    return Response(json, mimetype=APPLICATION_JSON)
-
-
-@application.route('/cleantweet', methods=['GET', 'POST'])
-def _cleantweet():
+def init_logging(log, verbose, logformat):
     """
-    The function that handles the /cleantweet namespace. Will use regular
-    expressions to completely clean a given tweet.
-
-    @return: The body of the response, in this case a json formatted \
-             string containing the cleaned tweet.
+    A convencience function that initializes the logging framework by setting
+    the path to the log, verbosity, and the logformat.
     """
-    text = _get_text_from_request()
-    clean_text = cleantweet(text)
+    root = logging.getLogger()
+    formatter = logging.Formatter(logformat)
+    
+    file_handler = TimedRotatingFileHandler(log, when='midnight')
+    stream_handler = logging.StreamHandler(sys.stdout)
 
-    return _json_dumps({"cleaned_text": clean_text})
+    stream_handler.setFormatter(formatter)
+    file_handler.setFormatter(formatter)
+    
+    if verbose == True:
+        root.setLevel(logging.DEBUG)
+        
+    root.addHandler(stream_handler)  
+    root.addHandler(file_handler) 
 
+# Init the logger
+init_logging(config_get(('logging', 'path'), 'log.txt'),
+             config_get(('logging', 'verbose'), False),
+             config_get(('logging', 'format'), None))
 
-def cleantweet(text):
-    """
-    Tweet cleaner/tokenizer.
+# Set the datasource and init it
+wpmlangs = config_get(('wpm', 'languages'))
+init_datasource(wpmlangs)
 
-    Uses regular expressions to completely clean, and tokenize, a
-    given tweet.
-    """
+# Init the server
+application = init_wsgi_server(config_get(('wpm', 'languages')).keys(),
+                 config_get(('logging', 'verbose'), False),
+                 config_get(('logging', 'format'), None),
+                 config_get(('linkprocs', 'includefeatures'), False),
+                 config_get(('server', 'debug'), False))
 
-    for cleaner in ['user', 'url', 'punctuation', 'retweet']:
-        text = CLEAN_TWEET[cleaner].sub(" ", text)
-    text = " ".join([w for w in re.split(r'\s+', text) if len(w) > 1])
-
-    return text
-
-
-def _semanticize(langcode, settings, text):
-    """
-    Method that performs the actual semantization.
-    """
-    links = []
-
-    for function in ("preprocess", "process", "postprocess"):
-        for step, processor in PIPELINE:
-            # self.application.logger.debug("Semanticizing: %s for step %s" \
-            #                       % (function, step))
-            (links, text, settings) = getattr(processor, function)(links,
-                                                                   text,
-                                                                   settings
-                                                                   )
-        # self.application.logger.debug("Semanticizing: %s pipeline with %d steps \
-        #                        done" % (function, len(self.pipeline)))
-
-    result = {"links": links, "text": text}
-
-    return result
-
-
-def _json_dumps(obj, pretty=False):
-    """
-    Util function to create json dumps based on an object.
-
-    @param o: Object to transform
-    @param pretty: Whether or not to prettify the JSON
-    @return: The JSON string
-    """
-    if not pretty and "ujson" in locals():
-        return ujson.dumps(obj)
-    elif not pretty:
-        return json.dumps(obj)
-    else:
-        return json.dumps(obj, indent=4)
-
-def _get_text_from_request():
-    """
-    Util function to get the param called "text" from the current request
-
-    @return: the value of "text"
-    """
-
-    return request.values['text']
-    # content_type = request.headers['Content-Type']
-    # if request.method == "POST":
-    #     if content_type == 'application/x-www-form-urlencoded':
-    #         return request.form['text']
-    #     elif content_type == 'text/plain':
-    #         return request.data
-    #     else:
-    #         abort(Response("Unsupported Content Type, use: text/plain\n",
-    #                        status=415))
-    # elif "text" in request.args:
-    #     return request.args["text"]
-    # else:
-    #     abort(Response("No text provided, use: POST or GET with attribute \
-    #                     'text'\n", status=400))
-
-
-if __name__ == '__main__':
-    application.run()
+# debug middleware for wsgi errors
+#import paste 
+#from paste.exceptions.errormiddleware import ErrorMiddleware
+#application = ErrorMiddleware(application, debug=True)
