@@ -88,15 +88,18 @@ def check_dump_path(path):
             print fullpath + " doesn't exist"
     raise IOError("Cannot find " + path)
 
-def get_relatedness(wpm, artA, artB):
-    if artA is artB:
-        return 1.0
+def get_relatedness(linksA, linksB):
+    """
+    Compare relatedness of 2 articles based on in or outlinks.
 
-    linksA = wpm.get_item_inlinks( artA )
-    linksB = wpm.get_item_inlinks( artB )
-    
+    @param linksA: in or out links of article A
+    @param linksB: in or out links of article B 
+    """   
     if not linksA or not linksB:
         return 0.0 
+    
+    if linksA == linksB:
+        return 1.0
     
     intersection = 0
     indexA = 0
@@ -115,18 +118,18 @@ def get_relatedness(wpm, artA, artB):
         if indexB < len(linksB):
             linkB = linksB[indexB]
             
-        if linkA and linkB and linkA is linkB:
+        if linkA and linkB and linkA == linkB:
             useA = True
             useB = True
             intersection += 1
         else:
             if linkA and (not linkB or linkA < linkB):
                 useA = True
-                if linkA is artB:
+                if linkA == artB:
                     intersection += 1
             else:
                 useB = True
-                if linkB is artA:
+                if linkB == artA:
                     intersection += 1
         
         if useA:
@@ -136,7 +139,7 @@ def get_relatedness(wpm, artA, artB):
 
     googleMeasure = None
 
-    if intersection is 0:
+    if intersection == 0:
         googleMeasure = 1.0
     else:
         a = math.log(len(linksA))
@@ -154,6 +157,11 @@ def get_relatedness(wpm, artA, artB):
     return 1 - googleMeasure
 
 def generate_markup_definition(markup):
+    """
+    Strip wiki markup and convert some wiki tags to html
+
+    @param markup: wiki markup
+    """       
     stripper = MarkupStripper()
 
     # strip markup
@@ -184,6 +192,13 @@ def generate_markup_definition(markup):
     return fp
 
 def cli_progress(current, total, bar_length=40):
+    """
+    shows progressbar in CLI 
+
+    @param current: int of current step
+    @param current: int of total steps
+    @param bar_length: length of the progressbar in cli window
+    """           
     percent = float(current) / total
     hashes = '#' * int(round(percent * bar_length))
     spaces = ' ' * (bar_length - len(hashes))
