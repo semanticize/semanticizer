@@ -117,10 +117,10 @@ class WpmLoader:
     def load_labels(self, filename):
         """
         line = 'Activiteitscoefficient,0,0,0,0,v{s{248591,0,0,F,T}}
-        {text},{LinkOccCount},{LinkDocCount},{TextDocCount},{TextOccCount}[{sense}, {sense}, ...]
+        {text},{LinkOccCount},{LinkDocCount},{TextOccCount},{TextDocCount}[{sense}, {sense}, ...]
         ---- 
         sense = s{248591,0,0,F,T}
-        [{pageid}, {sLinkDocCount}, {sLinkOccCount}, {FromTitle}, {FromRedirect}]
+        [{pageid}, {sLinkOccCount}, {sLinkDocCount}, {FromTitle}, {FromRedirect}]
         """
         print '\nLoading labels ...'
         

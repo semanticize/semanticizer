@@ -67,12 +67,9 @@ class ArticlesProcessor(LinksProcessor):
         if not settings["langcode"] in self.langcodes:
             return (links, text, settings)
         
-        #self.queue.join()
         wpm = wpm_dumps[langcode]
-        
         for link in links:
-            #article = self.articles[link["title"]]
-
+            
             link.update(deepcopy(self.article_template))
 
             link["article_title"] = link["title"]
@@ -84,26 +81,29 @@ class ArticlesProcessor(LinksProcessor):
             inlinks = wpm.get_item_inlinks( link["article_id"] )
             if inlinks:
                 for inlink in inlinks:
-                    title = wpm.get_item_title(inlink)
-                    relatedness = get_relatedness(wpm, link["article_id"], inlink)
-                    link["InLinks"].append( {title:title, id:int(inlink), relatedness:relatedness} )
+                    # below data is not used, for now only append inlink id to reduce load on db
+                    #title = wpm.get_item_title(inlink)
+                    #relatedness = get_relatedness(inlinks, wpm.get_item_inlinks(inlink) )
+                    #link["InLinks"].append( {title:title, id:int(inlink), relatedness:relatedness} )
+                    link["InLinks"].append( { id:int(inlink) } )
             
-            outlinks = wpm.get_item_outlinks( link["article_id"] )
             if outlinks:
                 for outlink in outlinks:
-                    title = wpm.get_item_title(outlink)
-                    relatedness = get_relatedness(wpm, link["article_id"], outlink)
-                    link["OutLinks"].append( {title:title, id:int(outlink), relatedness:relatedness} )
+                    # below data is not used, for now only append inlink id to reduce load on db
+                    #title = wpm.get_item_title(outlink)
+                    #relatedness = get_relatedness(outlinks, wpm.get_item_outlinks(outlin) )
+                    #link["OutLinks"].append( {title:title, id:int(outlink), relatedness:relatedness} )
+                    link["OutLinks"].append( { id:int(outlink) } )
 
-            categories = wpm.get_item_categories( link["article_id"] )
-            if categories:
-                for category in categories:
-                    title = wpm.get_item_title(category)
-                    link["ParentCategories"].append( {title:title, id:int(category)} )
+            #categories = wpm.get_item_categories( link["article_id"] )
+            #if categories:
+            #    for category in categories:
+            #        title = wpm.get_item_title(category)
+            #        link["ParentCategories"].append( {title:title, id:int(category)} )
 
-            definition = wpm.get_item_definitions(link["article_id"])
-            if definition:
-                link["Definition"] = definition
+            #definition = wpm.get_item_definitions(link["article_id"])
+            #if definition:
+            #    link["Definition"] = definition
             
             labels = wpm.get_item_labels(link["article_id"])
             if labels:

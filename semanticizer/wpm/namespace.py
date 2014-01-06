@@ -130,7 +130,7 @@ class WpmNS:
         key
             <langcode>:<version>:page:<pageid>:labels
         value
-            list( json({title:string, occurances:int, fromRedirect:bool, fromTitle:bool isPrimary:bool, proportion:float}), ...)
+            list( json([title, occurances, fromRedirect, fromTitle isPrimary, proportion]), ...)
         """
         return self.sep.join( (self.lc, self.version(), "page", pageid, "labels") )
  
