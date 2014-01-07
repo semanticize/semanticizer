@@ -94,7 +94,7 @@ class WpmLoader:
             for idx in xrange(0, total, step):
                 if self.progress:
                     cli_progress(idx+step, total)
-                chunk = keys[idx:idx+step]
+                chunk = oldkeys[idx:idx+step]
                 self.db.delete(*chunk)
         print '\nDone cleanup...'
             
