@@ -47,9 +47,11 @@ class MemoryDB:
             cache[key].add(value)
         return [True]*len(values)
         
-    def lrange(self, key, start, end):
-        data = cache.get(key, set())
-        return list(data)[start:end] 
+    def lrange(self, key, start=0, end=None):
+        data = cache.get(key, list())
+        if end is None:
+          end = len(data)
+        return data[start:end] 
         
     def rpush(self, key, *values):
         if not key in cache:
@@ -66,9 +68,10 @@ class MemoryDB:
         if not key in cache:
             cache[key] = dict()
         # in case value does not exist init 
-        if value in cache[key]:
+        if not value in cache[key]:
             cache[key][value] = ammount
-        cache[key][value] += ammount
+        else:
+            cache[key][value] += ammount
         return cache[key][value]
         
     def delete(self,*keys):
