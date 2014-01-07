@@ -19,12 +19,16 @@ from .namespace import WpmNS
 from .utils import normalize, check_dump_path, dump_filenames, generate_markup_definition, cli_progress
 
 class WpmLoader:
-    def __init__(self, db, langcode, langname=None, path=None, translation_languages=None, progress=False, **kwargs):
+    def __init__(self, db, langcode, settings, langname=None, path=None, translation_languages=None, progress=False, **kwargs):
         
-        skip_files = []
+        skip_files = ["pageCategories", "pages-articles"]
         if not translation_languages:
-          skip_files = ["translations"] 
-        
+            skip_files.append("translations")
+        if settings.get("include_categories", False):
+            skip_files.remove("pageCategories")
+        if settings.get("include_definitions", False):
+            skip_files.remove("pages-articles") 
+          
         path = check_dump_path(path, skip_files)
         
         #show progress in CLI when execting insert, not for in memory
@@ -62,8 +66,10 @@ class WpmLoader:
             self.load_translations(path + dump_filenames["translations"])
         self.load_page_titles(path + dump_filenames["pages"])
         self.load_page_labels(path + dump_filenames["pageLabels"])
-        #self.load_page_categories(path + dump_filenames["pageCategories"])
-        #self.load_definitions(glob.glob(path + '*-pages-articles.xml')[0])
+        if "pageCategories" not in skip_files:
+            self.load_page_categories(path + dump_filenames["pageCategories"])
+        if "pages-articles" not in skip_files:
+            self.load_definitions(glob.glob(path + '*-pages-articles.xml')[0])
         
         #make new dataset active and remove old dataset
         self.cleanup(langcode)

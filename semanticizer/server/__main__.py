@@ -72,7 +72,8 @@ def main():
 
     # Set the datasource and init it
     wpmlangs = config_get(('wpm', 'languages'))
-    init_datasource(wpmlangs)
+    settings = config_get(('settings'), {})
+    init_datasource(wpmlangs, settings)
 
     # Start the server
     try:

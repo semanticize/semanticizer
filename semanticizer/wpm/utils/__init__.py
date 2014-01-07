@@ -80,11 +80,12 @@ def check_dump_path(path, skip_files = []):
                     print "Found " + fullpath + filename
                 else:
                     raise IOError("Cannot find " + fullpath + filename)
-            wiki = glob.glob(fullpath + '*-pages-articles.xml')
-            if len(wiki) > 0:
-                print "Found " + wiki[0]
-            else:
-                raise IOError("Cannot find wiki *-pages-articles.xml")
+            if "pages-articles" not in skip_files:
+                wiki = glob.glob(fullpath + '*-pages-articles.xml')
+                if len(wiki) > 0:
+                    print "Found " + wiki[0]
+                else:
+                    raise IOError("Cannot find wiki *-pages-articles.xml")
             return fullpath
         else:
             print fullpath + " doesn't exist"

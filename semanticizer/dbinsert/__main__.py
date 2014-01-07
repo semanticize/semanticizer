@@ -38,6 +38,7 @@ def load_wpm_data(datasource, langcode, **kwargs):
 if __name__ == '__main__':
     configYaml = yaml.load(file('conf/semanticizer.yml'))
     wpm_languages = config_get(('wpm', 'languages'), None, configYaml)
+    settings = config_get("settings", {}, configYaml)
     try:
        opts, args = getopt.getopt(sys.argv[1:], 'l:o:', ['language=', 'output='])
     except getopt.GetoptError:
@@ -61,9 +62,9 @@ if __name__ == '__main__':
 
     #if language code is specified only import that language
     if language and wpm_languages[language]:
-        load_wpm_data(wpm_languages[language]['source'], language, progress=showprogress, **wpm_languages[language]['initparams'])
+        load_wpm_data(wpm_languages[language]['source'], language, settings, progress=showprogress, **wpm_languages[language]['initparams'])
     #else important all languages in the config file
     else:
         for langcode, langconfig in wpm_languages.iteritems():
-            load_wpm_data(langconfig['source'], langcode, progress=showprogress, **langconfig['initparams'])
+            load_wpm_data(langconfig['source'], langcode, settings, progress=showprogress, **langconfig['initparams'])
 

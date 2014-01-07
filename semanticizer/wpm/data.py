@@ -17,12 +17,12 @@ from .namespace import WpmNS
 
 wpm_dumps = {}
 
-def init_datasource(wpm_languages):
+def init_datasource(wpm_languages, settings):
     """Set the datasource and init it"""
     for langcode, langconfig in wpm_languages.iteritems():
-        load_wpm_data(langconfig['source'], langcode, **langconfig['initparams'])
+        load_wpm_data(langconfig['source'], langcode, settings, **langconfig['initparams'])
 
-def load_wpm_data(datasource, langcode, **kwargs):
+def load_wpm_data(datasource, langcode, settings, **kwargs):
     if datasource == "redis":
         from .db.redisdb import RedisDB
         db = RedisDB(**kwargs)
@@ -33,7 +33,7 @@ def load_wpm_data(datasource, langcode, **kwargs):
         from .db.mongodb import MongoDB
         db = MongoDB()
         #load wpm data into memory
-        WpmLoader(db, langcode, **kwargs)
+        WpmLoader(db, langcode, settings, **kwargs)
     else:
         raise ValueError("Unknown backend {}".format(datasource))
     wpm_dumps[langcode] = WpmData(db, langcode)
@@ -103,7 +103,7 @@ class WpmData:
     def get_item_categories(self, pid):
         return self.db.get(self.ns.page_categories(pid))
     
-    def get_item_definitions(self, pid):
+    def get_item_definition(self, pid):
         return self.db.get(self.ns.page_definition(pid))
     
     def get_item_labels(self, pid):
