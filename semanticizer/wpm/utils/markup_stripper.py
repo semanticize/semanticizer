@@ -17,7 +17,7 @@ from .emphasis_resolver import EmphasisResolver
 class MarkupStripper:
     def __init__(self):
         self.linkPattern = re.compile("\\[\\[(.*?:)?(.*?)(\\|.*?)?\\]\\]")
-	self.emphasisResolver = EmphasisResolver()
+        self.emphasisResolver = EmphasisResolver()
 
     # Returns a copy of the given markup, where all markup has been removed except for 
     # internal links to other wikipedia pages (e.g. to articles or categories), section 
@@ -39,7 +39,7 @@ class MarkupStripper:
         regions = self.gather_templates(clearedMarkup) ;
         clearedMarkup = self.strip_regions(clearedMarkup, regions, replacement) 
 
-        #now gather all of the other regions we want to ignore	
+        #now gather all of the other regions we want to ignore        
         regions = self.gather_tables(clearedMarkup)
 
         regions = self.merge_region_lists(regions, self.gather_html(clearedMarkup))
@@ -100,7 +100,7 @@ class MarkupStripper:
                     if not prefix:
                         # this is not a link to another article, so get rid of it entirely
                         if replacement:
-                            strippedLinkMarkup = linkMarkup.replace(".", str(replacement))		
+                            strippedLinkMarkup = linkMarkup.replace(".", str(replacement))                
                         else:
                             strippedLinkMarkup = ""
                     else:
@@ -125,12 +125,12 @@ class MarkupStripper:
         if lastPos > 0:
             strippedMarkup.insert(0, markup[0:lastPos] )
 
-	return "".join(strippedMarkup)	
+        return "".join(strippedMarkup)        
 
 
     def strip_excess_newlines(self, markup):
-	strippedMarkup = markup.replace("\n{3,}", "\n\n")
-	return strippedMarkup.strip()
+        strippedMarkup = markup.replace("\n{3,}", "\n\n")
+        return strippedMarkup.strip()
 
 
     # Gathers simple regions: ones which cannot be nested within each other.
@@ -140,13 +140,13 @@ class MarkupStripper:
     
     def gather_simple_regions(self, markup, regex):
         # an array of regions we have identified
-	# each region is given as an array containing start and end character indexes of the region. 
+        # each region is given as an array containing start and end character indexes of the region. 
         regions = []
-	p = re.compile(regex, re.DOTALL)
+        p = re.compile(regex, re.DOTALL)
         for m in p.finditer(markup):
             region = (m.start(), m.end())
             regions.append(region)
-	return regions
+        return regions
 
 
     # Merges two lists of regions into one sorted list. Regions that are contained
@@ -250,8 +250,8 @@ class MarkupStripper:
 
     # Gathers areas within the markup which correspond to tables (as identified by {| and |} pairs). 
     def gather_tables(self, markup):
-	# currItem = "tables" ;
-	return self.gather_complex_regions(markup, "\\{\\|", "\\|\\}")
+        # currItem = "tables" ;
+        return self.gather_complex_regions(markup, "\\{\\|", "\\|\\}")
     
     # Gathers areas within the markup which correspond to html tags. 
     # 
@@ -278,24 +278,24 @@ class MarkupStripper:
     # since we assume this content is supposed to be discarded. 
     def gather_references(self, markup):
         # currItem = "references" ;
-	#gather <ref/>
-	regions = self.gather_simple_regions(markup, "\\<ref(\\s*?)([^>]*?)\\/\\>")
+        #gather <ref/>
+        regions = self.gather_simple_regions(markup, "\\<ref(\\s*?)([^>]*?)\\/\\>")
 
-	#gather <ref> </ref> pairs (these shouldnt be nested, but what the hell...)
-	regions = self.merge_region_lists(regions, self.gather_complex_regions(markup, "\\<ref(\\s*?)([^>\\/]*?)\\>", "\\<\\/ref(\\s*?)\\>"))
+        #gather <ref> </ref> pairs (these shouldnt be nested, but what the hell...)
+        regions = self.merge_region_lists(regions, self.gather_complex_regions(markup, "\\<ref(\\s*?)([^>\\/]*?)\\>", "\\<\\/ref(\\s*?)\\>"))
 
-	return regions
+        return regions
 
     # Gathers all links to external web pages
     def gather_external_links(self, markup):
-	# currItem = "external links" ;
-	return self.gather_simple_regions(markup, "\\[(http|www|ftp).*?\\]")
+        # currItem = "external links" ;
+        return self.gather_simple_regions(markup, "\\[(http|www|ftp).*?\\]")
 
 
     # Gathers items which MediaWiki documentation mysteriously refers to as "majic words": e.g. __NOTOC__
     def gather_magic_words(self, markup):
-	# currItem = "magic words" ;
-	return self.gather_simple_regions(markup, "\\_\\_([A-Z]+)\\_\\_")
+        # currItem = "magic words" ;
+        return self.gather_simple_regions(markup, "\\_\\_([A-Z]+)\\_\\_")
 
 
     # Gathers paragraphs within the markup referred to by the given pointer, which are at the 
@@ -318,7 +318,7 @@ class MarkupStripper:
             if isWhitespace or isIndented or isItalicised or isImage:
                 #want to ignore this line
                 ignoreUntil = ignoreUntil + len(line) + 1
-                #print " - - - discard\n"	
+                #print " - - - discard\n"        
             else:
                 #print " - - - keep\n"
                 break

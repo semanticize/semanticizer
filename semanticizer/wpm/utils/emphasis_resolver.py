@@ -15,7 +15,7 @@ import re
 
 # This parses MediaWiki syntax for '''bold''' and ''italic'' text with the equivalent html markup.
 class EmphasisResolver:
-    def resolve_emphasis(self, text):	
+    def resolve_emphasis(self, text):
         sb = []
         for line in text.split("\n"):
             sb.append(self.resolve_line(line))
@@ -31,21 +31,21 @@ class EmphasisResolver:
     # @return the line, with all emphasis markup resolved to html tags
     # 
     def resolve_line(self, line):
-		
+        
         #print "Resolving line '" + line + "'"
         
-	arr = self.get_splits("$"+line)
-	if len(arr) <= 1:
+        arr = self.get_splits("$"+line)
+        if len(arr) <= 1:
             return line
 
         # First, do some preliminary work. This may shift some apostrophes from
         # being mark-up to being text. It also counts the number of occurrences
         # of bold and italics mark-ups.
 
-	numBold = 0
-	numItalics = 0
+        numBold = 0
+        numItalics = 0
 
-	for i, value in enumerate(arr):
+        for i, value in enumerate(arr):
             if (i % 2 == 1):
                 # If there are ever four apostrophes, assume the first is supposed to
                 # be text, and the remaining three constitute mark-up for bold text.
@@ -59,11 +59,11 @@ class EmphasisResolver:
                     arr[i] = self.get_filled_string(5)
                 
                 size = len(arr[i])
-		if size == 2:
+                if size == 2:
                     numItalics +=1
                 elif size == 3:
                     numBold+=1
-		elif size == 5:
+                elif size == 5:
                     numItalics +=1
                     numBold +=1
 
@@ -71,7 +71,7 @@ class EmphasisResolver:
         # that one of the bold ones was meant to be an apostrophe followed
         # by italics. Which one we cannot know for certain, but it is more
         # likely to be one that has a single-letter word before it.
-	if (numBold%2==1) and (numItalics%2==1):
+        if (numBold%2==1) and (numItalics%2==1):
             i= 0
             firstSingleLetterWord = -1
             firstMultiLetterWord = -1
@@ -80,33 +80,33 @@ class EmphasisResolver:
             for r in arr:
                 if i%2==1 and len(r)==3:
                     x1 = arr[i-1][len(arr[i-1])-1]
-		    x2 = arr[i-1][len(arr[i-1])-2]
+                    x2 = arr[i-1][len(arr[i-1])-2]
                     if x1==' ':
                         if firstSpace == -1:
                             firstSpace = i ;
                     elif x2==' ':
-			if firstSingleLetterWord == -1:
-			    firstSingleLetterWord = i
+                        if firstSingleLetterWord == -1:
+                            firstSingleLetterWord = i
                     else:
-			if firstMultiLetterWord == -1:
+                        if firstMultiLetterWord == -1:
                             firstMultiLetterWord = i
 
-		i += 1
+                i += 1
 
             # If there is a single-letter word, use it!
-	    if firstSingleLetterWord > -1:
+            if firstSingleLetterWord > -1:
                 arr[firstSingleLetterWord] = "''"
-		arr[firstSingleLetterWord-1] = arr[firstSingleLetterWord] + "'" 
+                arr[firstSingleLetterWord-1] = arr[firstSingleLetterWord] + "'" 
             elif firstMultiLetterWord > -1:
                 # If not, but there's a multi-letter word, use that one.
-		arr[firstMultiLetterWord] = "''" 
-		arr[firstMultiLetterWord-1] = arr[firstMultiLetterWord] + "'" 
+                arr[firstMultiLetterWord] = "''" 
+                arr[firstMultiLetterWord-1] = arr[firstMultiLetterWord] + "'" 
             elif firstSpace > -1:
                 # ... otherwise use the first one that has neither.
                 # (notice that it is possible for all three to be -1 if, for example,
                 # there is only one pentuple-apostrophe in the line)
-		arr[firstSpace] = "''" 
-		arr[firstSpace-1] = arr[firstSpace] + "'" 
+                arr[firstSpace] = "''" 
+                arr[firstSpace-1] = arr[firstSpace] + "'" 
 
         # Now let's actually convert our apostrophic mush to HTML!
 
@@ -204,32 +204,32 @@ class EmphasisResolver:
 
         return "".join(output)
 
-	
+        
 
     # Does the same job as php function preg_split 
     def get_splits(self, text):
         #return re.split("\\'{2,}", text)
-	splits = []
+        splits = []
         lastCopyIndex = 0
         p = re.compile("\\'{2,}")
 
         for m in p.finditer(text):
             if m.start() > lastCopyIndex:
-		splits.append( text[lastCopyIndex: m.start()] )
+                splits.append( text[lastCopyIndex: m.start()] )
             splits.append( m.group() )
             lastCopyIndex = m.end()
 
-	if lastCopyIndex < len(text)-1:
+        if lastCopyIndex < len(text)-1:
             splits.append(text[lastCopyIndex])
 
-	return splits
+        return splits
 
 
     def get_filled_string(self, length):
         sb = []
-	for i in xrange(0,length): 
+        for i in xrange(0,length): 
             sb.append("'")
-	return "".join(sb)
+        return "".join(sb)
 
 ## EmphasisResolver testing using 
 ## python -m semanticizer.wpm.utils.emphasis_resolver
