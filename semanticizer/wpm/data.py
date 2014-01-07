@@ -85,14 +85,20 @@ class WpmData:
     def get_item_id(self, title):
         return self.db.get(self.ns.page_id(title))
     
+    def get_item_ids(self, *titles):
+        with self.db.pipeline() as pipe:
+            for title in titles:
+                pipe.get(self.ns.page_id(title))
+            return pipe.execute()
+    
     def get_item_title(self, pid):
         return self.db.get(self.ns.page_title(pid))
     
     def get_item_inlinks(self, pid):
-        return self.db.get(self.ns.page_inlinks(pid))
+        return self.db.lrange(self.ns.page_inlinks(pid), 0, -1)
     
     def get_item_outlinks(self, pid):
-        return self.db.get(self.ns.page_outlinks(pid))
+        return self.db.lrange(self.ns.page_outlinks(pid), 0, -1)
     
     def get_item_categories(self, pid):
         return self.db.get(self.ns.page_categories(pid))
@@ -142,3 +148,33 @@ class WpmData:
     
     def get_stat(self, value):
         return self.db.get(self.ns.wiki_stats(value))
+    
+    def get_articles(self, *pids):
+        pipe = self.db.pipeline()
+        for pid in pids:
+            pipe.lrange(self.ns.page_inlinks(pid), 0, -1)
+            pipe.lrange(self.ns.page_outlinks(pid), 0, -1)
+            pipe.lrange(self.ns.page_labels(pid), 0, -1)
+        data = pipe.execute()
+        
+        results = []
+        for i in xrange(0, len(data)-1, 3):
+            labels = []
+            json_labels = data[i+2]
+            for json_label in json_labels:
+                label = json.loads(json_label)
+                labels.append({
+                    'title': label[0],
+                    'occurances': label[1],
+                    'fromRedirect': label[2],
+                    'fromTitle': label[3],
+                    'isPrimary': label[4],
+                    'proportion': label[5] 
+                })
+            result = {
+                "InLinks":data[i],
+                "OutLinks":data[i+1],
+                "Labels":labels
+            }
+            results.append(result)
+        return results
