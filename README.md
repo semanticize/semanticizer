@@ -6,7 +6,7 @@ at [ILPS](http://ilps.science.uva.nl/) (University of Amsterdam).
 
 This project since received contributions from (in alphabetical order):
 [Lars Buitinck](http://staff.science.uva.nl/~buitinck/),
-[Bart van den Ende](http://www.bartsidee.nl/), 
+[Bart van den Ende](http://www.bartvandenende.nl/), 
 [David Graus](http://graus.nu/),
 [Tom Kenter](http://staff.science.uva.nl/~tkenter1/),
 [Evert Lammerts](http://www.evertlammerts.nl/),
