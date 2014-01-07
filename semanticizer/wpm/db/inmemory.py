@@ -11,72 +11,68 @@
 # You should have received a copy of the GNU Lesser General Public License 
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-cache = dict()
+
 
 class MemoryDB:
     #store all data in memory instead of redis, mimic redis functions
     def __init__(self, **kwargs): 
-        pass
+        self.cache = dict()
     
     def pipeline(self,  **kwargs):
-        return Pipe()
+        return Pipe(self.cache)
     
     def exists(self, key):
-        return key in cache
+        return key in self.cache
     
     def keys(self, key):
-        return [k for k in cache.iterkeys() if k.startswith(key.replace("*", ""))]
+        key = key.replace("*", "")  
+        # simple abstraction of redis wildcard key search, only valid for startswith equivalent search which should be sufficient, probably faster then full regular expression search over keys 
+        return [k for k in self.cache.iterkeys() if k.startswith(key)]
     
     def get(self, key):
-        return cache[key]
+        return self.cache[key]
     
     def set(self, key, value):
-        cache[key] = value
+        self.cache[key] = value
         return True
         
     def smembers(self, key):
         return self.get(key)
     
     def sismember(self, key, value):
-        return value in cache[key]
+        return value in self.cache[key]
     
     def sadd(self, key, *values):
-        if not key in cache:
-            cache[key] = set()
-        for value in values:
-            cache[key].add(value)
+        self.cache.setdefault(key, set()).update(values)
         return [True]*len(values)
         
-    def lrange(self, key, start=0, end=None):
-        data = cache.get(key, list())
-        if end is None:
-          end = len(data)
-        return data[start:end] 
+    def lrange(self, key, start=0, end=-1):
+        data = self.cache.get(key, list())
+        if end < -1:
+          return data[start:end+1] 
+        elif end == -1:
+          return data[start:] 
+        else:
+          return data[start:end] 
         
     def rpush(self, key, *values):
-        if not key in cache:
-            cache[key] = list()
-        for value in values:
-            cache[key].append(value)
+        self.cache.setdefault(key, []).extend(values)
         return [True]*len(values)
         
     def zscore(self, key, value):
-        return cache[key][value]
+        return self.cache[key][value]
     
     def zincrby(self, key, value, ammount=1):
-        # in case key does not exist create dict
-        if not key in cache:
-            cache[key] = dict()
         # in case value does not exist init 
-        if not value in cache[key]:
-            cache[key][value] = ammount
+        if not value in self.cache.setdefault(key, {}):
+            self.cache[key][value] = ammount
         else:
-            cache[key][value] += ammount
-        return cache[key][value]
+            self.cache[key][value] += ammount
+        return self.cache[key][value]
         
     def delete(self,*keys):
         for key in keys:
-            cache.pop(key, None)
+            self.cache.pop(key, None)
         return True
 
 
@@ -84,7 +80,7 @@ class MemoryDB:
 class Proxy(object):
     def __getattribute__(self,name):
         attr = object.__getattribute__(self, name)
-        if hasattr(attr, '__call__'):
+        if hasattr(attr, '__call__') and name not in ["execute", "reset"]:
             def newfunc(*args, **kwargs):
                 result = attr(*args, **kwargs)
                 self.results.append(result)
@@ -95,8 +91,9 @@ class Proxy(object):
         
 #implicity add a decorator Proxy to all functions of MemoryDB to fetch all returns and output them on execute
 class Pipe(Proxy, MemoryDB):
-    def __init__(self):
+    def __init__(self, cache):
         self.reset()
+        self.cache = cache
         
     def __enter__(self):
         return self
