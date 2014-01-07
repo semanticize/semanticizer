@@ -59,7 +59,7 @@ def remove_accents(input_str):
     return u"".join([c for c in nkfd_form if not unicodedata.combining(c)])
 
 
-def check_dump_path(path):
+def check_dump_path(path, skip_files = []):
     """
     Checks whether a path exists and raises an error if it doesn't.
 
@@ -73,7 +73,9 @@ def check_dump_path(path):
     for fullpath in pathlist:
         print "Checking " + fullpath
         if os.path.exists(fullpath):
-            for _, filename in dump_filenames.iteritems():
+            for filetype, filename in dump_filenames.iteritems():
+                if filetype in skip_files:
+                    continue
                 if os.path.isfile(fullpath + filename) == True:
                     print "Found " + fullpath + filename
                 else:
