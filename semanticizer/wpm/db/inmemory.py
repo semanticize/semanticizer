@@ -62,12 +62,12 @@ class MemoryDB:
     def zscore(self, key, value):
         return self.cache[key][value]
     
-    def zincrby(self, key, value, ammount=1):
+    def zincrby(self, key, value, amount=1):
         # in case value does not exist init 
         if not value in self.cache.setdefault(key, {}):
-            self.cache[key][value] = ammount
+            self.cache[key][value] = amount
         else:
-            self.cache[key][value] += ammount
+            self.cache[key][value] += amount
         return self.cache[key][value]
         
     def delete(self,*keys):
