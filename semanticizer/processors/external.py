@@ -29,17 +29,6 @@ from ..wpm.utils import get_relatedness
 class ArticlesProcessor(LinksProcessor):
     def __init__(self, langcodes, pickledir):
         self.langcodes = langcodes
-        self.article_cache = {}
-
-        for langcode in langcodes:
-            pickle_root = os.path.join(pickledir, langcode)
-            if not os.path.isdir(pickle_root):
-                os.makedirs(pickle_root)
-            self.article_cache[langcode] = \
-                shelve.open(os.path.join(pickle_root, 'article_cache.db'))
-            print "Loaded %d articles for %s from cache." \
-                  % (len(self.article_cache[langcode]), langcode)
-
         self.article_template = {
             "article_id": -1,
             "article_title": "",
@@ -67,33 +56,37 @@ class ArticlesProcessor(LinksProcessor):
         if not settings["langcode"] in self.langcodes:
             return (links, text, settings)
         
-        wpm = wpm_dumps[langcode]
-        for link in links:
+        wpm = wpm_dumps[settings["langcode"]]
+        
+        
+        titles = [link["title"] for link in links]
+        ids = wpm.get_item_ids(*titles)        
+        articles = wpm.get_articles(*ids)
+        
+        for link, id, title, article in zip(links, ids, titles, articles):
             
             link.update(deepcopy(self.article_template))
 
-            link["article_title"] = link["title"]
-            
-            id = wpm.get_item_id(link["title"])
-            if id:
-                link["article_id"] = id
-            
-            inlinks = wpm.get_item_inlinks( link["article_id"] )
+            link["article_title"] = title
+            link["article_id"] = id
+
+            inlinks = article["InLinks"]
             if inlinks:
-                for inlink in inlinks:
-                    # below data is not used, for now only append inlink id to reduce load on db
-                    #title = wpm.get_item_title(inlink)
-                    #relatedness = get_relatedness(inlinks, wpm.get_item_inlinks(inlink) )
-                    #link["InLinks"].append( {title:title, id:int(inlink), relatedness:relatedness} )
-                    link["InLinks"].append( { id:int(inlink) } )
+                link["InLinks"] = [{ "id":int(inlink) } for inlink in inlinks]
+                # below data is not used, for now only append inlink id to reduce load on db
+                #title = wpm.get_item_title(inlink)
+                #relatedness = get_relatedness(inlinks, wpm.get_item_inlinks(inlink) )
+                #link["InLinks"].append( {"title":title, "id":int(inlink), "relatedness":relatedness} )
+
             
+            outlinks = article["OutLinks"]
             if outlinks:
-                for outlink in outlinks:
-                    # below data is not used, for now only append inlink id to reduce load on db
-                    #title = wpm.get_item_title(outlink)
-                    #relatedness = get_relatedness(outlinks, wpm.get_item_outlinks(outlin) )
-                    #link["OutLinks"].append( {title:title, id:int(outlink), relatedness:relatedness} )
-                    link["OutLinks"].append( { id:int(outlink) } )
+                link["OutLinks"] = [{ "id":int(outlink) } for outlink in outlinks]
+                # below data is not used, for now only append inlink id to reduce load on db
+                #title = wpm.get_item_title(outlink)
+                #relatedness = get_relatedness(outlinks, wpm.get_item_outlinks(outlin) )
+                #link["OutLinks"].append( {"title":title, "id":int(outlink), "relatedness":relatedness} )
+
 
             #categories = wpm.get_item_categories( link["article_id"] )
             #if categories:
@@ -104,15 +97,9 @@ class ArticlesProcessor(LinksProcessor):
             #definition = wpm.get_item_definitions(link["article_id"])
             #if definition:
             #    link["Definition"] = definition
-            
-            labels = wpm.get_item_labels(link["article_id"])
-            if labels:
-                link["Labels"] = labels
 
-        for langcode, cache in self.article_cache.iteritems():
-            print "Saving %d articles for %s to cache." \
-                   % (len(cache), langcode)
-            cache.sync()
+            if article["Labels"]:
+                link["Labels"] = article["Labels"]
 
         return (links, text, settings)
 
