@@ -18,15 +18,15 @@ import getopt
 from ..wpm.load import WpmLoader
 from ..config import config_get
 
-def load_wpm_data(datasource, langcode, **kwargs):
+def load_wpm_data(datasource, langcode, settings, **kwargs):
     if datasource == "redis":
         from ..wpm.db.redisdb import RedisDB
         db = RedisDB(**kwargs)
-        WpmLoader(db, langcode, **kwargs)
+        WpmLoader(db, langcode, settings, **kwargs)
     elif datasource == "mongo":
         from ..wpm.db.mongodb import MongoDB
         db = MongoDB(**kwargs)
-        WpmLoader(db, langcode, **kwargs)
+        WpmLoader(db, langcode, settings, **kwargs)
     else:
         raise ValueError("No %s backend for language %s" % (datasource, langcode))
 
