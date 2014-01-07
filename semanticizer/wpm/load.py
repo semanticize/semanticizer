@@ -96,7 +96,7 @@ class WpmLoader:
             
         pipe = self.db.pipeline(transaction=False)
         file = codecs.open(filename, "r", "utf-8")
-        for linenr, line in enumerate(stats_file):
+        for linenr, line in enumerate(file):
             if self.progress and linenr % 10 is 0:
                 cli_progress(linenr+1, num_lines)
             try:
@@ -129,7 +129,7 @@ class WpmLoader:
         
         pipe = self.db.pipeline(transaction=False)
         file = codecs.open(filename, "r", "utf-8")
-        for linenr, line in enumerate(labels_file):
+        for linenr, line in enumerate(file):
             if self.progress and linenr % 10 is 0:
                 cli_progress(linenr+1, num_lines)
             try:
@@ -182,7 +182,7 @@ class WpmLoader:
         else:
             ns_function = self.ns.page_outlinks
         
-        for linenr, line in enumerate(links_file):
+        for linenr, line in enumerate(file):
             if self.progress and linenr % 10 is 0:
                 cli_progress(linenr+1, num_lines)
             try:
@@ -215,7 +215,7 @@ class WpmLoader:
             
         pipe = self.db.pipeline(transaction=False)
         file = codecs.open(filename, "r", "utf-8")
-        for linenr, line in enumerate(trnsl_file):
+        for linenr, line in enumerate(file):
             if self.progress and linenr % 10 is 0:
                 cli_progress(linenr+1, num_lines)
             try:
@@ -250,7 +250,7 @@ class WpmLoader:
             
         pipe = self.db.pipeline(transaction=False)
         file = codecs.open(filename, "r", "utf-8")
-        for linenr, line in enumerate(titles_file):
+        for linenr, line in enumerate(file):
             if self.progress and linenr % 10 is 0:
                 cli_progress(linenr+1, num_lines)
             try:
@@ -290,7 +290,7 @@ class WpmLoader:
             
         pipe = self.db.pipeline(transaction=False)
         file = codecs.open(filename, "r", "utf-8")
-        for linenr, line in enumerate(titles_file):
+        for linenr, line in enumerate(file):
             if self.progress and linenr % 10 is 0:
                 cli_progress(linenr+1, num_lines)
             try:
@@ -338,7 +338,7 @@ class WpmLoader:
             
         pipe = self.db.pipeline(transaction=False)
         file = codecs.open(filename, "r", "utf-8")
-        for linenr, line in enumerate(titles_file):
+        for linenr, line in enumerate(file):
             if self.progress and linenr % 10 is 0:
                 cli_progress(linenr+1, num_lines)
             try:
