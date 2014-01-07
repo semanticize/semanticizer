@@ -18,12 +18,10 @@ server:
 wpm:
   languages:
     en:
-      source: WpmDataInProc
+      source: memory
       initparams:
         path: ./enwiki-20110722
         language: english
-  threads: 16
-  bdburl: http://wikipedia-miner.cms.waikato.ac.nz/services/exploreArticle
 
 linkprocs:
   features: false

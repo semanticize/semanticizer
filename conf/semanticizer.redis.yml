@@ -19,12 +19,12 @@ server:
 wpm:
   languages:
     en:
-      source: WpmDataRedis
+      source: redis
       initparams:
+        path: ./enwiki-20110722
+        language: english
         host: localhost
         port: 6379
-  threads: 16
-  bdburl: http://wikipedia-miner.cms.waikato.ac.nz/services/exploreArticle
 
 linkprocs:
   features: false

@@ -14,9 +14,7 @@
 from Queue import Queue, Empty
 from threading import Thread
 
-import urllib
 import urllib2
-from lxml import etree as ElementTree
 
 import datetime
 import shelve
@@ -24,25 +22,13 @@ import os
 from copy import deepcopy
 
 from .core import LinksProcessor
-from ..wpm import wpm_dumps
+from ..wpm.data import wpm_dumps
+from ..wpm.utils import get_relatedness
 
 
 class ArticlesProcessor(LinksProcessor):
-    def __init__(self, langcodes, article_url, threads, pickledir):
-        self.threads = threads
-        self.article_url = article_url
+    def __init__(self, langcodes, pickledir):
         self.langcodes = langcodes
-        self.article_cache = {}
-
-        for langcode in langcodes:
-            pickle_root = os.path.join(pickledir, langcode)
-            if not os.path.isdir(pickle_root):
-                os.makedirs(pickle_root)
-            self.article_cache[langcode] = \
-                shelve.open(os.path.join(pickle_root, 'article_cache.db'))
-            print "Loaded %d articles for %s from cache." \
-                  % (len(self.article_cache[langcode]), langcode)
-
         self.article_template = {
             "article_id": -1,
             "article_title": "",
@@ -61,11 +47,6 @@ class ArticlesProcessor(LinksProcessor):
         if not settings["langcode"] in self.langcodes:
             return (links, text, settings)
 
-        # Start threads
-        (self.articles, self.queue) = self.get_articles(
-                                            links,
-                                            settings["langcode"], self.threads)
-
         return (links, text, settings)
 
     def process(self, links, text, settings):
@@ -74,53 +55,51 @@ class ArticlesProcessor(LinksProcessor):
             return (links, text, settings)
         if not settings["langcode"] in self.langcodes:
             return (links, text, settings)
-
-        self.queue.join()
-        for link in links:
-            article = self.articles[link["title"]]
-
+        
+        wpm = wpm_dumps[settings["langcode"]]
+        
+        
+        titles = [link["title"] for link in links]
+        ids = wpm.get_item_ids(*titles)        
+        articles = wpm.get_articles(*ids)
+        
+        for link, id, title, article in zip(links, ids, titles, articles):
+            
             link.update(deepcopy(self.article_template))
 
-            if "id" in article.attrib:
-                link["article_id"] = int(article.attrib["id"])
-            if "title" in article.attrib:
-                link["article_title"] = article.attrib["title"]
+            link["article_title"] = title
+            link["article_id"] = id
 
-            for child in article:
-                if child.tag in ('InLinks', 'OutLinks', 'ParentCategories'):
-                    for linktag in child:
-                        link[child.tag].append(dict(linktag.attrib))
-                        if "id" in link[child.tag][-1]:
-                            link[child.tag][-1]["id"] = \
-                                      int(link[child.tag][-1]["id"])
-                        if "relatedness" in link[child.tag][-1]:
-                            link[child.tag][-1]["relatedness"] = \
-                                      float(link[child.tag][-1]["relatedness"])
-                elif child.tag == 'Labels':
-                    for labeltag in child:
-                        label = {"title": labeltag.text}
-                        label.update(labeltag.attrib)
-                        if "fromRedirect" in label:
-                            label["fromRedirect"] = bool(label["fromRedirect"])
-                        if "fromTitle" in label:
-                            label["fromTitle"] = bool(label["fromTitle"])
-                        if "isPrimary" in label:
-                            label["isPrimary"] = bool(label["isPrimary"])
-                        if "occurances" in label:
-                            label["occurances"] = int(label["occurances"])
-                        if "proportion" in label:
-                            label["proportion"] = float(label["proportion"])
-                        link["Labels"].append(label)
-                elif child.tag == "Image":
-                    link["Images"].append(child.attrib['url'])
-                elif child.tag == "Definition":
-                    if child.text and len(child.text):
-                        link["Definition"] = child.text
+            inlinks = article["InLinks"]
+            if inlinks:
+                link["InLinks"] = [{ "id":int(inlink) } for inlink in inlinks]
+                # below data is not used, for now only append inlink id to reduce load on db
+                #title = wpm.get_item_title(inlink)
+                #relatedness = get_relatedness(inlinks, wpm.get_item_inlinks(inlink) )
+                #link["InLinks"].append( {"title":title, "id":int(inlink), "relatedness":relatedness} )
 
-        for langcode, cache in self.article_cache.iteritems():
-            print "Saving %d articles for %s to cache." \
-                   % (len(cache), langcode)
-            cache.sync()
+            
+            outlinks = article["OutLinks"]
+            if outlinks:
+                link["OutLinks"] = [{ "id":int(outlink) } for outlink in outlinks]
+                # below data is not used, for now only append inlink id to reduce load on db
+                #title = wpm.get_item_title(outlink)
+                #relatedness = get_relatedness(outlinks, wpm.get_item_outlinks(outlin) )
+                #link["OutLinks"].append( {"title":title, "id":int(outlink), "relatedness":relatedness} )
+
+
+            #categories = wpm.get_item_categories( link["article_id"] )
+            #if categories:
+            #    for category in categories:
+            #        title = wpm.get_item_title(category)
+            #        link["ParentCategories"].append( {title:title, id:int(category)} )
+
+            #definition = wpm.get_item_definitions(link["article_id"])
+            #if definition:
+            #    link["Definition"] = definition
+
+            if article["Labels"]:
+                link["Labels"] = article["Labels"]
 
         return (links, text, settings)
 
@@ -139,87 +118,6 @@ class ArticlesProcessor(LinksProcessor):
                     del link[label]
 
         return (links, text, settings)
-
-    def get_articles(self, articles, langcode, num_of_threads):
-        results = {}
-
-        def worker():
-            while True:
-                try:
-                    item = queue.get_nowait()
-                    results[item] = self.get_article(item.encode('utf-8'),
-                                                     langcode)
-                    queue.task_done()
-                except Empty:
-                    break
-
-        queue = Queue()
-        for title in set([article["title"] for article in articles]):
-            queue.put(title)
-
-        for _ in range(num_of_threads):
-            t = Thread(target=worker)
-            t.daemon = True
-            t.start()
-
-        return (results, queue)
-
-    def get_article(self, article, langcode):
-        if article in self.article_cache[langcode]:
-            resultDoc = self.article_cache[langcode][article]
-        else:
-            wpm = wpm_dumps[langcode]
-            wikipedia_name = wpm.get_wikipedia_name()
-            url = self.article_url + "?"
-            url += urllib.urlencode({"wikipedia": wikipedia_name,
-                                     "title": article,
-                                     "definition": "true",
-                                     "definitionLength": "LONG",
-                                     "linkRelatedness": True,
-                                     "linkFormat": "HTML",
-                                     "inLinks": "true",
-                                     "outLinks": "true",
-                                     "labels": "true",
-#                                    "images": "true",
-# Images disabled because of a bug in WikipediaMiner
-                                     "parentCategories": "true"})
-
-            print url
-            try:
-                request = urllib2.urlopen(url)
-                encoding = request.headers['content-type'] \
-                                  .split('charset=')[-1]
-                #resultDoc = unicode(request.read(), encoding)
-                resultDoc = request.read()
-            except urllib2.HTTPError:
-                # Strange bug in some articles, mentioned to Edgar
-                print "Strange bug, requesting shorter definition"
-
-                try:
-                    request = urllib2.urlopen(url.replace("&definitionLength=LONG",
-                                                          ""))
-                    encoding = request.headers['content-type'] \
-                                      .split('charset=')[-1]
-                    #resultDoc = unicode(request.read(), encoding)
-                    resultDoc = request.read()
-                except urllib2.HTTPError as e:
-                    print e
-                    return ElementTree.Element('Response')
-
-            self.article_cache[langcode][article] = resultDoc
-
-        result = ElementTree.fromstring(resultDoc).find("Response")
-
-        if not "title" in result.attrib:
-            print "Error", result.attrib["error"]
-            if 'url' in locals():
-                print url
-        else:
-            if article.decode("utf-8") != result.attrib["title"]:
-                print "%s!=%s" % (article.decode("utf-8"), \
-                                  result.attrib["title"])
-
-        return result
 
 
 class StatisticsProcessor(LinksProcessor):

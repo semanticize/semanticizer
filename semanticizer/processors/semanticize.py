@@ -15,8 +15,8 @@ from nltk.util import ngrams as nltk_ngrams
 import re
 import urllib
 
-from ..wpm import wpmutil, wpm_dumps
-
+from ..wpm import utils as wpmutil
+from ..wpm.data import wpm_dumps
 
 tokenize = re.compile(r'\w+(?:[.,\']\w+)*|[^\w\s]+',
                       re.UNICODE | re.MULTILINE | re.DOTALL).findall
@@ -88,7 +88,7 @@ class Semanticizer:
                                 link_probability = float(entity['cntlinkdoc']) / entity['cnttextdoc']
                                 sense_probability = float(sense_data['cntlinkdoc']) / entity['cnttextdoc']
                             if sense_probability > sense_probability_threshold:
-                                title = unicode(self.wpm.get_sense_title(sense_str))
+                                title = unicode(self.wpm.get_item_title(sense_str))
                                 url = self.wikipedia_url_template \
                                       % (self.language_code,
                                          urllib.quote(title.encode('utf-8')))

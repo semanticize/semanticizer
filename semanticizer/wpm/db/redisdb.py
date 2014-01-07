@@ -11,16 +11,7 @@
 # You should have received a copy of the GNU Lesser General Public License 
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import sys
-from ..wpm.wpmdata_redis import WpmLoader
+import redis
 
-if __name__ == '__main__':
-    if len(sys.argv) < 4:
-        print "Usage: %s language_name language_code path_to_wpm_dump" \
-               % sys.argv[0]
-        sys.exit(1)
-    try:
-        loader = WpmLoader()
-        loader.load_wpminer_dump(sys.argv[1], sys.argv[2], sys.argv[3])
-    except IOError as err:
-        print err.message
+def RedisDB(host='localhost', port=6379, **kwargs):
+    return redis.StrictRedis(host=host, port=port, db=0, decode_responses=True)

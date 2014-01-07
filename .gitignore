@@ -2,6 +2,7 @@
 *.sw[op]
 *~
 ._*
+.DS_Store
 
 *.pyc
 
@@ -39,3 +40,6 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+#netbeans
+/nbproject/
