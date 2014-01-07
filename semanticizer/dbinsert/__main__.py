@@ -34,11 +34,10 @@ def load_wpm_data(datasource, langcode, **kwargs):
 
 ##
 ## usage
-## python -m semanticizer.redisinsert --language=<language> --output=/tmp/redisinsert.log
+## python -m semanticizer.dbinsert --language=<languagecode> --output=/tmp/redisinsert.log
 if __name__ == '__main__':
     configYaml = yaml.load(file('conf/semanticizer.yml'))
     wpm_languages = config_get(('wpm', 'languages'), None, configYaml)
-
     try:
        opts, args = getopt.getopt(sys.argv[1:], 'l:o:', ['language=', 'output='])
     except getopt.GetoptError:
@@ -48,23 +47,23 @@ if __name__ == '__main__':
     showprogress = True
     output = None
     language = None
-    
+
     for opt, arg in opts:
         if opt in ('-l', '--language'):
             language = arg
         elif opt in ('-o', '--output'):
             output = arg
-    
+
     if output:
         f = open(output, "w+")
         sys.stdout = f
         showprogress = False
-        
+
     #if language code is specified only import that language
     if language and wpm_languages[language]:
-        load_wpm_data(langconfig['source'], langcode, progress=showprogress, **wpm_languages[sys.argv[1]]['initparams'])
+        load_wpm_data(wpm_languages[language]['source'], language, progress=showprogress, **wpm_languages[language]['initparams'])
     #else important all languages in the config file
-    else:    
+    else:
         for langcode, langconfig in wpm_languages.iteritems():
             load_wpm_data(langconfig['source'], langcode, progress=showprogress, **langconfig['initparams'])
 
