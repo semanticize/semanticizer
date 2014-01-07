@@ -79,7 +79,6 @@ class Semanticizer:
                         entity = self.wpm.get_entity_data(anchor)
                         for sense in entity['senses']:
                             sense_str = str(sense)
-                            print anchor, sense_str
                             sense_data = self.wpm.get_sense_data(anchor,
                                                                  sense_str)
                             if sense_data:
