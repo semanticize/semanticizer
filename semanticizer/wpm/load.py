@@ -20,7 +20,12 @@ from .utils import normalize, check_dump_path, dump_filenames, generate_markup_d
 
 class WpmLoader:
     def __init__(self, db, langcode, langname=None, path=None, translation_languages=None, progress=False, **kwargs):
-        path = check_dump_path(path)
+        
+        skip_files = []
+        if not translation_languages:
+          skip_files = ["translations"] 
+        
+        path = check_dump_path(path, skip_files)
         
         #show progress in CLI when execting insert, not for in memory
         self.progress = progress
@@ -33,7 +38,7 @@ class WpmLoader:
             self.version = str(int(self.db.get(self.ns.db_version())) + 1)
         except:
             self.version = "0"
-                
+        
         #which translation languages to include in results 
         self.translation_langs = translation_languages if translation_languages is not None else []
         
@@ -45,13 +50,16 @@ class WpmLoader:
         self.db.set(self.ns.wiki_language_name(), langname) 
         self.db.set(self.ns.wiki_path(), path) 
         
-        #start loading the new data        
+        #start loading the new data
+        for filetype in skip_files:
+            print "Skipping " + filetype
         print "Loading new db: ", self.version
         self.load_stats(path + dump_filenames["stats"])
         self.load_labels(path + dump_filenames["labels"])
         self.load_links(path + dump_filenames["inlinks"])
         self.load_links(path + dump_filenames["outlinks"], inlinks = False)
-        self.load_translations(path + dump_filenames["translations"])
+        if "translations" not in skip_files:
+            self.load_translations(path + dump_filenames["translations"])
         self.load_page_titles(path + dump_filenames["pages"])
         self.load_page_labels(path + dump_filenames["pageLabels"])
         #self.load_page_categories(path + dump_filenames["pageCategories"])
