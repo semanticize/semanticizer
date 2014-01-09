@@ -39,7 +39,7 @@ class WpmLoader:
         
         #generate unique version, so that existing db can exist while new one is imported, use simpel integer to prevent long key (reduce memory)
         try:
-            self.version = str(int(self.db.get(self.ns.db_version())) + 1)
+            self.version = str(int(db.get(":".join((langcode, "db", "version")))) + 1)
         except:
             self.version = "0"
         
