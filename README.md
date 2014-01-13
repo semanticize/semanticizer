@@ -52,7 +52,7 @@ If you want to dive into the code, start at `semanticizer/server/__main__.py`.
    easy_install or pip):
 
    * nltk
-   * python-Levenshtein
+   * leven
    * networkx
    * lxml
    * flask

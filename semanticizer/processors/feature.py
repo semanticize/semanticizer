@@ -17,7 +17,7 @@ import cPickle as pickle
 import os
 import re
 
-import Levenshtein
+from leven import levenshtein
 
 from . import stringUtils
 from ..wpm import wpm_dumps
@@ -150,7 +150,7 @@ class anchorFeatures:
         return SNCL
 
     def feature_NORMALIZATION(self, lnk):
-        edit = Levenshtein.distance(unicode(lnk["label"]), unicode(lnk["text"]))
+        edit = levenshtein(unicode(lnk["label"]), unicode(lnk["text"]))
         return float(edit) / len(lnk["text"])
 
     def compute_anchor_features(self, lnk):
@@ -269,8 +269,7 @@ class articleFeatures:
             - (2 * features['WORD_MATCH'])
 
         # Levenshtein distance between query and title of the candidate
-        features["EDIT_DISTANCE"] = Levenshtein.distance(label_text,
-                                                         article_title)
+        features["EDIT_DISTANCE"] = levenshtein(label_text, article_title)
 
     def feature_COMMONNESS(self, lnk, features):
         features["COMMONNESS"] = lnk["priorProbability"]
