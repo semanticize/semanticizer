@@ -20,8 +20,9 @@ import yaml
 import sys
 import argparse
 import traceback
+import os
 
-def load_config(path='conf/semanticizer.yml'):
+def load_config(path='../conf/semanticizer.yml'):
     
     #add command line args
     parser = argparse.ArgumentParser(description="""
@@ -36,7 +37,10 @@ def load_config(path='conf/semanticizer.yml'):
     
     if args.config != None:
         path = args.config
-    
+        
+    if not path.startswith("/"):
+    	path = os.path.join(os.path.dirname(__file__), path)
+    	
     configYaml = yaml.load(file(path))
     
     if args.port != None:

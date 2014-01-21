@@ -15,8 +15,8 @@ from nltk.util import ngrams as nltk_ngrams
 import re
 import urllib
 
-from ..wpm import wpmutil, wpm_dumps
-
+from ..wpm import utils as wpmutil
+from ..wpm.data import wpm_dumps
 
 tokenize = re.compile(r'\w+(?:[.,\']\w+)*|[^\w\s]+',
                       re.UNICODE | re.MULTILINE | re.DOTALL).findall
@@ -81,51 +81,52 @@ class Semanticizer:
                             sense_str = str(sense)
                             sense_data = self.wpm.get_sense_data(anchor,
                                                                  sense_str)
-                            if entity['cnttextocc'] == 0:
-                                link_probability = 0
-                                sense_probability = 0
-                            else:
-                                link_probability = float(entity['cntlinkdoc']) / entity['cnttextdoc']
-                                sense_probability = float(sense_data['cntlinkdoc']) / entity['cnttextdoc']
-                            if sense_probability > sense_probability_threshold:
-                                title = unicode(self.wpm.get_sense_title(sense_str))
-                                url = self.wikipedia_url_template \
-                                      % (self.language_code,
-                                         urllib.quote(title.encode('utf-8')))
-                                if entity['cntlinkocc'] == 0:
-                                    prior_probability = 0
+                            if sense_data:
+                                if entity['cnttextocc'] == 0:
+                                    link_probability = 0
+                                    sense_probability = 0
                                 else:
-                                    prior_probability = float(sense_data['cntlinkocc']) / entity['cntlinkocc']
-                                link = {
-                                    "label": anchor,
-                                    "text": ngram,
-                                    "title": title,
-                                    "id": sense,
-                                    "url": url,
-                                    "linkProbability": link_probability,
-                                    "senseProbability": sense_probability,
-                                    "priorProbability": prior_probability
-                                }
-                                if translations:
-                                    link["translations"] = {self.language_code:
-                                                            {"title": title,
-                                                             "url": url}}
-                                    if self.wpm.sense_has_trnsl(sense_str):
-                                        for lang in self.wpm.get_trnsl_langs(sense_str):
-                                            trnsl = self.wpm.get_sense_trnsl(sense_str, lang)
-                                            link["translations"][lang] = {
-                                                'title': unicode(trnsl),
-                                                'url': self.wikipedia_url_template % (lang, urllib.quote(unicode(trnsl).encode('utf-8')))
-                                            }
-                                if counts:
-                                    link["occCount"] = entity['cnttextocc']
-                                    link["docCount"] = entity['cnttextdoc']
-                                    link["linkOccCount"] = entity['cntlinkocc']
-                                    link["linkDocCount"] = entity['cntlinkdoc']
-                                    link["senseOccCount"] = int(sense_data['cntlinkocc'])
-                                    link["senseDocCount"] = int(sense_data['cntlinkdoc'])
-                                    link['fromTitle'] = sense_data['from_title']
-                                    link['fromRedirect'] = sense_data['from_redir']
-                                result["links"].append(link)
+                                    link_probability = float(entity['cntlinkdoc']) / entity['cnttextdoc']
+                                    sense_probability = float(sense_data['cntlinkdoc']) / entity['cnttextdoc']
+                                if sense_probability > sense_probability_threshold:
+                                    title = unicode(self.wpm.get_item_title(sense_str))
+                                    url = self.wikipedia_url_template \
+                                          % (self.language_code,
+                                             urllib.quote(title.encode('utf-8')))
+                                    if entity['cntlinkocc'] == 0:
+                                        prior_probability = 0
+                                    else:
+                                        prior_probability = float(sense_data['cntlinkocc']) / entity['cntlinkocc']
+                                    link = {
+                                        "label": anchor,
+                                        "text": ngram,
+                                        "title": title,
+                                        "id": sense,
+                                        "url": url,
+                                        "linkProbability": link_probability,
+                                        "senseProbability": sense_probability,
+                                        "priorProbability": prior_probability
+                                    }
+                                    if translations:
+                                        link["translations"] = {self.language_code:
+                                                                {"title": title,
+                                                                 "url": url}}
+                                        if self.wpm.sense_has_trnsl(sense_str):
+                                            for lang in self.wpm.get_trnsl_langs(sense_str):
+                                                trnsl = self.wpm.get_sense_trnsl(sense_str, lang)
+                                                link["translations"][lang] = {
+                                                    'title': unicode(trnsl),
+                                                    'url': self.wikipedia_url_template % (lang, urllib.quote(unicode(trnsl).encode('utf-8')))
+                                                }
+                                    if counts:
+                                        link["occCount"] = entity['cnttextocc']
+                                        link["docCount"] = entity['cnttextdoc']
+                                        link["linkOccCount"] = entity['cntlinkocc']
+                                        link["linkDocCount"] = entity['cntlinkdoc']
+                                        link["senseOccCount"] = int(sense_data['cntlinkocc'])
+                                        link["senseDocCount"] = int(sense_data['cntlinkdoc'])
+                                        link['fromTitle'] = sense_data['from_title']
+                                        link['fromRedirect'] = sense_data['from_redir']
+                                    result["links"].append(link)
 
         return result

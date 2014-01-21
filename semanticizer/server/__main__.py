@@ -17,7 +17,7 @@ from logging.handlers import TimedRotatingFileHandler
 from .. import procpipeline
 from ..config import config_get
 from ..server import Server
-from ..wpm import init_datasource
+from ..wpm.data import init_datasource
 
 
 def start_server(langcodes,
@@ -72,7 +72,8 @@ def main():
 
     # Set the datasource and init it
     wpmlangs = config_get(('wpm', 'languages'))
-    init_datasource(wpmlangs)
+    settings = config_get(('settings'), {})
+    init_datasource(wpmlangs, settings)
 
     # Start the server
     try:

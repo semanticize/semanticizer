@@ -6,7 +6,7 @@ at [ILPS](http://ilps.science.uva.nl/) (University of Amsterdam).
 
 This project since received contributions from (in alphabetical order):
 [Lars Buitinck](http://staff.science.uva.nl/~buitinck/),
-[Bart van den Ende](http://www.bartsidee.nl/), 
+[Bart van den Ende](http://www.bartvandenende.nl/), 
 [David Graus](http://graus.nu/),
 [Tom Kenter](http://staff.science.uva.nl/~tkenter1/),
 [Evert Lammerts](http://www.evertlammerts.nl/),
@@ -74,8 +74,7 @@ If you want to dive into the code, start at `semanticizer/server/__main__.py`.
 
 	2. Redis server needs to be set up and running.
 
-	3. Load data into redis: `python -m semanticizer.redisinsert english en enwiki-20110722`.
-	    --langloc dutch nl nlwiki-20111104
+	3. Load data into redis: `python -m semanticizer.dbinsert [--language=<languagecode>] [--output=/tmp/redisinsert.log]`.
 
 4. Run the server using `python -m semantizicer.server`.
 

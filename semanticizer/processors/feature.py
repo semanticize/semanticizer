@@ -20,85 +20,13 @@ import re
 from leven import levenshtein
 
 from . import stringUtils
-from ..wpm import wpm_dumps
-
-
+from ..wpm.data import wpm_dumps
 
 class anchorFeatures:
     def __init__(self, langcode):
-        '''pickle_root = pickledir + '/' + langcode + '/'
-
-        if not os.path.exists(pickle_root):
-            os.makedirs(pickle_root)'''
         self.wpm = wpm_dumps[langcode]
-        #   From Wikipedia miner CSV file:
-        self.wikipediaArticleCount = 970139
-        self.wikipediaCategoryCount = 63108
-        # NEEDS TO BE CHANGED FOR OTHER LANGUAGES THAN NL
-        if langcode != "nl":
-            print "WARNING: Statistics for features are incorrect"
-
-        '''        if title_page != None:
-            self.title_page = title_page
-            try:
-                self.ngram_in_title = pickle.load(open(pickle_root +
-                                                       'ngram_in_title.pickle',
-                                                       'rb'))
-                print "Loaded ngram in title from pickle"
-            except IOError:
-                self.ngram_in_title = {}
-                self.load_ngram_in_title()
-                pickle.dump(self.ngram_in_title, open(pickle_root +
-                                                      'ngram_in_title.pickle',
-                                                      'wb'))
-        else:
-            try:
-                self.title_page = pickle.load(open(pickle_root +
-                                                   'title_page.pickle',
-                                                   'rb'))
-                self.ngram_in_title = pickle.load(open(pickle_root +
-                                                       'ngram_in_title.pickle',
-                                                       'rb'))
-                print "Loaded page titles from pickle"
-            except IOError:
-                self.title_page = {}
-                self.ngram_in_title = {}
-                pickle.dump(self.title_page, open(pickle_root +
-                                                  'title_page.pickle',
-                                                  'wb'))
-                pickle.dump(self.ngram_in_title, open(pickle_root +
-                                                      'ngram_in_title.pickle',
-                                                      'wb'))'''
-
-    '''    def load_page_titles(self, filename):
-        print "Loading page titles...",
-        file = open(filename, 'r')
-        for line in file:
-            line = line.replace('\'', '')
-            splits = line.split(',')
-            id = int(splits[0])
-            title = splits[1]
-    #       page_title[id] = title
-            self.title_page[title] = id
-
-            words = title.split()
-            for n in range(1, len(words) + 1):
-                for i in range(0, len(words) - n):
-                    ngram = " ".join(words[i:i + n])
-                    self.ngram_in_title.setdefault(ngram, 0)
-                    self.ngram_in_title[ngram] += 1
-        print "done"
-
-    def load_ngram_in_title(self):
-        print "Loading ngram in title..."
-        for title in self.title_page:
-            words = title.split()
-            for n in range(1, len(words) + 1):
-                for i in range(0, len(words) - n):
-                    ngram = " ".join(words[i:i + n])
-                    self.ngram_in_title.setdefault(ngram, 0)
-                    self.ngram_in_title[ngram] += 1
-        print "done"'''
+        self.wikipediaArticleCount = int(self.wpm.get_stat("articleCount")) #970139
+        self.wikipediaCategoryCount = int(self.wpm.get_stat("categoryCount")) #63108
 
     def feature_LEN(self, lnk):
         return len(re.findall(stringUtils.reTokenPattern, lnk["label"]))
@@ -133,7 +61,7 @@ class anchorFeatures:
         for n in range(1, len(words) + 1):
             for i in range(0, len(words) - n):
                 ngram = " ".join(words[i:i + n])
-                if not self.wpm.get_title_id(ngram) == None:
+                if not self.wpm.get_item_id(ngram) == None:
                     SNIL += 1
         return SNIL
 
