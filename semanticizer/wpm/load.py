@@ -20,14 +20,19 @@ from .utils import normalize, check_dump_path, dump_filenames, generate_markup_d
 
 class WpmLoader:
     def __init__(self, db, langcode, settings, langname=None, path=None, translation_languages=None, progress=False, **kwargs):
+        print "db", db
+        print "langcode", langcode
         
-        skip_files = ["pageCategories", "pages-articles"]
+        # TODO: This is ugly; skipping data should be in the yml file [DG]
+        skip_files = []
         if not translation_languages:
             skip_files.append("translations")
+        else:
+          print "Translation languages:", translation_languages
         if settings.get("include_categories", False):
-            skip_files.remove("pageCategories")
+            skip_files.append("pageCategories")
         if settings.get("include_definitions", False):
-            skip_files.remove("pages-articles") 
+            skip_files.append("pages-articles") 
           
         path = check_dump_path(path, skip_files)
         
@@ -55,6 +60,7 @@ class WpmLoader:
         self.db.set(self.ns.wiki_path(), path) 
         
         #start loading the new data
+        # TODO: This is ugly too, skip_files <-> load data should be smoother [DG]
         for filetype in skip_files:
             print "Skipping " + filetype
         print "Loading new db: ", self.version
@@ -70,10 +76,9 @@ class WpmLoader:
             self.load_page_categories(path + dump_filenames["pageCategories"])
         if "pages-articles" not in skip_files:
             self.load_definitions(glob.glob(path + '*-pages-articles.xml')[0])
-        
+
         #make new dataset active and remove old dataset
         self.cleanup(langcode)
-        
         
             
     def cleanup(self, langcode):

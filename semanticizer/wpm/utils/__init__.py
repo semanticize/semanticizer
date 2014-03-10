@@ -80,7 +80,7 @@ def check_dump_path(path, skip_files = []):
                     print "Found " + fullpath + filename
                 else:
                     raise IOError("Cannot find " + fullpath + filename)
-            if "pages-articles" not in skip_files:
+            if "pages-articles" not in skip_files: # TODO: Why is this hard coded? What does it mean? [DG]
                 wiki = glob.glob(fullpath + '*-pages-articles.xml')
                 if len(wiki) > 0:
                     print "Found " + wiki[0]

@@ -12,16 +12,35 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 server:
-  port: 5000
+  port: 8005
   host: 0.0.0.0
+  use_reloader: false
 
 wpm:
   languages:
     en:
-      source: memory
+      source: redis
       initparams:
-        path: ./enwiki-20110722
+        path: /zfs/ilps-plexer/wikipediaminer/en
+        host: localhost
+        port: 6379
         language: english
+        translation_languages: ["nl", "fr", "de", "es"] # TODO: We should include all possible params in the config file [DG]
+      settings:
+        include_categories: True
+        include_definitions: False
+
+    nl:
+      source: redis
+      initparams:
+        path: /zfs/ilps-plexer/wikipediaminer/nl
+        host: localhost
+        port: 6379
+        language: nederlands
+        translation_languages: ["en", "fr", "de", "es"]
+      settings:
+        include_categories: True
+        include_definitions: False
 
 linkprocs:
   features: false
