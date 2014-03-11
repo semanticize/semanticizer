@@ -386,7 +386,7 @@ class WpmLoader:
         for event, element in ET.iterparse(filename):
             if element.xpath('local-name()') == 'page':
                 elementnr += 1
-                if self.progress and linenr % 10 is 0:
+                if self.progress and elementnr % 10 is 0:
                     cli_progress(elementnr, num_lines)
                 try:
                     namespace = element.tag[1:element.tag.index('}')] or ""
@@ -408,5 +408,5 @@ class WpmLoader:
                     continue
         pipe.execute()
         if self.progress:
-            cli_progress(linenr, num_lines)
+            cli_progress(elementnr, num_lines)
         print '\nDone loading page definitions'
