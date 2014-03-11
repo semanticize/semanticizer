@@ -18,7 +18,7 @@ server:
 
 settings:
   include_categories: True
-  include_definitions: False
+  include_definitions: True
 
 wpm:
   languages:
