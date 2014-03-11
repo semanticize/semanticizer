@@ -16,31 +16,29 @@ server:
   host: 0.0.0.0
   use_reloader: false
 
+settings:
+  include_categories: True
+  include_definitions: False
+
 wpm:
   languages:
-    en:
-      source: redis
-      initparams:
-        path: /zfs/ilps-plexer/wikipediaminer/en
-        host: localhost
-        port: 6379
-        language: english
-        translation_languages: ["nl", "fr", "de", "es"] # TODO: We should include all possible params in the config file [DG]
-      settings:
-        include_categories: True
-        include_definitions: False
+    #en:
+    #  source: redis
+    #  initparams:
+    #    path: /zfs/ilps-plexer/wikipediaminer/en
+    #    host: localhost
+    #    port: 6379
+    #    language: english
+    #    #translation_languages: ["nl", "fr", "de", "es"] # TODO: We should include all possible params in the config file [DG]
 
     nl:
       source: redis
       initparams:
-        path: /zfs/ilps-plexer/wikipediaminer/nl
+        path: /zfs/ilps-plexer/wikipediaminer/nlwiki-latest
         host: localhost
         port: 6379
         language: nederlands
-        translation_languages: ["en", "fr", "de", "es"]
-      settings:
-        include_categories: True
-        include_definitions: False
+        #translation_languages: ["en", "fr", "de", "es"]
 
 linkprocs:
   features: false

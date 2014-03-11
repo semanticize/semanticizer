@@ -22,20 +22,9 @@ class WpmLoader:
     def __init__(self, db, langcode, settings, langname=None, path=None, translation_languages=None, progress=False, **kwargs):
         print "db", db
         print "langcode", langcode
-        
-        # TODO: This is ugly; skipping data should be in the yml file [DG]
-        skip_files = []
-        if not translation_languages:
-            skip_files.append("translations")
-        else:
-          print "Translation languages:", translation_languages
-        if settings.get("include_categories", False):
-            skip_files.append("pageCategories")
-        if settings.get("include_definitions", False):
-            skip_files.append("pages-articles") 
-          
-        path = check_dump_path(path, skip_files)
-        
+       
+        path = check_dump_path(path, settings)
+       
         #show progress in CLI when execting insert, not for in memory
         self.progress = progress
         
@@ -60,22 +49,23 @@ class WpmLoader:
         self.db.set(self.ns.wiki_path(), path) 
         
         #start loading the new data
-        # TODO: This is ugly too, skip_files <-> load data should be smoother [DG]
-        for filetype in skip_files:
-            print "Skipping " + filetype
         print "Loading new db: ", self.version
+        if settings.get("include_definitions", True):
+            wiki = glob.glob(path + '*-pages-articles.xml')
+            if len(wiki) > 0:
+                self.load_definitions(wiki[0])
+            else:
+                print "Cannot find *-pages-articles.xml -- skipping definitions"
+        else:
+            print "Skipping definitions (*-pages-articles.xml)"
+        self.load_translations(path + dump_filenames["translations"])
+        self.load_page_categories(path + dump_filenames["pageCategories"])
         self.load_stats(path + dump_filenames["stats"])
         self.load_labels(path + dump_filenames["labels"])
         self.load_links(path + dump_filenames["inlinks"])
         self.load_links(path + dump_filenames["outlinks"], inlinks = False)
-        if "translations" not in skip_files:
-            self.load_translations(path + dump_filenames["translations"])
         self.load_page_titles(path + dump_filenames["pages"])
         self.load_page_labels(path + dump_filenames["pageLabels"])
-        if "pageCategories" not in skip_files:
-            self.load_page_categories(path + dump_filenames["pageCategories"])
-        if "pages-articles" not in skip_files:
-            self.load_definitions(glob.glob(path + '*-pages-articles.xml')[0])
 
         #make new dataset active and remove old dataset
         self.cleanup(langcode)
@@ -231,7 +221,6 @@ class WpmLoader:
         
         if self.progress:
             num_lines = sum(1 for line in open(filename)) 
-            
         pipe = self.db.pipeline(transaction=False)
         file = codecs.open(filename, "r", "utf-8")
         for linenr, line in enumerate(file):
@@ -243,7 +232,7 @@ class WpmLoader:
                 parts = translation_part.split(",'")
                 for i in range(0, len(parts), 2):
                     lang = parts[i]
-                    if lang in self.translation_langs:
+                    if not self.translation_langs or lang in self.translation_langs:
                         pipe.rpush(self.ns.translation_sense(tr_id), lang)
                         pipe.set(self.ns.translation_sense_language(tr_id, lang), parts[i + 1])
                 if len(pipe) >= self.pipechunk:

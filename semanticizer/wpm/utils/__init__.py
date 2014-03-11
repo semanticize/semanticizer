@@ -59,7 +59,7 @@ def remove_accents(input_str):
     return u"".join([c for c in nkfd_form if not unicodedata.combining(c)])
 
 
-def check_dump_path(path, skip_files = []):
+def check_dump_path(path, settings):
     """
     Checks whether a path exists and raises an error if it doesn't.
 
@@ -74,13 +74,11 @@ def check_dump_path(path, skip_files = []):
         print "Checking " + fullpath
         if os.path.exists(fullpath):
             for filetype, filename in dump_filenames.iteritems():
-                if filetype in skip_files:
-                    continue
                 if os.path.isfile(fullpath + filename) == True:
                     print "Found " + fullpath + filename
                 else:
                     raise IOError("Cannot find " + fullpath + filename)
-            if "pages-articles" not in skip_files: # TODO: Why is this hard coded? What does it mean? [DG]
+            if settings.get("include_definitions", True):
                 wiki = glob.glob(fullpath + '*-pages-articles.xml')
                 if len(wiki) > 0:
                     print "Found " + wiki[0]
