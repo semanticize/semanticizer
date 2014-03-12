@@ -58,6 +58,7 @@ class ArticlesProcessor(LinksProcessor):
         
         wpm = wpm_dumps[settings["langcode"]]
         
+        parts = settings["article"].lower().split(',')
         
         titles = [link["title"] for link in links]
         ids = wpm.get_item_ids(*titles)        
@@ -71,8 +72,8 @@ class ArticlesProcessor(LinksProcessor):
             link["article_id"] = id
 
             inlinks = article["InLinks"]
-            if inlinks:
-                if settings.get("include_relatedness", False):
+            if inlinks and (not parts or 'inlinks' in parts):
+                if not parts or 'relatedness' in parts:
                     for inlink in inlinks:
                         title = wpm.get_item_title(inlink)
                         relatedness = get_relatedness(inlinks, wpm.get_item_inlinks(inlink) )
@@ -81,8 +82,8 @@ class ArticlesProcessor(LinksProcessor):
                     link["InLinks"] = [{ "id":int(inlink) } for inlink in inlinks]
 
             outlinks = article["OutLinks"]
-            if outlinks:
-                if settings.get("include_relatedness", False):
+            if outlinks and (not parts or 'outlinks' in parts):
+                if not parts or 'relatedness' in parts:
                     for outlink in outlinks:
                         title = wpm.get_item_title(outlink)
                         relatedness = get_relatedness(outlinks, wpm.get_item_outlinks(outlink) )
@@ -90,19 +91,19 @@ class ArticlesProcessor(LinksProcessor):
                 else:
                     link["OutLinks"] = [{ "id":int(outlink) } for outlink in outlinks]
 
-            if settings.get("include_categories", False):
+            if not parts or 'categories' in parts:
                 categories = wpm.get_item_categories( link["article_id"] )
                 if categories:
                     for category in categories:
                         title = wpm.get_item_title(category)
                         link["ParentCategories"].append( {"title":title, "id":int(category)} )
-            
-            if settings.get("include_definitions", False):
+
+            if not parts or 'definition' in parts:
                 definition = wpm.get_item_definition(link["article_id"])
                 if definition:
                     link["Definition"] = definition
 
-            if article["Labels"]:
+            if article["Labels"] and "labels" in parts:
                 link["Labels"] = article["Labels"]
 
         return (links, text, settings)

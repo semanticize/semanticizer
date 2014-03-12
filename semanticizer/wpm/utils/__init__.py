@@ -89,6 +89,7 @@ def check_dump_path(path, settings):
             print fullpath + " doesn't exist"
     raise IOError("Cannot find " + path)
 
+
 def get_relatedness(linksA, linksB):
     """
     Compare relatedness of 2 articles based on in or outlinks.
