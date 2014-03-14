@@ -43,3 +43,9 @@ nosetests.xml
 
 #netbeans
 /nbproject/
+
+# MediaWiki dumps
+*.bz2
+*.gz
+*.sql
+*.xml
