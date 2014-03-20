@@ -25,6 +25,8 @@ or
 """
 
 import re
+from semanticizer.config import config_get
+settings = config_get(('settings'), {})
 
 # Can do without ujson and simplejson, but speeds up considerably.
 try:
@@ -40,12 +42,12 @@ from flask import Flask, Response, request
 
 from semanticizer import procpipeline
 from semanticizer.config import config_get
-from semanticizer.wpm import init_datasource
+from semanticizer.wpm.data import init_datasource
 
 
 wpm_languages = config_get(('wpm', 'languages'))
-init_datasource(wpm_languages)
-PIPELINE = procpipeline.build(wpm_languages, feature_config=None)
+init_datasource(wpm_languages, settings)
+PIPELINE = procpipeline.build(wpm_languages)
 
 # WSGI application!
 application = Flask(__name__)
