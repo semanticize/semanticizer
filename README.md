@@ -5,6 +5,7 @@ created in 2012 by [Daan Odijk](http://staff.science.uva.nl/~dodijk/)
 at [ILPS](http://ilps.science.uva.nl/) (University of Amsterdam).
 
 This project since received contributions from (in alphabetical order):
+[Marc Bron](http://staff.science.uva.nl/~mbron/), 
 [Lars Buitinck](http://staff.science.uva.nl/~buitinck/),
 [Bart van den Ende](http://www.bartvandenende.nl/), 
 [David Graus](http://graus.nu/),
