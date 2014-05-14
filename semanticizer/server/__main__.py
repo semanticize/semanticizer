@@ -83,7 +83,7 @@ def main():
                      config_get(('server', 'use_reloader'), False),
                      config_get(('logging', 'verbose'), False),
                      config_get(('logging', 'format'), None),
-                     config_get(('linkprocs', 'includefeatures'), False),
+                     config_get(('linkprocs', 'features'), False),
                      config_get(('server', 'debug'), False))
     except ValueError as e:
         logging.getLogger().fatal("Error running Semanticizer server: %s" \

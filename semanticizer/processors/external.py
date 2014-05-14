@@ -216,7 +216,7 @@ class StatisticsProcessor(LinksProcessor):
         if len(settings["wikistats"]) > 0:
             return datetime.datetime.fromtimestamp(int(settings["wikistats"]))
         else:
-            return datetime.now()
+            return datetime.datetime.now()
 
     def wikipedia_page_views(self, year, month, article, langcode):
         url = self.WIKIPEDIA_STATS_URL[langcode] % (year, month, article)
