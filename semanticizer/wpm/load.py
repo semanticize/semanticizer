@@ -16,7 +16,7 @@ import json
 import glob
 
 from .namespace import WpmNS
-from .utils import normalize, check_dump_path, dump_filenames, generate_markup_definition, cli_progress
+from .utils import normalize, check_dump_path, dump_filenames, generate_markup_definition, cli_progress, wikidumps
 
 class WpmLoader:
     def __init__(self, db, langcode, settings, langname=None, path=None, translation_languages=None, progress=False, **kwargs):
@@ -51,9 +51,10 @@ class WpmLoader:
         #start loading the new data
         print "Loading new db: ", self.version
         if settings.get("include_definitions", True):
+            from db.mongodb import MongoDB
             wiki = glob.glob(path + '*-pages-articles.xml')
             if len(wiki) > 0:
-                self.load_definitions(wiki[0])
+                self.load_definitions(wiki[0]) # kwargs need to join for mongo
             else:
                 print "Cannot find *-pages-articles.xml -- skipping definitions"
         else:
@@ -372,44 +373,31 @@ class WpmLoader:
 
 
     def load_definitions(self, filename):
-        print '\nLoading page definitions...'
-        try:
-            import lxml.etree as ET # ElementTree API using libxml2
-            print "Using 'lxml.etree' parser"
-        except ImportError:
-            try:
-                import cElementTree as ET # effbot's C module
-                print "Using 'cElementTree' parser"
-            except ImportError:
-                print "Using 'xml.etree' parser"
-                import xml.etree.ElementTree as ET
+        print '\nLoading page definitions... (in Mongo)'
+
+        mongo = MongoDB()
+
         if self.progress:
             num_lines = sum(1 for line in open(filename) if '<page' in line) 
+        
         elementnr = 1
-        pipe = self.db.pipeline(transaction=False)
-        for event, element in ET.iterparse(filename):
-            if element.xpath('local-name()') == 'page':
-                elementnr += 1
-                if self.progress and elementnr % 10 is 0:
-                    cli_progress(elementnr, num_lines)
-                try:
-                    namespace = element.tag[1:element.tag.index('}')] or ""
-                    id     = element.find('.//n:id', namespaces={'n': namespace})
-                    markup = element.find('.//n:revision/n:text', namespaces={'n': namespace})
-
-                    if markup is not None and markup.text:
-                        definition = generate_markup_definition(markup.text)
-                    else:
-                        definition = ""
-                    pipe.set(self.ns.page_definition(id.text), definition)
-                    element.clear()
-                    del element # for extra insurance 
-
-                    if len(pipe) >= 100:
-                        pipe.execute()
-                except Exception, e:
-                    print "Error loading on element: ", elementnr, str(e)
-                    continue
+        pipe = mongo.pipeline(transaction=False)
+        
+        for pageid, title, markup in wikidumps.extract_pages(filename):
+            elementnr += 1
+            if self.progress and elementnr % 10 is 0:
+                cli_progress(elementnr, num_lines)
+            try:
+                if markup is not None:
+                    definition = generate_markup_definition(markup)
+                else:
+                    definition = ''
+                pipe.set(self.ns.page_definition(str(pageid)), definition)
+                if len(pipe) >= 100:
+                    pipe.execute()
+            except Exception, e:
+                print "Error loading on element: ", elementnr, str(e)
+                continue
         pipe.execute()
         if self.progress:
             cli_progress(elementnr, num_lines)
