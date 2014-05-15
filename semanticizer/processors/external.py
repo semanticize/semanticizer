@@ -61,7 +61,7 @@ class ArticlesProcessor(LinksProcessor):
         parts = settings["article"].lower().split(',')
         
         titles = [link["title"] for link in links]
-        ids = wpm.get_item_ids(*titles)        
+        ids = [link["id"] for link in links]
         articles = wpm.get_articles(*ids)
         
         for link, id, title, article in zip(links, ids, titles, articles):
@@ -168,7 +168,7 @@ class StatisticsProcessor(LinksProcessor):
         for _ in set([link["title"] for link in links]):
             day = now
             for _ in range(14):
-                self.queue.put((day.year, day.month, article))
+                queue.put((day.year, day.month, article))
                 day += timedelta(days=28)
 
         for _ in range(self.num_of_threads):
