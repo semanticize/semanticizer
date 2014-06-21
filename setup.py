@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 pkgs = (["semanticizer"] +
-        ["semanticizer." + sub for sub in ("processors", "redisinsert",
+        ["semanticizer." + sub for sub in ("processors", "dbinsert",
                                            "server", "util", "wpm")])
 
 setup(
