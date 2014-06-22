@@ -311,14 +311,19 @@ class LearningProcessor(LinksProcessor):
         # Preprocess data
         if preprocessor:
             data = preprocessor.fit_transform(data)
-        
+
         if len(data):
             if not "classifier" in settings:
                 model.partial_fit(data, targets, (True, False))
                 print "Partially",
             else:
-                model.fit(data, targets)
+                if "randomforest" in settings["classifier"].lower(): # RF likes balanced data
+                    balance = float(targets.count(True))/len(targets)
+                    weights = np.array(map(lambda v: 1-balance if v else balance, targets))
+                    model.fit(data, targets, weights)
+                else: # SVM doesn't care
+                    model.fit(data, targets)
             print "Fitted %s model to %d training samples." % \
                   (model.__class__.__name__, len(data))
-            
+
         self.modelStore.save_model(model, name, metadata, preprocessor)
