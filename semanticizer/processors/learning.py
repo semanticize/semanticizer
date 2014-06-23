@@ -12,8 +12,6 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import warnings
-import numpy as np
-from time import time
 
 from collections import defaultdict
 
@@ -28,7 +26,6 @@ class LearningProcessor(LinksProcessor):
         self.context_history = defaultdict(list)
 
     def predict(self, classifier, testfeatures):
-        t0 = time()
         print("Start predicting of %d instances with %d features."
               % (len(testfeatures), len(testfeatures[0])))
 
@@ -44,8 +41,9 @@ class LearningProcessor(LinksProcessor):
             predictions = classifier.predict(testfeatures)
             predict = [[0,1] if p else [1,0] for p in predictions]
 
-        print("Done predicting of %d instances. In %s seconds" % (len(predict), str(round(time()-t0, 2))) )
-        return predict
+        print("Done predicting of %d instances." % len(predict))
+
+        return predict    
 
     def check_model(self, model, description, features, settings):
         if "language" in description:
@@ -87,12 +85,11 @@ class LearningProcessor(LinksProcessor):
             return (links, text, settings)
         
         modelname = settings["learning"]
-        t0 = time()
         (model, description, preprocessor) \
             = self.modelStore.load_model(modelname)
-        print("Loaded classifier from %s in %s seconds" % (description["source"], str(round(time()-t0, 2))))
+        print("Loaded classifier from %s" % description["source"])
 
-        features = sorted(links[0]["features"].keys())
+        features = sorted(links[0]["features"].keys())        
         features = self.check_model(model, description, features, settings)
 
         testfeatures = []
@@ -147,12 +144,13 @@ class LearningProcessor(LinksProcessor):
             request_ids = self.context_history[context]
             if len(request_ids) == 0:
                 raise ValueError("No requests found for context %s." % context)
-
+        
         print("Received feedback for request_id %s in context %s: %s." %
                               (request_id, context, feedback))
-
+                              
         def process_feedback(link, feedback):
             link["feedback"] = feedback
+            print feedback, link["title"]
 
         for feedback_request_id in request_ids:
             if feedback_request_id not in self.history:
@@ -161,7 +159,7 @@ class LearningProcessor(LinksProcessor):
             for link in self.history[feedback_request_id]:
                 for feedback_type in feedback.keys():
                     if feedback_type == "default": continue
-                    if link["id"] in feedback.getlist(feedback_type):
+                    if link["title"] in feedback.getlist(feedback_type):
                         process_feedback(link, feedback_type)
                         break
                 else:
@@ -291,6 +289,8 @@ class LearningProcessor(LinksProcessor):
                     metadata["features"] = sorted(link["features"].keys())
                 assert metadata["features"] == sorted(link["features"].keys())
             
+                # print request_id, len(link["features"]), 
+                # print link["feedback"] if "feedback" in link else ""
                 if "feedback" in link:
                     metadata["feedback"][link["feedback"]] += 1
                     targets.append(link["feedback"] == metadata["target"])
@@ -317,14 +317,7 @@ class LearningProcessor(LinksProcessor):
                 model.partial_fit(data, targets, (True, False))
                 print "Partially",
             else:
-                if "randomforest" in settings["classifier"].lower():
-                    # RF likes balanced data
-                    balance = float(targets.count(True))/len(targets)
-                    weights = np.array(map(lambda v: 1-balance if v else balance, targets))
-                    model.fit(data, targets, weights)
-                else:
-                    # SVM doesn't care
-                    model.fit(data, targets)
+                model.fit(data, targets)
             print "Fitted %s model to %d training samples." % \
                   (model.__class__.__name__, len(data))
             
