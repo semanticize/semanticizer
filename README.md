@@ -77,7 +77,7 @@ If you want to dive into the code, start at `semanticizer/server/__main__.py`.
 
 	3. Load data into redis: `python -m semanticizer.dbinsert [--language=<languagecode>] [--output=/tmp/redisinsert.log]`.
 
-4. Run the server using `python -m semantizicer.server`.
+4. Run the server using `python -m semanticizer.server`.
 
 5. In order to work with the features you need to install the
    scikit-learn and scipy packages. Before installing scipy you need
