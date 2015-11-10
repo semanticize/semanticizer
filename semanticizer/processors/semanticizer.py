@@ -51,6 +51,7 @@ class SemanticizeProcessor(LinksProcessor):
                                     not "accents" in settings["normalize"])
             normalize_lower = "normalize" in settings and \
                               "lower" in settings["normalize"]
+            largest_matching = "largestMatching" in settings
 
             if "split_sentences" in settings:
                 sentences = PunktSentenceTokenizer().tokenize(text)
@@ -63,6 +64,7 @@ class SemanticizeProcessor(LinksProcessor):
                                           normalize_dash=normalize_dash,
                                           normalize_accents=normalize_accents,
                                           normalize_lower=normalize_lower,
+                                          largest_matching=largest_matching, 
                                           translations=translations,
                                           sense_probability_threshold=-1)
 

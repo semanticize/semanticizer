@@ -37,6 +37,7 @@ class Semanticizer:
     def semanticize(self, sentence, normalize_dash=True,
                     normalize_accents=True, normalize_lower=False,
                     translations=True, counts=False,
+                    largest_matching=False,
                     sense_probability_threshold=None):
         if sense_probability_threshold == None:
             sense_probability_threshold = self.sense_probability_threshold
@@ -77,10 +78,9 @@ class Semanticizer:
                                               + "find %s in the database" \
                                               % anchor)
                         entity = self.wpm.get_entity_data(anchor)
-                        for sense in entity['senses']:
-                            sense_str = str(sense)
-                            sense_data = self.wpm.get_sense_data(anchor,
-                                                                 sense_str)
+                        senses = [(sense, self.wpm.get_sense_data(anchor, str(sense))) for sense in entity['senses']]
+                        if largest_matching: senses = sorted(senses, key=lambda (_, d): -d['cntlinkdoc'])[:1]
+                        for sense, sense_data in senses:
                             if sense_data:
                                 if entity['cnttextocc'] == 0:
                                     link_probability = 0
@@ -89,7 +89,7 @@ class Semanticizer:
                                     link_probability = float(entity['cntlinkdoc']) / entity['cnttextdoc']
                                     sense_probability = float(sense_data['cntlinkdoc']) / entity['cnttextdoc']
                                 if sense_probability > sense_probability_threshold:
-                                    title = unicode(self.wpm.get_item_title(sense_str))
+                                    title = unicode(self.wpm.get_item_title(str(sense)))
                                     url = self.wikipedia_url_template \
                                           % (self.language_code,
                                              urllib.quote(title.encode('utf-8')))
@@ -111,9 +111,9 @@ class Semanticizer:
                                         link["translations"] = {self.language_code:
                                                                 {"title": title,
                                                                  "url": url}}
-                                        if self.wpm.sense_has_trnsl(sense_str):
-                                            for lang in self.wpm.get_trnsl_langs(sense_str):
-                                                trnsl = self.wpm.get_sense_trnsl(sense_str, lang)
+                                        if self.wpm.sense_has_trnsl(str(sense)):
+                                            for lang in self.wpm.get_trnsl_langs(str(sense)):
+                                                trnsl = self.wpm.get_sense_trnsl(str(sense), lang)
                                                 link["translations"][lang] = {
                                                     'title': unicode(trnsl),
                                                     'url': self.wikipedia_url_template % (lang, urllib.quote(unicode(trnsl).encode('utf-8')))
@@ -129,4 +129,11 @@ class Semanticizer:
                                         link['fromRedirect'] = sense_data['from_redir']
                                     result["links"].append(link)
 
+        if largest_matching:
+            available_text = wpmutil.normalize(sentence, normalize_dash, normalize_accents, normalize_lower)
+            for link in sorted(result["links"], key=lambda link: -link["priorProbability"]/2-len(link["label"])):
+                normalized_label = wpmutil.normalize(link["label"], normalize_dash, normalize_accents, normalize_lower)
+                if normalized_label in available_text: 
+                    available_text = available_text.replace(normalized_label, "")
+                else: result["links"].remove(link)
         return result
