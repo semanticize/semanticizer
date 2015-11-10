@@ -58,7 +58,10 @@ class ArticlesProcessor(LinksProcessor):
         
         wpm = wpm_dumps[settings["langcode"]]
         
-        parts = settings["article"].lower().split(',')
+        if "article" in settings:
+            parts = settings["article"].lower().split(',') 
+        else:
+            parts = [key.lower() for key in self.article_template.keys()]
         
         titles = [link["title"] for link in links]
         ids = [link["id"] for link in links]
